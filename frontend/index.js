@@ -79,7 +79,7 @@ const QUIZ_CHALLENGE = {
   }
 };
 
-const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
+const getBackendUrl = () => 'https://webdev-learning-platform-backend.onrender.com';
 let syncTimeout = null;
 
 function queueNotesSync() {
