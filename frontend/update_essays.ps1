@@ -1,0 +1,3105 @@
+# update_essays.ps1
+# Programmatic Iteration 3 updates for the FAANG Web Development Roadmap Essays
+
+$essaysDir = Join-Path $PSScriptRoot "essays"
+$htmlFiles = Get-ChildItem -Path $essaysDir -Filter "*.html"
+
+# === INJECTED PREMIUM CSS RULES ===
+$injectedCSS = @'
+/* === INJECTED PREMIUM LAYOUT STYLE START === */
+.controller-rack-hud {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  z-index: 1009 !important;
+  display: flex !important;
+  gap: 12px !important;
+}
+.hud-btn {
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0 var(--border, #2a2c38);
+  text-decoration: none;
+}
+.hud-btn:hover {
+  background: var(--surface2, #1a1c24);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border, #2a2c38);
+}
+body.light-theme .hud-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 2px 2px 0 var(--border, #cbd5e1) !important;
+}
+body.light-theme .hud-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  box-shadow: 3px 3px 0 var(--border, #cbd5e1) !important;
+}
+
+/* Sidebar toggle button styling */
+.sidebar-toggle-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 1002;
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0 var(--border, #2a2c38);
+  backdrop-filter: blur(8px);
+}
+.sidebar-toggle-btn:hover {
+  background: var(--surface2, #1a1c24);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border, #2a2c38);
+}
+body.light-theme .sidebar-toggle-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 2px 2px 0 var(--border, #cbd5e1) !important;
+}
+body.light-theme .sidebar-toggle-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  box-shadow: 3px 3px 0 var(--border, #cbd5e1) !important;
+}
+
+/* Sidebar collapse overrides for grid-based layouts (Phase 1 & 2) */
+.sidebar, .sidebar-hud {
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), padding 0.3s, opacity 0.3s, left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  padding-top: 90px !important; /* Ensure room for top-left toggle */
+}
+.layout, .premium-layout {
+  transition: grid-template-columns 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+body.sidebar-closed .sidebar,
+body.sidebar-closed .sidebar-hud {
+  width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border-right-width: 0 !important;
+  overflow: hidden !important;
+}
+body.sidebar-closed .layout,
+body.sidebar-closed .premium-layout {
+  grid-template-columns: 0px 1fr !important;
+}
+
+/* Universal Light Mode Override Variables (All Phases) */
+body.light-theme {
+  /* Background overrides to wipe out hardcoded dark gradients */
+  background: #f8fafc !important;
+  color: #0f172a !important;
+
+  /* Phase 1 variables */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --code-bg: #f8fafc;
+  --amber: #ea580c;
+  --teal: #0d9488;
+  --purple: #7c3aed;
+  --rose: #e11d48;
+  --green: #16a34a;
+  --yellow: #ca8a04;
+
+  /* Phase 2 Cosmic variables */
+  --bg-glow: #f5f3f7;
+  --bg-deep: #eae6f0;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --surface-solid: #ffffff;
+  --surface-bright: #e9e5f3;
+  --border-neon: rgba(109, 40, 217, 0.15);
+  --border-glow: rgba(13, 148, 136, 0.2);
+  --text-primary: #1e1b4b;
+  --text-muted: #6b6a8a;
+  --neon-cyan: #0d9488;
+  --neon-magenta: #db2777;
+  --neon-purple: #6d28d9;
+  --neon-electric-grape: #6d28d9;
+  --neon-cyber-pink: #db2777;
+  --neon-matrix-emerald: #16a34a;
+  --neon-amber: #ca8a04;
+  --neon-green: #16a34a;
+  --neon-tech-blue: #2563eb;
+  --code-bg-dark: #f8fafc;
+
+  /* Phase 3 Cyberpunk variables */
+  --bg-core: #f5f6fa;
+  --bg-surface-dark: #e8eaf2;
+  --bg-surface-card: #ffffff;
+  --bg-surface-bright: #dfdfef;
+  --border-neon-vivid: rgba(58, 134, 255, 0.2);
+  --border-laser-glow: rgba(13, 148, 136, 0.3);
+  --text-hyper-bright: #0c0f1d;
+  --text-dimmed: #475569;
+  --js-yellow: #a16207;
+  --laser-cyan: #0d9488;
+  --laser-pink: #db2777;
+  --synth-purple: #6d28d9;
+  --matrix-neon-green: #16a34a;
+  --syntax-bg-matrix: #f1f5f9;
+
+  /* Phase 4 variables */
+  --react-blue: #0369a1;
+  --violet-glow: #6d28d9;
+  --matrix-green: #15803d;
+  --hero-gradient: linear-gradient(180deg, #e0f2fe 0%, #f5f6fa 100%);
+  --hud-overlay-bg: rgba(232, 234, 242, 0.9);
+}
+
+/* Phase-specific background gradient overrides in light mode */
+body.light-theme.phase-1 {
+  background: #f8fafc !important;
+}
+body.light-theme.phase-2 {
+  background: radial-gradient(circle at 50% 0%, #eae6f0 0%, #f5f3f7 70%) !important;
+}
+body.light-theme.phase-3 {
+  background: radial-gradient(circle at 50% 0%, #e8eaf2 0%, #f5f6fa 80%) !important;
+}
+body.light-theme.phase-4 {
+  background: #fafafa !important;
+}
+body.light-theme.phase-5 {
+  background: var(--bg-main) !important;
+}
+body.light-theme.phase-6 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-7 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-8 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-9 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-10 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-11 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-12 {
+  background: var(--bg-core) !important;
+}
+
+/* Clean light layout updates for containers and panels */
+body.light-theme .sidebar-hud {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-right-color: rgba(109, 40, 217, 0.15) !important;
+}
+body.light-theme .radar-cell {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(109, 40, 217, 0.15) !important;
+}
+body.light-theme .recap-item-node {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-left-color: var(--teal, #0d9488) !important;
+}
+body.light-theme .terminal {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+body.light-theme .terminal-bar {
+  background: #e2e8f0 !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+body.light-theme .terminal-body {
+  color: #0f172a !important;
+}
+
+/* GitHub-Style Premium Code Syntax Highlighting inside Light Mode */
+body.light-theme .code-block,
+body.light-theme .premium-code-block {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+}
+body.light-theme .code-header,
+body.light-theme .p-code-header {
+  background: #e2e8f0 !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+body.light-theme pre,
+body.light-theme code {
+  color: #0f172a !important;
+}
+body.light-theme p code,
+body.light-theme li code {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: #cbd5e1 !important;
+  color: var(--teal, #0d9488) !important;
+}
+body.light-theme .token-kw, body.light-theme .t-kw { color: #d73a49 !important; font-weight: bold; }
+body.light-theme .token-str, body.light-theme .t-val { color: #032f62 !important; }
+body.light-theme .token-comment, body.light-theme .t-comment { color: #6a737d !important; font-style: italic; }
+body.light-theme .token-fn, body.light-theme .token-var { color: #6f42c1 !important; }
+body.light-theme .token-num, body.light-theme .t-num { color: #005cc5 !important; }
+body.light-theme .token-tag, body.light-theme .t-sel { color: #22863a !important; font-weight: bold; }
+body.light-theme .token-attr { color: #e36209 !important; }
+
+/* Interactive code playground light overrides */
+body.light-theme #code-playground-drawer {
+  background: #ffffff !important;
+  border-left-color: #cbd5e1 !important;
+}
+body.light-theme #code-playground-drawer h3 {
+  color: #0f172a !important;
+}
+body.light-theme #code-playground-drawer #playground-filename {
+  color: #64748b !important;
+}
+body.light-theme #playground-code-input {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Study Notes Scratchpad styling overrides in light mode */
+body.light-theme #scratchpad-window {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important;
+}
+body.light-theme #scratchpad-window span {
+  color: #0f172a !important;
+}
+body.light-theme #scratchpad-textarea {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Style adjustments for code blocks run live button */
+.run-code-btn {
+  border: 1px solid var(--teal, #2ec4b6);
+  color: var(--teal, #2ec4b6);
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.run-code-btn:hover {
+  background: rgba(46, 196, 182, 0.1) !important;
+  color: var(--teal, #2ec4b6) !important;
+  box-shadow: 0 0 10px rgba(46, 196, 182, 0.2);
+}
+body.light-theme .run-code-btn {
+  border-color: var(--teal, #0d9488) !important;
+  color: var(--teal, #0d9488) !important;
+}
+body.light-theme .run-code-btn:hover {
+  background: rgba(13, 148, 136, 0.1) !important;
+  color: var(--teal, #0d9488) !important;
+}
+
+/* Reading Focus Mode */
+body.focus-mode {
+  padding-left: 0 !important;
+}
+body.focus-mode .sidebar,
+body.focus-mode .sidebar-hud,
+body.focus-mode .sidebar-toggle-btn {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.focus-mode main {
+  max-width: 880px !important;
+  margin: 0 auto !important;
+  padding: 80px 24px 120px 24px !important;
+  transition: all 0.3s ease;
+}
+/* Force grid layouts to collapse to single columns in Focus Mode to avoid text truncation and layout spoiling */
+body.focus-mode .pitfall-matrix,
+body.focus-mode .retrieval-grid,
+body.focus-mode .enterprise-radar,
+body.focus-mode .summary-hud-grid,
+body.focus-mode .glossary-matrix-grid,
+body.focus-mode .recap-grid-hud {
+  grid-template-columns: 1fr !important;
+}
+body.focus-mode .controller-rack-hud {
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+body.focus-mode .controller-rack-hud:hover {
+  opacity: 1;
+}
+body.focus-mode .controller-rack-hud a {
+  display: none !important;
+}
+
+/* Premium Floating Back to Top Button */
+#back-to-top-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#back-to-top-btn:hover {
+  background: var(--surface2, #1a1c24) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  border-color: var(--border-active, var(--border, #cbd5e1)) !important;
+}
+body.light-theme #back-to-top-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08) !important;
+}
+body.light-theme #back-to-top-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border-active, #16a34a) !important;
+}
+
+/* Scratchpad Tab Styling */
+.scratch-tab-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.scratch-tab-btn:hover {
+  color: #e4e2dc;
+}
+.scratch-tab-btn.active {
+  color: #8b5cf6;
+  border-bottom-color: #8b5cf6;
+}
+body.light-theme .scratch-tab-btn:hover {
+  color: #0f172a !important;
+}
+body.light-theme .scratch-tab-btn.active {
+  color: #7c3aed !important;
+  border-bottom-color: #7c3aed !important;
+}
+
+/* Flashcard Styles */
+.flashcard-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 160px;
+  cursor: pointer;
+  margin: 6px 0;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+.flashcard-container.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.flashcard-front {
+  background: #0d1117;
+  color: #f8fafc;
+}
+body.light-theme .flashcard-front {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.flashcard-back {
+  background: #1e1b4b;
+  color: #a78bfa;
+  transform: rotateY(180deg);
+}
+body.light-theme .flashcard-back {
+  background: #eae6f0 !important;
+  color: #6d28d9 !important;
+  border-color: #cbd5e1 !important;
+}
+.flashcard-prompt {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  color: #8b5cf6;
+  margin-top: auto;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Quiz Styles */
+.quiz-option-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 6px;
+}
+.quiz-option-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+body.light-theme .quiz-option-btn {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+body.light-theme .quiz-option-btn:hover {
+  background: #e2e8f0 !important;
+}
+.quiz-option-btn.correct {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+}
+.quiz-option-btn.incorrect {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444 !important;
+  color: #f87171 !important;
+}
+
+/* Active paragraph segment highlighting */
+main p, main h3, main h4, main li, main .hud-callout p {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.voice-active-segment {
+  border-left: 6px solid var(--border-active, #8b5cf6) !important;
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-radius: var(--radius-sm, 8px) !important;
+  padding: 12px 20px !important;
+  margin-left: -12px !important;
+  transform: scale(1.025);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15), inset 4px 0 20px rgba(139, 92, 246, 0.08) !important;
+  z-index: 10;
+}
+body.light-theme .voice-active-segment {
+  background: rgba(109, 40, 217, 0.06) !important;
+  border-left-color: var(--purple, #7c3aed) !important;
+  box-shadow: 0 10px 35px rgba(109, 40, 217, 0.1), inset 4px 0 20px rgba(109, 40, 217, 0.04) !important;
+}
+
+/* Click-to-Play Interactive Mode Hover Effects */
+body.audio-interactive-mode main p,
+body.audio-interactive-mode main h3,
+body.audio-interactive-mode main h4,
+body.audio-interactive-mode main li,
+body.audio-interactive-mode main .hud-callout p {
+  cursor: pointer;
+  position: relative;
+}
+body.audio-interactive-mode main p:hover,
+body.audio-interactive-mode main h3:hover,
+body.audio-interactive-mode main h4:hover,
+body.audio-interactive-mode main li:hover,
+body.audio-interactive-mode main .hud-callout p:hover {
+  background: rgba(139, 92, 246, 0.03) !important;
+  border-left: 3px solid rgba(139, 92, 246, 0.3) !important;
+  padding-left: 12px !important;
+  margin-left: -6px !important;
+  transform: scale(1.01);
+}
+body.light-theme.audio-interactive-mode main p:hover,
+body.light-theme.audio-interactive-mode main h3:hover,
+body.light-theme.audio-interactive-mode main h4:hover,
+body.light-theme.audio-interactive-mode main li:hover,
+body.light-theme.audio-interactive-mode main .hud-callout p:hover {
+  background: rgba(109, 40, 217, 0.02) !important;
+  border-left-color: rgba(109, 40, 217, 0.3) !important;
+}
+
+/* Audio Equalizer animation */
+.audio-equalizer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  margin: 6px 0;
+}
+.eq-bar {
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to top, #8b5cf6, #d946ef);
+  border-radius: 1px;
+  animation: eq-bounce 0.8s ease-in-out infinite alternate;
+}
+body.light-theme .eq-bar {
+  background: linear-gradient(to top, #7c3aed, #db2777) !important;
+}
+@keyframes eq-bounce {
+  0% { height: 15%; }
+  100% { height: 100%; }
+}
+
+/* Audio Control Panel Drawer Overlay */
+#audio-control-panel {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  width: 320px;
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  border-radius: var(--radius-sm, 12px);
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 1008;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  backdrop-filter: blur(8px);
+}
+body.light-theme #audio-control-panel {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.audio-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 8px;
+}
+body.light-theme .audio-panel-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.audio-panel-header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--purple, #8b5cf6);
+  letter-spacing: 0.05em;
+}
+body.light-theme .audio-panel-header h3 {
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-panel-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.audio-panel-close:hover {
+  color: var(--text, #e4e2dc);
+}
+body.light-theme .audio-panel-close:hover {
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audio-control-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  letter-spacing: 0.02em;
+}
+
+.audio-select {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  outline: none;
+  font-family: inherit;
+  width: 100%;
+}
+body.light-theme .audio-select {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.audio-slider {
+  flex: 1;
+  height: 4px;
+  background: var(--border, #2a2c38);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+body.light-theme .audio-slider {
+  background: var(--border, #cbd5e1) !important;
+}
+
+.audio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--purple, #8b5cf6);
+  cursor: pointer;
+}
+body.light-theme .audio-slider::-webkit-slider-thumb {
+  background: var(--purple, #7c3aed) !important;
+}
+
+.audio-slider-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text, #e4e2dc);
+  min-width: 28px;
+  text-align: right;
+}
+body.light-theme .audio-slider-val {
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-mode-selector {
+  display: flex;
+  border: 1px solid var(--border, #2a2c38);
+  border-radius: 6px;
+  overflow: hidden;
+}
+body.light-theme .audio-mode-selector {
+  border-color: var(--border, #cbd5e1) !important;
+}
+
+.audio-mode-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  padding: 6px;
+  font-size: 0.7rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.audio-mode-btn.active {
+  background: var(--surface2, #1a1c24);
+  color: var(--purple, #8b5cf6);
+}
+body.light-theme .audio-mode-btn.active {
+  background: var(--surface2, #f1f5f9) !important;
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-playback-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.audio-play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+  transition: all 0.2s;
+}
+.audio-play-btn:hover {
+  transform: scale(1.05);
+}
+
+.audio-nav-btn {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.audio-nav-btn:hover {
+  background: var(--surface, #13141a);
+  color: var(--purple, #8b5cf6);
+}
+body.light-theme .audio-nav-btn {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+body.light-theme .audio-nav-btn:hover {
+  background: var(--surface, #ffffff) !important;
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-accent-notice {
+  font-size: 0.62rem;
+  color: var(--text-muted, #64748b);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+  line-height: 1.4;
+}
+body.light-theme .audio-accent-notice {
+  border-top-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* AI Tutor Drawer */
+#ai-tutor-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: var(--surface, #13141a);
+  border-left: 2px solid var(--border, #2a2c38);
+  z-index: 2000;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-direction: column;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  backdrop-filter: blur(12px);
+}
+body.light-theme #ai-tutor-drawer {
+  background: #ffffff !important;
+  border-left-color: #cbd5e1 !important;
+  box-shadow: -10px 0 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* AI Tutor Chat Bubbles */
+.ai-msg-bubble {
+  align-self: flex-start;
+  max-width: 85%;
+  border-radius: 8px 8px 8px 0px;
+  padding: 10px 12px;
+  color: var(--text, #e4e2dc);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-top: 4px;
+  word-break: break-word;
+}
+.ai-msg-bubble.tutor {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+body.light-theme .ai-msg-bubble.tutor {
+  background: rgba(124, 58, 237, 0.05) !important;
+  border-color: rgba(124, 58, 237, 0.15) !important;
+  color: #0f172a !important;
+}
+.ai-msg-bubble.user {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px 8px 0px 8px;
+  color: #ffffff;
+}
+body.light-theme .ai-msg-bubble.user {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Blink Animation for thinking dot */
+@keyframes blink {
+  0% { opacity: .2; }
+  20% { opacity: 1; }
+  100% { opacity: .2; }
+}
+
+/* AI Tutor resize handle */
+#ai-tutor-resize-handle {
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 100;
+  transition: background 0.2s;
+}
+#ai-tutor-resize-handle:hover {
+  background: rgba(139, 92, 246, 0.2);
+}
+body.light-theme #ai-tutor-resize-handle:hover {
+  background: rgba(109, 40, 217, 0.15) !important;
+}
+
+/* === AUTH MODAL & SYNCHRONIZATION PREMIUM STYLING === */
+#auth-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 11, 16, 0.6);
+  backdrop-filter: blur(10px);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+}
+.auth-container {
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  border-radius: var(--radius-sm, 12px);
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+body.light-theme .auth-container {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08) !important;
+}
+.auth-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.15);
+}
+body.light-theme .auth-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+.auth-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--purple, #8b5cf6);
+  font-family: 'Outfit', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+body.light-theme .auth-header h3 {
+  color: var(--purple, #7c3aed) !important;
+}
+.auth-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.auth-close:hover {
+  color: var(--text, #e4e2dc);
+}
+body.light-theme .auth-close:hover {
+  color: var(--text, #0f172a) !important;
+}
+.auth-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+body.light-theme .auth-tabs {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+.auth-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  text-align: center;
+}
+.auth-tab-btn.active {
+  color: var(--purple, #8b5cf6);
+  border-bottom-color: var(--purple, #8b5cf6);
+}
+body.light-theme .auth-tab-btn.active {
+  color: var(--purple, #7c3aed) !important;
+  border-bottom-color: var(--purple, #7c3aed) !important;
+}
+.auth-form {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-form.active {
+  display: flex;
+}
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.auth-input-group label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+}
+.auth-input {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  outline: none;
+  font-family: inherit;
+}
+body.light-theme .auth-input {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+.auth-btn-submit {
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+.auth-btn-submit:hover {
+  transform: translateY(-1px);
+}
+.auth-error {
+  color: #ef4444;
+  font-size: 0.72rem;
+  display: none;
+  margin-top: -4px;
+}
+.sync-status-indicator {
+  font-size: 0.65rem;
+  color: var(--text-muted, #64748b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sync-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  display: inline-block;
+}
+.sync-status-dot.synced {
+  background: #10b981;
+}
+.sync-status-dot.error {
+  background: #ef4444;
+}
+.sync-status-dot.pending {
+  background: #ca8a04;
+  animation: pulse-sync 1.5s infinite;
+}
+@keyframes pulse-sync {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+/* === INJECTED PREMIUM LAYOUT STYLE END === */
+
+# === INJECTED PREMIUM JS CODE ===
+// === INJECTED PREMIUM MODULE JS START ===
+const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
+let syncTimeout = null;
+
+function queueNotesSync() {
+  if (!localStorage.getItem('faang-auth-token')) return;
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Saving notes to cloud...';
+  }
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    await syncProgressToServer();
+  }, 2000);
+}
+
+function toggleAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+  modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+  if (modal.style.display === 'flex') {
+    const errorEl = document.getElementById('auth-error-msg');
+    if (errorEl) errorEl.style.display = 'none';
+  }
+}
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('auth-form-login');
+  const registerForm = document.getElementById('auth-form-register');
+  const loginTab = document.getElementById('auth-tab-login');
+  const registerTab = document.getElementById('auth-tab-register');
+  
+  if (tab === 'login') {
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+  } else {
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+    loginTab.classList.remove('active');
+    registerTab.classList.add('active');
+  }
+}
+
+async function submitAuth(event, type) {
+  event.preventDefault();
+  const errorEl = document.getElementById('auth-error-msg');
+  if (errorEl) errorEl.style.display = 'none';
+  
+  const suffix = type === 'login' ? 'login' : 'register';
+  const usernameInput = document.getElementById(`auth-username-${suffix}`);
+  const passwordInput = document.getElementById(`auth-password-${suffix}`);
+  
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+  
+  if (!username || !password) {
+    showAuthError("Username and password are required.");
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/auth/${suffix}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Authentication failed.');
+    }
+    
+    localStorage.setItem('faang-auth-token', data.token);
+    localStorage.setItem('faang-username', data.username);
+    
+    toggleAuthModal();
+    usernameInput.value = '';
+    passwordInput.value = '';
+    
+    await syncProgressFromServer();
+    updateAuthHUD();
+    
+  } catch (err) {
+    showAuthError(err.message);
+  }
+}
+
+function showAuthError(msg) {
+  const errorEl = document.getElementById('auth-error-msg');
+  if (errorEl) {
+    errorEl.innerText = msg;
+    errorEl.style.display = 'block';
+  }
+}
+
+function logOut() {
+  if (confirm("Are you sure you want to log out? Local data will remain but cloud syncing will stop.")) {
+    localStorage.removeItem('faang-auth-token');
+    localStorage.removeItem('faang-username');
+    updateAuthHUD();
+    alert("Logged out successfully.");
+  }
+}
+
+function updateAuthHUD() {
+  const token = localStorage.getItem('faang-auth-token');
+  const username = localStorage.getItem('faang-username');
+  const hudBtn = document.getElementById('auth-hud-btn');
+  if (!hudBtn) return;
+  
+  if (token && username) {
+    hudBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>👤 ${username}</span>
+      <span class="sync-status-indicator" style="margin-left: 6px;" id="sync-indicator-container">
+        <span class="sync-status-dot synced" id="sync-indicator-status" title="Synced with cloud"></span>
+      </span>
+      <span onclick="event.stopPropagation(); logOut();" style="margin-left: 8px; color: var(--rose, #ef4444); cursor: pointer; font-weight: bold;" title="Log Out">&#10005;</span>
+    `;
+    hudBtn.onclick = () => {
+      syncProgressToServer();
+    };
+  } else {
+    hudBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Log In</span>
+    `;
+    hudBtn.onclick = toggleAuthModal;
+  }
+}
+
+async function syncProgressToServer() {
+  const token = localStorage.getItem('faang-auth-token');
+  if (!token) return;
+  
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Syncing...';
+  }
+  
+  const completed = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+  const notes = localStorage.getItem('faang-student-notes') || '';
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token
+      },
+      body: JSON.stringify({
+        completedEssays: completed,
+        studyNotes: notes
+      })
+    });
+    
+    if (!res.ok) throw new Error('Failed to sync to cloud');
+    
+    if (indicator) {
+      indicator.className = 'sync-status-dot synced';
+      indicator.title = 'Synced with cloud';
+    }
+  } catch (err) {
+    console.error('Sync to server error:', err);
+    if (indicator) {
+      indicator.className = 'sync-status-dot error';
+      indicator.title = 'Sync error: ' + err.message;
+    }
+  }
+}
+
+async function syncProgressFromServer() {
+  const token = localStorage.getItem('faang-auth-token');
+  if (!token) return;
+  
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Fetching cloud progress...';
+  }
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/progress`, {
+      method: 'GET',
+      headers: { 'x-auth-token': token }
+    });
+    
+    if (!res.ok) throw new Error('Failed to fetch from cloud');
+    
+    const data = await res.json();
+    
+    const localCompleted = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+    const serverCompleted = data.completedEssays || [];
+    const mergedCompleted = Array.from(new Set([...localCompleted, ...serverCompleted]));
+    localStorage.setItem('faang-completed-essays', JSON.stringify(mergedCompleted));
+    
+    const localNotes = localStorage.getItem('faang-student-notes') || '';
+    const serverNotes = data.studyNotes || '';
+    if (serverNotes && serverNotes !== localNotes) {
+      localStorage.setItem('faang-student-notes', serverNotes);
+      const textarea = document.getElementById('scratchpad-textarea');
+      if (textarea) {
+        textarea.value = serverNotes;
+        if (typeof updateWordCount === 'function') updateWordCount(serverNotes);
+      }
+    }
+    
+    if (typeof loadProgress === 'function') loadProgress();
+    if (typeof updateProgressHUD === 'function') updateProgressHUD();
+    
+    if (indicator) {
+      indicator.className = 'sync-status-dot synced';
+      indicator.title = 'Synced with cloud';
+    }
+  } catch (err) {
+    console.error('Sync from server error:', err);
+    if (indicator) {
+      indicator.className = 'sync-status-dot error';
+      indicator.title = 'Sync error: ' + err.message;
+    }
+  }
+}
+
+function saveBackendUrl() {
+  const input = document.getElementById('ai-backend-url-input');
+  if (!input) return;
+  const url = input.value.trim();
+  if (url) {
+    localStorage.setItem('faang-backend-url', url);
+    alert("Backend Server API URL updated successfully!");
+  } else {
+    localStorage.removeItem('faang-backend-url');
+    alert("Backend Server API URL reset to default.");
+  }
+}
+
+// Synchronously apply theme before DOMContentLoaded to prevent flash
+(function() {
+  const savedTheme = localStorage.getItem('faang-course-theme');
+  const body = document.body;
+  if (savedTheme === 'light') {
+    body.classList.add('light-theme');
+  } else {
+    body.classList.remove('light-theme');
+  }
+})();
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  body.classList.toggle('light-theme');
+  const isLight = body.classList.contains('light-theme');
+  localStorage.setItem('faang-course-theme', isLight ? 'light' : 'dark');
+  if (themeText) {
+    themeText.innerText = isLight ? "Light Lab" : "Dark Cyber";
+  }
+  syncScratchpadTheme(isLight ? 'light' : 'dark');
+}
+
+function syncScratchpadTheme(theme) {
+  const scratchWin = document.getElementById('scratchpad-window');
+  const scratchText = document.getElementById('scratchpad-textarea');
+  if (theme === 'light') {
+    if (scratchWin) {
+      scratchWin.style.background = '#ffffff';
+      scratchWin.style.borderColor = '#cbd5e1';
+    }
+    if (scratchText) {
+      scratchText.style.background = '#f8fafc';
+      scratchText.style.color = '#0f172a';
+    }
+  } else {
+    if (scratchWin) {
+      scratchWin.style.background = '#111425';
+      scratchWin.style.borderColor = 'rgba(97, 218, 251, 0.2)';
+    }
+    if (scratchText) {
+      scratchText.style.background = '#0b0d19';
+      scratchText.style.color = '#f8fafc';
+    }
+  }
+}
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+  
+  if (!sidebar) return;
+  
+  const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+  let isClosed = false;
+  
+  if (isFixedSidebar) {
+    body.classList.toggle('sidebar-open');
+    sidebar.classList.toggle('open');
+    isClosed = !sidebar.classList.contains('open');
+  } else {
+    body.classList.toggle('sidebar-closed');
+    isClosed = body.classList.contains('sidebar-closed');
+  }
+  
+  // Save state in localStorage
+  localStorage.setItem('faang-sidebar-state', isClosed ? 'closed' : 'open');
+  
+  // Update all toggle texts and icons
+  const textLeft = document.getElementById('sidebar-toggle-text-left');
+  const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+  
+  const textValue = isClosed ? "Expand Map" : "Collapse Map";
+  if (textLeft) textLeft.innerText = textValue;
+  if (textRight) textRight.innerText = textValue;
+  
+  const leftBtn = document.querySelector('.sidebar-toggle-btn');
+  if (leftBtn) {
+    const icon = leftBtn.querySelector('.toggle-icon');
+    if (icon) {
+      icon.innerHTML = isClosed ? "&#9776;" : "&#10005;";
+    }
+  }
+}
+
+function initSidebarState() {
+  const savedState = localStorage.getItem('faang-sidebar-state');
+  const body = document.body;
+  const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+  if (!sidebar) return;
+  
+  const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+  
+  if (savedState === 'closed') {
+    if (isFixedSidebar) {
+      body.classList.remove('sidebar-open');
+      sidebar.classList.remove('open');
+    } else {
+      body.classList.add('sidebar-closed');
+    }
+    
+    // Update texts
+    const textLeft = document.getElementById('sidebar-toggle-text-left');
+    const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+    if (textLeft) textLeft.innerText = "Expand Map";
+    if (textRight) textRight.innerText = "Expand Map";
+    
+    const leftBtn = document.querySelector('.sidebar-toggle-btn');
+    if (leftBtn) {
+      const icon = leftBtn.querySelector('.toggle-icon');
+      if (icon) icon.innerHTML = "&#9776;";
+    }
+  } else {
+    if (isFixedSidebar) {
+      body.classList.add('sidebar-open');
+      sidebar.classList.add('open');
+    } else {
+      body.classList.remove('sidebar-closed');
+    }
+    
+    // Update texts
+    const textLeft = document.getElementById('sidebar-toggle-text-left');
+    const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+    if (textLeft) textLeft.innerText = "Collapse Map";
+    if (textRight) textRight.innerText = "Collapse Map";
+    
+    const leftBtn = document.querySelector('.sidebar-toggle-btn');
+    if (leftBtn) {
+      const icon = leftBtn.querySelector('.toggle-icon');
+      if (icon) icon.innerHTML = "&#10005;";
+    }
+  }
+}
+
+function initScrollProgressTracker() {
+  const sections = document.querySelectorAll('.section, .section-card');
+  const navItems = document.querySelectorAll('.nav-item, .hud-nav-item');
+  
+  if (sections.length === 0 || navItems.length === 0) return;
+  
+  const observerOptions = {
+    root: null,
+    rootMargin: '-20% 0px -60% 0px',
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        if (!id) return;
+        
+        navItems.forEach(item => {
+          const href = item.getAttribute('href');
+          if (!href || !href.startsWith('#')) return;
+          if (href === `#${id}`) {
+            item.classList.add('active');
+            const numEl = item.querySelector('.nav-num, .nav-hud-num');
+            if (numEl && !numEl.dataset.original) {
+              numEl.dataset.original = numEl.innerText;
+              numEl.innerHTML = '&#9679;';
+            }
+          } else {
+            item.classList.remove('active');
+            const numEl = item.querySelector('.nav-num, .nav-hud-num');
+            if (numEl && numEl.dataset.original) {
+              const currentIdx = Array.from(sections).findIndex(s => s.getAttribute('id') === id);
+              const itemSecId = href.replace('#', '');
+              const itemIdx = Array.from(sections).findIndex(s => s.getAttribute('id') === itemSecId);
+              
+              if (itemIdx < currentIdx) {
+                numEl.innerHTML = '&#10003;';
+                numEl.style.color = 'var(--green, #4ade80)';
+              } else {
+                numEl.innerText = numEl.dataset.original;
+                numEl.style.color = '';
+              }
+            }
+          }
+        });
+      }
+    });
+  }, observerOptions);
+  
+  sections.forEach(section => observer.observe(section));
+}
+
+function updatePlaygroundPreview(code) {
+  const iframe = document.getElementById('playground-preview-frame');
+  if (!iframe) return;
+  
+  let formattedCode = code;
+  if (!code.includes('<html') && !code.includes('<body')) {
+    formattedCode = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              padding: 24px;
+              color: #1e293b;
+              background-color: #f8fafc;
+            }
+          </style>
+        </head>
+        <body>
+          ${code}
+        </body>
+      </html>
+    `;
+  }
+  
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(formattedCode);
+  doc.close();
+}
+
+function initCodePlayground() {
+  const codeBlocks = document.querySelectorAll('.code-block, .premium-code-block');
+  
+  codeBlocks.forEach(block => {
+    const header = block.querySelector('.code-header, .p-code-header');
+    const codeEl = block.querySelector('code');
+    const filenameEl = block.querySelector('.code-filename, .p-code-filename');
+    
+    if (!header || !codeEl) return;
+    
+    const filename = filenameEl ? filenameEl.innerText : 'sandbox.html';
+    
+    // Check if run code button already exists
+    if (header.querySelector('.run-code-btn')) return;
+    
+    const btn = document.createElement('button');
+    btn.className = 'run-code-btn';
+    btn.innerHTML = '&#9889; Run Live';
+    btn.style.marginLeft = '12px';
+    
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openPlayground(codeEl.textContent, filename);
+    });
+    
+    const dots = header.querySelector('.code-dots, .p-code-dots');
+    if (dots) {
+      header.insertBefore(btn, dots);
+    } else {
+      header.appendChild(btn);
+    }
+  });
+}
+
+function openPlayground(code, filename) {
+  const drawer = document.getElementById('code-playground-drawer');
+  const input = document.getElementById('playground-code-input');
+  const filenameEl = document.getElementById('playground-filename');
+  
+  if (!drawer || !input) return;
+  
+  filenameEl.innerText = filename;
+  input.value = code;
+  drawer.style.display = 'flex';
+  setTimeout(() => {
+    drawer.style.right = '0';
+  }, 10);
+  
+  updatePlaygroundPreview(code);
+  
+  input.oninput = (e) => {
+    updatePlaygroundPreview(e.target.value);
+  };
+}
+
+function closePlayground() {
+  const drawer = document.getElementById('code-playground-drawer');
+  if (!drawer) return;
+  drawer.style.right = '-600px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleScratchpadHUD() {
+  const win = document.getElementById('scratchpad-window');
+  if (!win) return;
+  if (win.style.display === 'none' || win.style.display === '') {
+    win.style.display = 'flex';
+  } else {
+    win.style.display = 'none';
+  }
+}
+
+function updateWordCount(text) {
+  const wordCountEl = document.getElementById('scratchpad-word-count');
+  if (!wordCountEl) return;
+  const trimmed = text.trim();
+  const words = trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+  wordCountEl.innerText = words + (words === 1 ? " word" : " words");
+}
+
+function downloadStudentNotes() {
+  const text = localStorage.getItem('faang-student-notes') || "";
+  if (text.trim() === "") {
+    alert("Scratchpad is empty. Add some study notes before exporting.");
+    return;
+  }
+  const blob = new Blob([text], { type: 'text/plain' });
+  const anchor = document.createElement('a');
+  anchor.download = 'FAANG_Roadmap_Study_Notes.txt';
+  anchor.href = window.URL.createObjectURL(blob);
+  anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+}
+
+// --- PREMIUM FOCUS MODE ---
+function toggleFocusMode() {
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  body.classList.toggle('focus-mode');
+  const isFocus = body.classList.contains('focus-mode');
+  localStorage.setItem('faang-focus-mode', isFocus ? 'on' : 'off');
+  if (focusBtnText) {
+    focusBtnText.innerText = isFocus ? "Focus On" : "Focus Off";
+  }
+}
+
+function initFocusMode() {
+  const savedFocus = localStorage.getItem('faang-focus-mode');
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  if (savedFocus === 'on') {
+    body.classList.add('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus On";
+  } else {
+    body.classList.remove('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus Off";
+  }
+}
+
+function scrollToTopHUD() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- PREMIUM AUDIO READER SYSTEM ---
+let audioSegments = [];
+let currentSegmentIndex = 0;
+let currentUtterance = null;
+let readingMode = 'summary'; // 'summary' or 'full'
+let selectedVoice = null;
+let speechRate = 1.0;
+let isAudioPlaying = false;
+let speechTimeout = null;
+
+function toggleAudioPanel() {
+  const panel = document.getElementById('audio-control-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'flex';
+    document.body.classList.add('audio-interactive-mode');
+    populateVoices();
+    initClickToPlay();
+    updateAudioProgress();
+  } else {
+    panel.style.display = 'none';
+    document.body.classList.remove('audio-interactive-mode');
+  }
+}
+
+function populateVoices() {
+  if (!window.speechSynthesis) return;
+  const select = document.getElementById('audio-voice-select');
+  if (!select) return;
+  
+  const voices = window.speechSynthesis.getVoices();
+  select.innerHTML = '';
+  
+  // Sort voices: Local Indian English first (en-IN + localService), then online Indian English, then local English, then the rest
+  const sortedVoices = [...voices].sort((a, b) => {
+    const aIsIn = a.lang.toLowerCase().includes('en-in');
+    const bIsIn = b.lang.toLowerCase().includes('en-in');
+    
+    const aIsLocal = a.localService;
+    const bIsLocal = b.localService;
+    
+    if (aIsIn && !bIsIn) return -1;
+    if (!aIsIn && bIsIn) return 1;
+    
+    if (aIsIn && bIsIn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    const aIsEn = a.lang.toLowerCase().startsWith('en');
+    const bIsEn = b.lang.toLowerCase().startsWith('en');
+    
+    if (aIsEn && !bIsEn) return -1;
+    if (!aIsEn && bIsEn) return 1;
+    
+    if (aIsEn && bIsEn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    return a.name.localeCompare(b.name);
+  });
+  
+  sortedVoices.forEach(voice => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    // Add [Offline] badge for local services to highlight rate support
+    const serviceType = voice.localService ? ' [Offline]' : ' [Cloud]';
+    option.innerText = voice.name + ' (' + voice.lang + ')' + serviceType;
+    if (voice.lang.toLowerCase().includes('en-in') && !selectedVoice) {
+      option.selected = true;
+      selectedVoice = voice;
+    }
+    select.appendChild(option);
+  });
+  
+  // Default to first voice if no en-IN found and selectedVoice not set
+  if (!selectedVoice && sortedVoices.length > 0) {
+    selectedVoice = sortedVoices[0];
+  }
+  
+  // Show/hide help alert about en-IN accent based on availability
+  const notice = document.getElementById('audio-accent-notice');
+  if (notice) {
+    const hasIndianVoice = voices.some(v => v.lang.toLowerCase().includes('en-in'));
+    notice.style.display = hasIndianVoice ? 'none' : 'block';
+  }
+}
+
+// Handle asynchronous voice loading
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = populateVoices;
+}
+
+function changeVoice() {
+  const select = document.getElementById('audio-voice-select');
+  if (!select || !window.speechSynthesis) return;
+  const voices = window.speechSynthesis.getVoices();
+  selectedVoice = voices.find(v => v.name === select.value);
+  
+  // If speaking, restart from current segment
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function updateRateLabel(val) {
+  const valEl = document.getElementById('audio-rate-val');
+  if (valEl) valEl.innerText = parseFloat(val).toFixed(1) + 'x';
+}
+
+function changeRate(val) {
+  speechRate = parseFloat(val);
+  updateRateLabel(val);
+  
+  // If speaking, restart from current segment to apply rate change
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function setReadingMode(mode) {
+  readingMode = mode;
+  const sumBtn = document.getElementById('audio-mode-summary');
+  const fullBtn = document.getElementById('audio-mode-full');
+  
+  if (mode === 'summary') {
+    sumBtn.classList.add('active');
+    fullBtn.classList.remove('active');
+  } else {
+    sumBtn.classList.remove('active');
+    fullBtn.classList.add('active');
+  }
+  
+  stopAudioPlayback();
+}
+
+function buildSegments() {
+  audioSegments = [];
+  if (readingMode === 'summary') {
+    const summaryTextEl = document.querySelector('.executive-summary-panel .summary-text-hud');
+    if (summaryTextEl) {
+      audioSegments = [summaryTextEl];
+    }
+  } else {
+    const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+    audioSegments = elements.filter(el => {
+      if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+        return false;
+      }
+      if (!el.innerText.trim()) return false;
+      return true;
+    });
+  }
+}
+
+function toggleAudioPlayback() {
+  if (!window.speechSynthesis) {
+    alert("Speech Synthesis is not supported in this browser.");
+    return;
+  }
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  const eq = document.getElementById('audio-eq-wave');
+  
+  if (isAudioPlaying) {
+    // We are playing, so pause it
+    window.speechSynthesis.pause();
+    isAudioPlaying = false;
+    if (playBtn) playBtn.innerHTML = '\u25B6';
+    if (eq) eq.style.display = 'none';
+    updateAudioProgress();
+    return;
+  }
+  
+  // We are paused, try to resume
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    isAudioPlaying = true;
+    if (playBtn) playBtn.innerHTML = '\u23F8';
+    if (eq) eq.style.display = 'flex';
+    updateAudioProgress();
+    return;
+  }
+  
+  // Starting playback from scratch or resuming cancelled speech
+  buildSegments();
+  if (audioSegments.length === 0) {
+    alert("No readable text found for audio playback.");
+    return;
+  }
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    currentSegmentIndex = 0;
+  }
+  
+  isAudioPlaying = true;
+  if (playBtn) playBtn.innerHTML = '\u23F8';
+  playCurrentSegment();
+}
+
+function playCurrentSegment() {
+  if (!window.speechSynthesis || audioSegments.length === 0) return;
+  
+  // Clear event listeners on current utterance to prevent cancel event triggers from skipping lines
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  
+  // Stop existing speech first
+  window.speechSynthesis.cancel();
+  
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clean all previous highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+    return;
+  }
+  
+  const currentEl = audioSegments[currentSegmentIndex];
+  currentEl.classList.add('voice-active-segment');
+  currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  const text = currentEl.innerText;
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  
+  if (selectedVoice) {
+    currentUtterance.voice = selectedVoice;
+  }
+  currentUtterance.rate = speechRate;
+  
+  currentUtterance.onend = () => {
+    // Only proceed to next if we are actively playing and not paused/cancelled
+    if (isAudioPlaying) {
+      currentSegmentIndex++;
+      if (currentSegmentIndex < audioSegments.length) {
+        playCurrentSegment();
+      } else {
+        stopAudioPlayback();
+      }
+    }
+  };
+  
+  currentUtterance.onerror = (e) => {
+    // If it was interrupted by user, do nothing. Otherwise, handle error.
+    if (e.error !== 'interrupted') {
+      console.error("SpeechSynthesis error:", e);
+      stopAudioPlayback();
+    }
+  };
+  
+  updateAudioProgress();
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) eq.style.display = 'flex';
+  
+  // Settle delay (150ms) to ensure speech cancel completely finishes before speak triggers (stabilizes local speed rate changes)
+  speechTimeout = setTimeout(() => {
+    window.speechSynthesis.speak(currentUtterance);
+  }, 150);
+}
+
+function stopAudioPlayback() {
+  isAudioPlaying = false;
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clear highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  if (playBtn) playBtn.innerHTML = '\u25B6';
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) eq.style.display = 'none';
+  
+  currentSegmentIndex = 0;
+  
+  const progressText = document.getElementById('audio-progress-text');
+  if (progressText) progressText.innerText = "Status: Stopped";
+}
+
+function nextAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex++;
+  if (currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+  } else {
+    if (isAudioPlaying) {
+      playCurrentSegment();
+    } else {
+      // Just highlight and scroll, don't speak
+      audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+      const currentEl = audioSegments[currentSegmentIndex];
+      currentEl.classList.add('voice-active-segment');
+      currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      updateAudioProgress();
+    }
+  }
+}
+
+// --- RESET UTTERANCE STATE ON BEFOREUNLOAD ---
+function prevAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex--;
+  if (currentSegmentIndex < 0) {
+    currentSegmentIndex = 0;
+  }
+  
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  } else {
+    // Just highlight and scroll, don't speak
+    audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+    const currentEl = audioSegments[currentSegmentIndex];
+    currentEl.classList.add('voice-active-segment');
+    currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateAudioProgress();
+  }
+}
+
+function updateAudioProgress() {
+  const progressText = document.getElementById('audio-progress-text');
+  if (!progressText || audioSegments.length === 0) return;
+  
+  const current = currentSegmentIndex + 1;
+  const total = audioSegments.length;
+  
+  // Calculate remaining words
+  let remainingWords = 0;
+  for (let i = currentSegmentIndex; i < audioSegments.length; i++) {
+    remainingWords += audioSegments[i].innerText.split(/\s+/).length;
+  }
+  
+  // Average reading speed is 150 words per minute
+  const baseWPM = 150;
+  const actualWPM = baseWPM * speechRate;
+  const minutesLeft = Math.ceil(remainingWords / actualWPM);
+  
+  progressText.innerText = 'Segment ' + current + ' of ' + total + ' (' + minutesLeft + ' min left)';
+}
+
+function initClickToPlay() {
+  // Pull all readable text blocks directly from layout body main
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const readableElements = elements.filter(el => {
+    if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+      return false;
+    }
+    if (!el.innerText.trim()) return false;
+    return true;
+  });
+  
+  readableElements.forEach(el => {
+    if (el.dataset.hasAudioListener) return;
+    el.dataset.hasAudioListener = "true";
+    
+    el.addEventListener('click', (e) => {
+      // Only execute if settings panel is open
+      if (!document.body.classList.contains('audio-interactive-mode')) return;
+      
+      // Prevent triggers on code frames, inputs, link tags
+      if (e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('input') || e.target.closest('code') || e.target.closest('pre')) {
+        return;
+      }
+      
+      // Force change to Full Essay mode if summary mode is active
+      if (readingMode === 'summary') {
+        readingMode = 'full';
+        const sumBtn = document.getElementById('audio-mode-summary');
+        const fullBtn = document.getElementById('audio-mode-full');
+        if (sumBtn) sumBtn.classList.remove('active');
+        if (fullBtn) fullBtn.classList.add('active');
+      }
+      
+      // Re-build essay segments list
+      buildSegments();
+      
+      const index = audioSegments.indexOf(el);
+      if (index !== -1) {
+        currentSegmentIndex = index;
+        isAudioPlaying = true;
+        
+        const playBtn = document.getElementById('audio-play-pause-btn');
+        if (playBtn) playBtn.innerHTML = '\u23F8';
+        
+        playCurrentSegment();
+      }
+    });
+  });
+}
+
+window.addEventListener('beforeunload', () => {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+});
+
+// --- TABBED SCRATCHPAD SYSTEM ---
+function switchScratchTab(tabName) {
+  const tabs = document.querySelectorAll('.scratch-tab-btn');
+  tabs.forEach(tab => {
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  
+  const panes = ['notes', 'flashcards', 'quiz'];
+  panes.forEach(pane => {
+    const paneEl = document.getElementById(`scratch-pane-${pane}`);
+    if (paneEl) {
+      paneEl.style.display = (pane === tabName) ? 'flex' : 'none';
+    }
+  });
+  
+  if (tabName === 'flashcards') {
+    renderFlashcard();
+  } else if (tabName === 'quiz') {
+    renderQuiz();
+  }
+}
+
+function getCurrentPhase() {
+  const body = document.body;
+  if (body.classList.contains('phase-1')) return 'phase-1';
+  if (body.classList.contains('phase-2')) return 'phase-2';
+  if (body.classList.contains('phase-3')) return 'phase-3';
+  if (body.classList.contains('phase-4')) return 'phase-4';
+  return 'phase-1';
+}
+
+const flashcardData = {
+  "phase-1": [
+    { q: "What is the difference between Block and Inline elements?", a: "Block elements start on a new line and occupy the full width (e.g., div, p). Inline elements take only as much width as necessary (e.g., span, a)." },
+    { q: "How is CSS selector specificity calculated?", a: "Calculated as a weight: Inline Styles (1000) > IDs (100) > Classes/attributes (10) > Elements/pseudo-elements (1)." },
+    { q: "How does 'flex-grow' work in Flexbox?", a: "It defines the ability for a flex item to grow if necessary. It accepts a unitless value that serves as a proportion of free space." }
+  ],
+  "phase-2": [
+    { q: "What is the difference between Grid's implicit and explicit grids?", a: "Explicit grid is defined using grid-template-columns/rows. Implicit grid is automatically created by the browser to hold items outside that explicit grid." },
+    { q: "What do CSS Container Queries solve?", a: "They let you apply styles to an element based on the size of its parent container rather than the viewport, enabling true component-driven design." },
+    { q: "What does the 'contain' property do in CSS?", a: "It tells the browser that the element's subtree is independent of the rest of the page, allowing layout, paint, and size optimization." }
+  ],
+  "phase-3": [
+    { q: "Explain the Event Loop task execution order.", a: "1. Run Call Stack. 2. Run all Microtasks (Promise callbacks, MutationObserver). 3. Run Macrotasks (setTimeout, events). 4. RequestAnimationFrame & Render." },
+    { q: "What is the difference between debounce and throttle?", a: "Debounce delays execution until a certain time of inactivity passes. Throttle limits the maximum number of times a function can be called over time." },
+    { q: "What are closures in JavaScript?", a: "A closure is a function that retains access to its outer scope variables even after the outer function has returned. Keeps the lexical environment in memory." }
+  ],
+  "phase-4": [
+    { q: "What is React's Virtual DOM and Reconciliation?", a: "React keeps a virtual representation of the DOM. Reconciliation is the diffing algorithm React uses to update the real DOM with minimal changes." },
+    { q: "How does a Client-Side SPA Router work?", a: "It intercepts link clicks, changes the URL using History API (pushState) without reloading the page, and loads the corresponding JS components." },
+    { q: "What is hydration in React SSR?", a: "The process of React checking pre-rendered HTML sent by the server, attaching event listeners, and making the markup interactive on the client." }
+  ]
+};
+
+let currentFlashcardIndex = 0;
+function renderFlashcard() {
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  const card = deck[currentFlashcardIndex];
+  
+  const pane = document.getElementById('scratch-pane-flashcards');
+  if (!pane) return;
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Card ${currentFlashcardIndex + 1} of ${deck.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: var(--teal, #0d9488); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+    </div>
+    
+    <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div style="font-size: 0.78rem; font-weight: 500; line-height: 1.4;">${card.q}</div>
+          <div class="flashcard-prompt">&#128260; Tap to Flip</div>
+        </div>
+        <div class="flashcard-back">
+          <div style="font-size: 0.75rem; font-weight: 400; line-height: 1.4;">${card.a}</div>
+          <div class="flashcard-prompt" style="color: #6d28d9;">&#128260; Tap to Flip</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 4px;">
+      <button class="hud-btn" onclick="prevFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">&larr; Prev</button>
+      <button class="hud-btn" onclick="nextFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">Next &rarr;</button>
+    </div>
+  `;
+}
+
+function prevFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  currentFlashcardIndex = (currentFlashcardIndex - 1 + deck.length) % deck.length;
+  renderFlashcard();
+}
+
+function nextFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  currentFlashcardIndex = (currentFlashcardIndex + 1) % deck.length;
+  renderFlashcard();
+}
+
+const quizData = {
+  "phase-1": [
+    {
+      q: "Which HTML element is semantically correct for main site navigation?",
+      o: ["&lt;nav&gt;", "&lt;div class='nav'&gt;", "&lt;ul&gt;", "&lt;section&gt;"],
+      a: 0
+    },
+    {
+      q: "Which Flexbox property aligns items along the cross-axis?",
+      o: ["justify-content", "align-items", "flex-direction", "align-self"],
+      a: 1
+    }
+  ],
+  "phase-2": [
+    {
+      q: "Which CSS contain value isolates layout, style, and paint?",
+      o: ["contain: strict", "contain: content", "contain: paint", "contain: layout"],
+      a: 0
+    },
+    {
+      q: "How are Container Queries specified in CSS?",
+      o: ["@media (min-width: 400px)", "@container (min-width: 400px)", "@parent (min-width: 400px)", "@element (min-width: 400px)"],
+      a: 1
+    }
+  ],
+  "phase-3": [
+    {
+      q: "Which queue are Promise callbacks appended to?",
+      o: ["Macrotask Queue", "Render Queue", "Microtask Queue", "RequestAnimationFrame Queue"],
+      a: 2
+    },
+    {
+      q: "What is the GC strategy used by modern V8 engines?",
+      o: ["Reference Counting", "Mark-and-Sweep (Generational)", "Manual Deallocation", "Stop-and-Copy Only"],
+      a: 1
+    }
+  ],
+  "phase-4": [
+    {
+      q: "What is the main role of standard key props in React lists?",
+      o: ["To apply styling", "To uniquely identify siblings for diff optimization", "To store element states", "To bind click events"],
+      a: 1
+    },
+    {
+      q: "Which hook handles side effects in React function components?",
+      o: ["useState", "useContext", "useEffect", "useMemo"],
+      a: 2
+    }
+  ]
+};
+
+let currentQuizIndex = 0;
+let answeredIndex = -1;
+
+function renderQuiz() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  const item = pool[currentQuizIndex];
+  
+  const pane = document.getElementById('scratch-pane-quiz');
+  if (!pane) return;
+  
+  let optionsHtml = '';
+  item.o.forEach((opt, idx) => {
+    let btnClass = 'quiz-option-btn';
+    if (answeredIndex !== -1) {
+      if (idx === item.a) {
+        btnClass += ' correct';
+      } else if (idx === answeredIndex) {
+        btnClass += ' incorrect';
+      }
+    }
+    optionsHtml += `
+      <button class="${btnClass}" onclick="submitQuizAnswer(${idx})" ${answeredIndex !== -1 ? 'disabled' : ''}>
+        ${opt}
+      </button>
+    `;
+  });
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Question ${currentQuizIndex + 1} of ${pool.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: var(--laser-pink, #ff007f); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+    </div>
+    
+    <div style="font-size: 0.76rem; font-weight: 500; line-height: 1.4; margin: 8px 0; color: var(--text-primary, #f8fafc);">
+      ${item.q}
+    </div>
+    
+    <div style="display: flex; flex-direction: column; width: 100%;">
+      ${optionsHtml}
+    </div>
+    
+    ${answeredIndex !== -1 ? `
+      <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 6px;">
+        <span style="font-size: 0.68rem; font-weight: bold; color: ${answeredIndex === item.a ? 'var(--green, #4ade80)' : 'var(--rose, #f87171)'}; display: flex; align-items: center;">
+          ${answeredIndex === item.a ? '&#10003; Correct!' : '&#10007; Incorrect'}
+        </span>
+        <button class="hud-btn" onclick="nextQuizQuestion()" style="padding: 6px 12px; font-size: 0.65rem;">
+          ${currentQuizIndex === pool.length - 1 ? 'Restart' : 'Next &rarr;'}
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
+function submitQuizAnswer(idx) {
+  answeredIndex = idx;
+  renderQuiz();
+}
+
+function nextQuizQuestion() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  currentQuizIndex = (currentQuizIndex + 1) % pool.length;
+  answeredIndex = -1;
+  renderQuiz();
+}
+
+// Bind functions to the window object to prevent namespace resolution failures
+window.toggleThemeHUD = toggleThemeHUD;
+window.toggleSidebarHUD = toggleSidebarHUD;
+window.toggleScratchpadHUD = toggleScratchpadHUD;
+window.downloadStudentNotes = downloadStudentNotes;
+window.closePlayground = closePlayground;
+window.toggleFocusMode = toggleFocusMode;
+window.switchScratchTab = switchScratchTab;
+window.prevFlashcard = prevFlashcard;
+window.nextFlashcard = nextFlashcard;
+window.submitQuizAnswer = submitQuizAnswer;
+window.nextQuizQuestion = nextQuizQuestion;
+window.scrollToTopHUD = scrollToTopHUD;
+window.toggleAudioPanel = toggleAudioPanel;
+window.changeVoice = changeVoice;
+window.updateRateLabel = updateRateLabel;
+window.changeRate = changeRate;
+window.setReadingMode = setReadingMode;
+window.toggleAudioPlayback = toggleAudioPlayback;
+window.stopAudioPlayback = stopAudioPlayback;
+window.prevAudioSegment = prevAudioSegment;
+window.nextAudioSegment = nextAudioSegment;
+window.initClickToPlay = initClickToPlay;
+window.updateAudioProgress = updateAudioProgress;
+
+// Account Auth and Sync Bindings
+window.toggleAuthModal = toggleAuthModal;
+window.switchAuthTab = switchAuthTab;
+window.submitAuth = submitAuth;
+window.logOut = logOut;
+window.saveBackendUrl = saveBackendUrl;
+window.syncProgressToServer = syncProgressToServer;
+window.syncProgressFromServer = syncProgressFromServer;
+
+// Hook up functions on load
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebarState();
+  initScrollProgressTracker();
+  initCodePlayground();
+  initFocusMode();
+  switchScratchTab('notes');
+  initAITutorResizer();
+  updateAuthHUD();
+  if (localStorage.getItem('faang-auth-token')) {
+    syncProgressFromServer();
+  }
+  
+  // Back to Top Button Scroll Listener
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 350) {
+        backToTopBtn.style.display = 'flex';
+      } else {
+        backToTopBtn.style.display = 'none';
+      }
+    });
+  }
+  
+  // Scratchpad Bindings
+  const notesText = localStorage.getItem('faang-student-notes') || "";
+  const textarea = document.getElementById('scratchpad-textarea');
+  if (textarea) {
+    textarea.value = notesText;
+    updateWordCount(notesText);
+    textarea.addEventListener('input', (e) => {
+      const text = e.target.value;
+      localStorage.setItem('faang-student-notes', text);
+      updateWordCount(text);
+      if (localStorage.getItem('faang-auth-token')) {
+        queueNotesSync();
+      }
+    });
+  }
+  
+  const savedTheme = localStorage.getItem('faang-course-theme');
+  const themeText = document.getElementById('theme-text');
+  if (themeText) {
+    themeText.innerText = savedTheme === 'light' ? "Light Lab" : "Dark Cyber";
+  }
+  syncScratchpadTheme(savedTheme === 'light' ? 'light' : 'dark');
+  
+  initClickToPlay();
+});
+
+// Custom storage synchronization
+window.addEventListener('storage', (e) => {
+  if (e.key === 'faang-student-notes') {
+    const textarea = document.getElementById('scratchpad-textarea');
+    if (textarea) {
+      textarea.value = e.newValue || '';
+      updateWordCount(e.newValue || '');
+    }
+  }
+  if (e.key === 'faang-course-theme') {
+    const theme = e.newValue;
+    const body = document.body;
+    const themeText = document.getElementById('theme-text');
+    if (theme === 'light') {
+      body.classList.add('light-theme');
+      if (themeText) themeText.innerText = "Light Lab";
+    } else {
+      body.classList.remove('light-theme');
+      if (themeText) themeText.innerText = "Dark Cyber";
+    }
+    syncScratchpadTheme(theme);
+  }
+});
+// --- PREMIUM GEMINI AI TUTOR SYSTEM ---
+function toggleAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  if (drawer.style.display === 'none' || drawer.style.display === '') {
+    drawer.style.display = 'flex';
+    setTimeout(() => {
+      drawer.style.right = '0';
+    }, 10);
+    const input = document.getElementById('ai-chat-input');
+    if (input) input.focus();
+    const key = localStorage.getItem('faang-gemini-api-key') || '';
+    const keyInput = document.getElementById('ai-api-key-input');
+    if (keyInput) keyInput.value = key;
+    if (!key) {
+      document.getElementById('ai-key-config').style.display = 'flex';
+    }
+  } else {
+    closeAITutorDrawer();
+  }
+}
+
+function closeAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  drawer.style.right = '-400px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleAIKeyConfig() {
+  const config = document.getElementById('ai-key-config');
+  if (!config) return;
+  config.style.display = (config.style.display === 'none' || config.style.display === '') ? 'flex' : 'none';
+}
+
+function saveAIKey() {
+  const input = document.getElementById('ai-api-key-input');
+  if (!input) return;
+  const key = input.value.trim();
+  localStorage.setItem('faang-gemini-api-key', key);
+  alert(key ? "Gemini API Key saved successfully!" : "API Key cleared.");
+  if (key) {
+    document.getElementById('ai-key-config').style.display = 'none';
+  }
+}
+
+function handleAITutorKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAITutorMessage();
+  }
+}
+
+async function sendAITutorMessage() {
+  const input = document.getElementById('ai-chat-input');
+  if (!input) return;
+  const question = input.value.trim();
+  if (!question) return;
+
+  const key = localStorage.getItem('faang-gemini-api-key') || '';
+  const token = localStorage.getItem('faang-auth-token');
+  if (!key && !token) {
+    document.getElementById('ai-key-config').style.display = 'flex';
+    alert("Please enter a Gemini API Key or log in to use the secure cloud proxy.");
+    return;
+  }
+
+  input.value = '';
+  const history = document.getElementById('ai-chat-history');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'ai-msg-bubble user';
+  userMsg.style.cssText = 'align-self: flex-end; max-width: 85%; background: rgba(255,255,255,0.06); border-radius: 8px 8px 0px 8px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; line-height: 1.5; word-break: break-word; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    userMsg.style.background = '#f1f5f9';
+    userMsg.style.color = '#0f172a';
+  }
+  
+  userMsg.innerText = question;
+  history.appendChild(userMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'ai-msg-bubble tutor loading';
+  loadingMsg.style.cssText = 'align-self: flex-start; max-width: 85%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 8px 8px 8px 0px; padding: 10px 12px; color: #e4e2dc; font-size: 0.8rem; line-height: 1.5; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    loadingMsg.style.background = 'rgba(124, 58, 237, 0.05)';
+    loadingMsg.style.borderColor = 'rgba(124, 58, 237, 0.15)';
+    loadingMsg.style.color = '#0f172a';
+  }
+  
+  loadingMsg.innerHTML = '<span class="dots" style="display:inline-block; animation: blink 1.4s infinite both;">Thinking...</span>';
+  history.appendChild(loadingMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const essayText = getEssayTextForContext();
+  const systemPrompt = `You are an expert FAANG Web Development Roadmap Tutor.
+Below is the text of the syllabus module the student is currently reading:
+---
+${essayText}
+---
+The student has asked the following question. Respond to the question, help them understand, give code examples if relevant, or suggest quick practice tasks. Keep your response highly structured, clear, and engaging. Limit formatting to basic Markdown: bold (**text**), lists (- item), inline code (\`code\`), and code blocks (\`\`\`language ... \`\`\`). Keep your response concise (usually under 250 words) so it fits nicely in the chat drawer.`;
+
+  try {
+    let response;
+    if (key) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + "\n\nStudent Question: " + question }] }]
+        })
+      });
+    } else {
+      response = await fetch(`${getBackendUrl()}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          prompt: systemPrompt + "\n\nStudent Question: " + question
+        })
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const responseText = key ? data.candidates[0].content.parts[0].text : data.reply;
+    
+    loadingMsg.classList.remove('loading');
+    loadingMsg.innerHTML = formatMarkdown(responseText);
+  } catch (error) {
+    loadingMsg.classList.remove('loading');
+    loadingMsg.style.color = '#ef4444';
+    loadingMsg.innerText = "Error: " + error.message + ". Please verify your connection or API configuration.";
+  }
+  
+  history.scrollTop = history.scrollHeight;
+}
+
+function getEssayTextForContext() {
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const text = elements.map(el => el.innerText).join('\n');
+  return text.substring(0, 8000);
+}
+
+function formatMarkdown(text) {
+  let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Hoist code blocks to prevent splits on double newlines
+  const codeBlocks = [];
+  escaped = escaped.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<div class="code-block" style="background:#090b10; border:1px solid #2a2c38; padding:12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; margin:10px 0; overflow-x:auto; color:#f8fafc;"><div style="font-size:0.6rem; color:#64748b; border-bottom:1px solid #1a1c24; margin-bottom:8px; padding-bottom:4px; text-transform:uppercase;">${lang || 'code'}</div><pre><code>${code}</code></pre></div>`);
+    return placeholder;
+  });
+  
+  // Format inline code
+  escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-family:\'JetBrains Mono\',monospace; font-size:0.75rem; color:#2ec4b6;">$1</code>');
+  
+  // Format bold
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Format bullet lists
+  escaped = escaped.replace(/^\s*-\s+(.+)$/gm, '<li style="margin-left:20px; font-size:0.8rem; line-height:1.5; margin-bottom:4px;">$1</li>');
+  
+  // Format paragraphs
+  escaped = escaped.split('\n\n').map(p => {
+    const trimmed = p.trim();
+    if (trimmed.startsWith('__CODE_BLOCK_') && trimmed.endsWith('__') && trimmed.split('_').length === 5) {
+      return p;
+    }
+    if (trimmed.startsWith('<li')) return p;
+    return `<p style="margin-bottom:10px; line-height:1.6; font-size:0.82rem;">${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+  
+  // Restore code blocks
+  codeBlocks.forEach((block, idx) => {
+    escaped = escaped.replace(`__CODE_BLOCK_${idx}__`, block);
+  });
+  
+  return escaped;
+}
+
+function initAITutorResizer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  const handle = document.getElementById('ai-tutor-resize-handle');
+  if (!drawer || !handle) return;
+  
+  let startX, startWidth;
+  
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    startWidth = parseInt(document.defaultView.getComputedStyle(drawer).width, 10);
+    document.documentElement.addEventListener('mousemove', doDrag, false);
+    document.documentElement.addEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'none';
+  });
+  
+  function doDrag(e) {
+    const newWidth = startWidth + (startX - e.clientX);
+    if (newWidth > 280 && newWidth < 800) {
+      drawer.style.width = newWidth + 'px';
+    }
+  }
+  
+  function stopDrag(e) {
+    document.documentElement.removeEventListener('mousemove', doDrag, false);
+    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'right 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+  }
+}
+
+window.initAITutorResizer = initAITutorResizer;
+window.toggleAITutorDrawer = toggleAITutorDrawer;
+window.closeAITutorDrawer = closeAITutorDrawer;
+window.toggleAIKeyConfig = toggleAIKeyConfig;
+window.saveAIKey = saveAIKey;
+window.handleAITutorKeyDown = handleAITutorKeyDown;
+window.sendAITutorMessage = sendAITutorMessage;
+
+// === INJECTED PREMIUM MODULE JS END ===
+'@
+
+# === INJECTED TOGGLE BUTTON HTML ===
+$injectedToggleBtn = @'
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+'@
+
+# === INJECTED HUD RACK HTML ===
+$injectedHUD = @'
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
+
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+'@
+
+# === INJECTED STUDY NOTES SCRATCHPAD HTML ===
+$injectedScratchpad = @'
+<!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->
+<div id="scratchpad-hud-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 1010; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Back to Top Button -->
+  <button id="back-to-top-btn" onclick="scrollToTopHUD()" aria-label="Scroll to Top" style="width: 50px; height: 50px; border-radius: 50%; background: var(--surface, #13141a); border: 2px solid var(--border, #2a2c38); color: var(--text, #e4e2dc); display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 1008; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 12px; outline: none;">
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+  </button>
+  <!-- Toggle Button -->
+  <button id="scratchpad-toggle-btn" onclick="toggleScratchpadHUD()" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.2s ease;">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+  </button>
+  <!-- Scratchpad Window -->
+  <div id="scratchpad-window" style="display: none; position: absolute; bottom: 65px; right: 0; width: 320px; min-height: 330px; background: #111425; border: 1.5px solid rgba(97, 218, 251, 0.2); border-radius: 12px; padding: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); flex-direction: column; gap: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 4px;">
+      <span style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: #8b5cf6;">Study Helper</span>
+      <button onclick="toggleScratchpadHUD()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 0.8rem;">&#10005;</button>
+    </div>
+    
+    <!-- Tab Bar -->
+    <div style="display: flex; gap: 2px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; margin-bottom: 4px;">
+      <button class="scratch-tab-btn active" data-tab="notes" onclick="switchScratchTab('notes')">Notes</button>
+      <button class="scratch-tab-btn" data-tab="flashcards" onclick="switchScratchTab('flashcards')">Flashcards</button>
+      <button class="scratch-tab-btn" data-tab="quiz" onclick="switchScratchTab('quiz')">Quick Quiz</button>
+    </div>
+
+    <!-- Notes Pane -->
+    <div id="scratch-pane-notes" style="display: flex; flex-direction: column; gap: 8px;">
+      <textarea id="scratchpad-textarea" placeholder="Write down study notes, takeaways, or code snippets here... Auto-saved in browser." style="width: 100%; height: 200px; background: #0b0d19; border: 1px solid rgba(255,255,255,0.06); color: #f8fafc; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; resize: none; outline: none; line-height: 1.5;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+        <span id="scratchpad-word-count" style="font-size: 0.65rem; color: #64748b;">0 words</span>
+        <button id="scratchpad-download-btn" onclick="downloadStudentNotes()" style="background: transparent; border: 1px solid #8b5cf6; color: #8b5cf6; padding: 4px 10px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; display: inline-block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Flashcards Pane -->
+    <div id="scratch-pane-flashcards" style="display: none; flex-direction: column; gap: 8px; align-items: center; width: 100%;">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Quiz Pane -->
+    <div id="scratch-pane-quiz" style="display: none; flex-direction: column; gap: 8px; width: 100%;">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+<!-- === INJECTED STUDY NOTES SCRATCHPAD END === -->
+'@
+
+# === INJECTED PLAYGROUND DRAWER HTML ===
+$injectedPlaygroundDrawer = @'
+<!-- === INJECTED PLAYGROUND DRAWER START === -->
+<div id="code-playground-drawer" style="display: none; position: fixed; top: 0; right: -600px; width: 600px; height: 100vh; background: var(--bg-surface-dark, #0a0c14); border-left: 2px solid var(--border-neon-vivid, #cbd5e1); z-index: 2000; box-shadow: -10px 0 40px rgba(0,0,0,0.5); transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+    <div>
+      <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-hyper-bright, #f8fafc); display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif;">
+        <span style="color: var(--teal, #2ec4b6);">&#9889;</span> Live Code Playground
+      </h3>
+      <span id="playground-filename" style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-dimmed, #64748b);">index.html</span>
+    </div>
+    <button onclick="closePlayground()" style="background: transparent; border: none; color: var(--text-dimmed, #64748b); cursor: pointer; font-size: 1.2rem; transition: color 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='var(--text-dimmed, #64748b)'">&#10005;</button>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 0; overflow: hidden;">
+    <!-- Editor Pane -->
+    <div style="flex: 1; display: flex; flex-direction: column; min-height: 200px; position: relative;">
+      <div style="padding: 8px 24px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dimmed, #64748b); display: flex; justify-content: space-between; align-items: center;">
+        <span>SOURCE CODE</span>
+        <span style="color: var(--green, #4ade80); font-weight: 700;">EDITABLE</span>
+      </div>
+      <textarea id="playground-code-input" style="flex: 1; width: 100%; border: none; background: var(--syntax-bg-matrix, #03030b); color: #f8fafc; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 20px; outline: none; resize: none; line-height: 1.6;"></textarea>
+    </div>
+    <!-- Preview Pane -->
+    <div style="flex: 1; display: flex; flex-direction: column; border-top: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06));">
+      <div style="padding: 8px 24px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dimmed, #64748b);">
+        <span>LIVE INTERACTIVE PREVIEW</span>
+      </div>
+      <div style="flex: 1; background: #ffffff; position: relative;">
+        <iframe id="playground-preview-frame" style="width: 100%; height: 100%; border: none; background: #ffffff;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- === INJECTED PLAYGROUND DRAWER END === -->
+'@
+
+# === INJECTED AI TUTOR DRAWER HTML ===
+$injectedAITutorDrawer = @'
+<!-- === INJECTED AI TUTOR DRAWER START === -->
+<div id="ai-tutor-drawer" style="display: none; position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: var(--bg-surface-dark, #0a0c14); border-left: 2px solid var(--border-neon-vivid, #cbd5e1); z-index: 2000; box-shadow: -10px 0 40px rgba(0,0,0,0.5); transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Resize handle -->
+  <div id="ai-tutor-resize-handle"></div>
+  <!-- Header -->
+  <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+    <div>
+      <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #8b5cf6; display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif;">
+        <span>&#129302;</span> Gemini AI Study Tutor
+      </h3>
+      <span style="font-size: 0.65rem; color: #64748b;">Context: Active Syllabus Module</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button onclick="toggleAIKeyConfig()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1rem; transition: color 0.2s;" title="API Key Setup" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'">&#9881;&#65039;</button>
+      <button onclick="closeAITutorDrawer()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- API Key Setup Dialog (Toggled) -->
+  <div id="ai-key-config" style="display: none; padding: 16px; background: rgba(139, 92, 246, 0.05); border-bottom: 1px solid rgba(139, 92, 246, 0.15); flex-direction: column; gap: 8px;">
+    <label style="font-size: 0.68rem; font-weight: 700; color: #a78bfa; text-transform: uppercase;">Gemini API Key</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="password" id="ai-api-key-input" placeholder="Paste your Gemini API key..." style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px 10px; color: #ffffff; font-size: 0.72rem; outline: none;">
+      <button onclick="saveAIKey()" style="background: #8b5cf6; border: none; border-radius: 4px; color: #ffffff; padding: 6px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Save</button>
+    </div>
+    <span style="font-size: 0.6rem; color: #64748b; line-height: 1.3;">
+      Get a key at <a href="https://aistudio.google.com/" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Google AI Studio</a>. Stored locally in your browser.
+    </span>
+    <label style="font-size: 0.68rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; margin-top: 8px;">Backend API URL</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="ai-backend-url-input" placeholder="e.g. http://localhost:5000" style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px 10px; color: #ffffff; font-size: 0.72rem; outline: none;">
+      <button onclick="saveBackendUrl()" style="background: #8b5cf6; border: none; border-radius: 4px; color: #ffffff; padding: 6px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Save</button>
+    </div>
+  </div>
+
+  <!-- Chat History -->
+  <div id="ai-chat-history" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.05);">
+    <div class="ai-msg-bubble tutor" style="align-self: flex-start; max-width: 85%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 8px 8px 8px 0px; padding: 10px 12px; color: #e4e2dc; font-size: 0.8rem; line-height: 1.5;">
+      Hi there! I am your Gemini-powered AI Tutor. Ask me anything about this essay&mdash;whether you want explanations, code examples, or quick quizzes!
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; background: rgba(0,0,0,0.15);">
+    <textarea id="ai-chat-input" placeholder="Ask a question about this roadmap module..." rows="1" style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; resize: none; outline: none; line-height: 1.4; font-family: inherit;" onkeydown="handleAITutorKeyDown(event)"></textarea>
+    <button onclick="sendAITutorMessage()" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #ffffff; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+</div>
+<!-- === INJECTED AI TUTOR DRAWER END === -->
+'@
+
+# === INJECTED AUTH MODAL HTML ===
+$injectedAuthModal = @'
+<!-- === INJECTED AUTH MODAL START === -->
+<div id="auth-modal" onclick="if(event.target===this) toggleAuthModal()">
+  <div class="auth-container">
+    <div class="auth-header">
+      <h3>Roadmap Account</h3>
+      <button class="auth-close" onclick="toggleAuthModal()">&#10005;</button>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Log In</button>
+        <button class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Register</button>
+      </div>
+      
+      <div id="auth-error-msg" class="auth-error"></div>
+      
+      <!-- Login Form -->
+      <form id="auth-form-login" class="auth-form active" onsubmit="submitAuth(event, 'login')">
+        <div class="auth-input-group">
+          <label for="auth-username-login">Username</label>
+          <input type="text" id="auth-username-login" class="auth-input" placeholder="Enter username..." required>
+        </div>
+        <div class="auth-input-group">
+          <label for="auth-password-login">Password</label>
+          <input type="password" id="auth-password-login" class="auth-input" placeholder="Enter password..." required>
+        </div>
+        <button type="submit" class="auth-btn-submit" style="margin-top: 8px;">Log In</button>
+      </form>
+      
+      <!-- Register Form -->
+      <form id="auth-form-register" class="auth-form" onsubmit="submitAuth(event, 'register')">
+        <div class="auth-input-group">
+          <label for="auth-username-register">Desired Username</label>
+          <input type="text" id="auth-username-register" class="auth-input" placeholder="Choose username (min 3 chars)..." required minlength="3">
+        </div>
+        <div class="auth-input-group">
+          <label for="auth-password-register">Password</label>
+          <input type="password" id="auth-password-register" class="auth-input" placeholder="Choose password (min 6 chars)..." required minlength="6">
+        </div>
+        <button type="submit" class="auth-btn-submit" style="margin-top: 8px;">Create Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- === INJECTED AUTH MODAL END === -->
+'@
+
+Write-Host "Updating essays in $essaysDir..." -ForegroundColor Cyan
+
+foreach ($file in $htmlFiles) {
+    Write-Host "Processing $($file.Name)..."
+    
+    $content = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::UTF8)
+    
+    # ── NEXT SYLLABUS MODULE LINK RESOLUTION ──
+    $nextButtonLink = "../index.html"
+    $nextButtonLabel = "Return to Dashboard"
+    $nextButtonTitle = "Course Completed! Return to Portal Dashboard"
+    
+    if ($file.Name -match "essay-(\d+)\.(\d+)\.html") {
+        $currentPhase = [int]$Matches[1]
+        $currentLesson = [int]$Matches[2]
+        
+        # Try next lesson in same phase
+        $nextPhase = $currentPhase
+        $nextLesson = $currentLesson + 1
+        $nextFileName = "essay-$nextPhase.$nextLesson.html"
+        $nextFilePath = Join-Path $essaysDir $nextFileName
+        
+        # If not found, try first lesson of next phase
+        if (-not (Test-Path $nextFilePath)) {
+            $nextPhase = $currentPhase + 1
+            $nextLesson = 1
+            $nextFileName = "essay-$nextPhase.$nextLesson.html"
+            $nextFilePath = Join-Path $essaysDir $nextFileName
+        }
+        
+        if (Test-Path $nextFilePath) {
+            $nextButtonLink = "essay-$nextPhase.$nextLesson.html"
+            $nextButtonLabel = "Advance to Next Syllabus Module"
+            
+            # Read title of next essay
+            $nextFileContent = [System.IO.File]::ReadAllText($nextFilePath, [System.Text.Encoding]::UTF8)
+            $titleMatch = [System.Text.RegularExpressions.Regex]::Match($nextFileContent, "(?i)<title>(.*?)</title>")
+            if ($titleMatch.Success) {
+                $nextTitleStr = $titleMatch.Groups[1].Value
+                $nextTitleStr = $nextTitleStr -replace '\s*\|\s*FAANG Roadmap.*$', ''
+                $nextTitleStr = $nextTitleStr -replace '^Essay\s+\d+\.\d+\s*[\u2014-]\s*', ''
+                $nextButtonTitle = "Essay $nextPhase.$nextLesson - $nextTitleStr"
+            } else {
+                $nextButtonTitle = "Essay $nextPhase.$nextLesson"
+            }
+        }
+    }
+    
+    $btnClass = "matrix-next-btn"
+    $labelClass = "footer-btn-label"
+    $titleClass = "footer-btn-title"
+    $arrowClass = "footer-btn-arrow"
+    
+    if ($content -match 'class=\s*["'']next-btn["'']') {
+        $btnClass = "next-btn"
+        $labelClass = "next-label"
+        $titleClass = "next-title"
+        $arrowClass = "next-arrow"
+    }
+
+    $newNextBtnHtml = @"
+<a class="$btnClass" href="$nextButtonLink">
+            <div>
+              <div class="$labelClass">$nextButtonLabel</div>
+              <div class="$titleClass">$nextButtonTitle</div>
+            </div>
+            <div class="$arrowClass">&#8594;</div>
+          </a>
+"@
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<a\s+class=[`"'](matrix-)?next-btn[`"']\s+href=[`"'][^`"']*[`"']>.*?</a>", $newNextBtnHtml)
+    
+    # ── CLEANUP STEP ──
+    # 1. Clean up old custom styles (various older naming structures)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(/\* Injected HUD & Theme controls \*/|/\* === INJECTED PREMIUM LAYOUT STYLE START === \*/).*?(?=</style>)", "")
+    
+    # 2. Clean up old custom scripts
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(// Re-declared function to sync theme with localStorage|// === INJECTED PREMIUM MODULE JS START ===).*?(?=</script>)", "")
+    
+    # 3. Clean up old sidebar toggle buttons (both classes, IDs, raw, and commented variants)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->.*?<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<button\s+class=[`"']sidebar-toggle-btn[`"'].*?</button>", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<button\s+id=[`"']sidebar-toggle[`"'].*?</button>", "")
+    
+    # 4. Clean up old HUD racks (both raw and commented variants)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PREMIUM HUD RACK START === -->.*?<!-- === INJECTED PREMIUM HUD RACK END === -->", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<div\s+class=[`"']controller-rack-hud[`"'].*?</div>", "")
+    
+    # 5. Clean up old playground drawers
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PLAYGROUND DRAWER START === -->.*?<!-- === INJECTED PLAYGROUND DRAWER END === -->", "")
+    
+    # 6. Clean up old floating scratchpads (any old and corrupted variations)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->.*?<!-- === INJECTED STUDY NOTES SCRATCHPAD END === -->", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(<!--\s*FLOATING STUDY NOTES SCRATCHPAD\s*-->\s*)?<div\s+id=[`"']scratchpad-hud-container[`"'][\s\S]*?(?=<!-- === INJECTED PLAYGROUND DRAWER START === -->|</body>)", "")
+
+    # 7. Clean up old AI Tutor drawers
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED AI Tutor DRAWER START === -->.*?<!-- === INJECTED AI Tutor DRAWER END === -->", "")
+    
+    # 8. Clean up old auth modals
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED AUTH MODAL START === -->.*?<!-- === INJECTED AUTH MODAL END === -->", "")
+
+    # Determine the Phase class for the body tag based on filename
+    $phaseClass = ""
+    if ($file.Name -match "essay-(\d+)\.") {
+        $phaseClass = "phase-$($Matches[1])"
+    }
+    
+    # ── BODY CLASS INJECTION ──
+    $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
+    if ($bodyMatch.Success) {
+        $bodyTag = $bodyMatch.Value
+        # Remove any existing phase class markers
+        $cleanBodyTag = [System.Text.RegularExpressions.Regex]::Replace($bodyTag, "\bphase-[1-9]\b", "")
+        # Remove empty class="" if we cleared classes completely
+        $cleanBodyTag = $cleanBodyTag -replace 'class="\s*"', ""
+        
+        # Inject the correct phase class
+        if ($cleanBodyTag -match 'class="([^"]*)"') {
+            $existingClasses = $matches[1].Trim()
+            $newBodyTag = $cleanBodyTag -replace 'class="[^"]*"', "class=""$existingClasses $phaseClass"""
+            $content = $content.Replace($bodyTag, $newBodyTag)
+        } else {
+            $newBodyTag = $cleanBodyTag -replace '<body', "<body class=""$phaseClass"""
+            $content = $content.Replace($bodyTag, $newBodyTag)
+        }
+    }
+    
+    # ── INJECTION STEP ──
+    # 1. Inject custom styles before the FIRST </style> tag in the document (the main stylesheet)
+    $styleEndIndex = $content.IndexOf("</style>")
+    if ($styleEndIndex -ge 0) {
+        $content = $content.Substring(0, $styleEndIndex) + "`n" + $injectedCSS + "`n" + $content.Substring($styleEndIndex)
+    }
+    
+    # 2. Inject custom scripts before the FIRST </script> tag in the document (the main script block)
+    $scriptEndIndex = $content.IndexOf("</script>")
+    if ($scriptEndIndex -ge 0) {
+        $content = $content.Substring(0, $scriptEndIndex) + "`n" + $injectedJS + "`n" + $content.Substring($scriptEndIndex)
+    }
+    
+    # 3. Inject new toggle button and HUD rack right after the opening <body> tag (which may have been updated)
+    $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
+    if ($bodyMatch.Success) {
+        $insertIndex = $bodyMatch.Index + $bodyMatch.Length
+        $content = $content.Substring(0, $insertIndex) + "`n" + $injectedToggleBtn + "`n" + $injectedHUD + "`n" + $content.Substring($insertIndex)
+    }
+    
+    # 4. Inject playground drawer and scratchpad right before the closing </body> tag
+    $bodyEndIndex = $content.LastIndexOf("</body>")
+    if ($bodyEndIndex -ge 0) {
+        $content = $content.Substring(0, $bodyEndIndex) + "`n" + $injectedScratchpad + "`n" + $injectedPlaygroundDrawer + "`n" + $injectedAITutorDrawer + "`n" + $injectedAuthModal + "`n" + $content.Substring($bodyEndIndex)
+    }
+    
+    # Write updated contents back to file using UTF-8 encoding
+    [System.IO.File]::WriteAllText($file.FullName, $content, [System.Text.Encoding]::UTF8)
+}
+
+Write-Host "Essays update completed successfully!" -ForegroundColor Green

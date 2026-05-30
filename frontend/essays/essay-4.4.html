@@ -1,0 +1,4096 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essay 4.4 — React Router: Multi-Page Web Applications & URL Parameters Tracking | FAANG Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ── BRAND NEW PHASE 4 VARIANT: INTENSE CHRONO-SAPPHIRE HUD INFRASTRUCTURE ── */
+  /* Re-engineered completely without a sidebar layout. Built as a unified top-navigation, high-contrast matrix dashboard. */
+  --bg-core: #020309;
+  --bg-surface-dark: #080a18;
+  --bg-surface-card: #0f122c;
+  --bg-surface-bright: #191e45;
+  
+  --border-neon-vivid: rgba(58, 134, 255, 0.35);
+  --border-laser-glow: rgba(0, 245, 212, 0.4);
+  
+  --text-hyper-bright: #f3f5fa;
+  --text-dimmed: #8e9cb3;
+  
+  /* High-Vibrancy Routing Accents */
+  --js-yellow: #f7df1e;
+  --laser-cyan: #00f5d4;
+  --laser-pink: #ff007f;
+  --route-blue: #3a86ff;
+  --matrix-neon-green: #39ff14;
+  
+  --syntax-bg-matrix: #040511;
+  --radius-premium: 12px;
+  --radius-pill: 9999px;
+  --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  --hero-gradient: linear-gradient(135deg, #0a1329 0%, #020309 100%);
+  --hud-overlay-bg: rgba(8, 10, 24, 0.85);
+  --box-shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* ── HIGH-CONTRAST PRISTINE LIGHT MATRIX LAB THEME ── */
+body.light-theme {
+  --bg-core: #fafbfc;
+  --bg-surface-dark: #f0f4f8;
+  --bg-surface-card: #ffffff;
+  --bg-surface-bright: #e2e8f0;
+  
+  --border-neon-vivid: rgba(58, 134, 255, 0.25);
+  --border-laser-glow: rgba(114, 9, 183, 0.4);
+  
+  --text-hyper-bright: #0f172a;
+  --text-dimmed: #475569;
+  
+  --js-yellow: #b45309;
+  --laser-cyan: #0f766e;
+  --laser-pink: #db2777;
+  --route-blue: #1d4ed8;
+  --matrix-neon-green: #15803d;
+  
+  --syntax-bg-matrix: #f1f5f9;
+  
+  --hero-gradient: linear-gradient(135deg, #e0f2fe 0%, #fafbfc 100%);
+  --hud-overlay-bg: rgba(240, 244, 248, 0.9);
+  --box-shadow-premium: 0 15px 35px rgba(0, 0, 0, 0.05);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; background-color: var(--bg-core); }
+
+body {
+  background: var(--bg-core);
+  color: var(--text-hyper-bright);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.8;
+  overflow-x: hidden;
+  transition: background var(--transition-smooth);
+}
+
+/* ── NEW HORIZONTAL TOP WORKSPACE PANEL NAVIGATION (NEW FEATURE) ── */
+/* Replaces the sidebar entirely with a sleek horizontal map tracker clear of clipping hazards */
+.top-navigation-hub {
+  position: sticky; top: 0; width: 100%; background: rgba(8, 10, 24, 0.8);
+  backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-neon-vivid);
+  z-index: 1000; padding: 16px 48px; display: flex; align-items: center; justify-content: space-between;
+}
+body.light-theme .top-navigation-hub { background: rgba(240, 244, 248, 0.85); }
+
+.nav-logo-hud { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; font-weight: 900; color: var(--laser-cyan); text-transform: uppercase; letter-spacing: 0.1em; }
+.nav-scroll-rack { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; max-width: 70%; }
+.nav-scroll-rack::-webkit-scrollbar { display: none; }
+
+.top-nav-item {
+  font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--text-dimmed);
+  padding: 8px 16px; text-decoration: none; border-radius: var(--radius-premium);
+  transition: var(--transition-smooth); border: 1px solid transparent; white-space: nowrap;
+}
+.top-nav-item:hover { color: var(--text-hyper-bright); background: rgba(255,255,255,0.03); }
+.top-nav-item.active-top-link { color: var(--route-blue); border-color: var(--border-neon-vivid); background: rgba(58, 134, 255, 0.05); font-weight: bold; }
+
+/* Theme Shift Control Trigger Button Placement */
+.theme-trigger-container { display: flex; align-items: center; }
+.theme-btn-hud {
+  background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid);
+  color: var(--text-hyper-bright); padding: 8px 16px; border-radius: var(--radius-premium);
+  font-family: 'Fira Code', monospace; font-size: 0.72rem; cursor: pointer; transition: var(--transition-smooth);
+}
+.theme-btn-hud:hover { border-color: var(--route-blue); }
+
+/* ── PROGRESS MARGIN MONITOR ── */
+#progress-container {
+  position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+  background: rgba(255, 255, 255, 0.01); z-index: 1010;
+}
+#progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--route-blue), var(--laser-cyan), var(--laser-pink));
+  box-shadow: 0 0 14px var(--route-blue), 0 0 4px var(--laser-cyan);
+  transition: width 0.1s linear;
+}
+
+/* ── EXECUTIVE STRATEGIC SPECIFICATION SUMMARY PANEL ── */
+.executive-summary-panel {
+  background: var(--bg-surface-dark); border: 1px solid var(--border-neon-vivid);
+  border-radius: var(--radius-premium); padding: 28px 32px; margin-bottom: 48px;
+  box-shadow: var(--box-shadow-premium);
+}
+.summary-title-hud { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--route-blue); font-weight: 800; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.15em; }
+.summary-text-hud { font-size: 1.02rem; color: var(--text-dimmed); line-height: 1.7; }
+
+/* ── PROGRESS TIMELINE STRUCTURE PANEL ── */
+.interactive-framework-sector {
+  background: var(--bg-surface-dark); border: 1px solid var(--border-neon-vivid);
+  border-radius: var(--radius-premium); padding: 36px; margin: 40px 0;
+  box-shadow: var(--box-shadow-premium);
+}
+.framework-title-hud { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: var(--laser-cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 24px; text-align: center; }
+.framework-flex-track { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.frame-node-box {
+  background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid);
+  padding: 14px 20px; border-radius: var(--radius-premium); text-align: center; min-width: 130px; flex: 1;
+  font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--text-dimmed); transition: var(--transition-smooth);
+}
+.frame-node-box.active-node-box { border-color: var(--route-blue); background: rgba(58, 134, 255, 0.04); color: var(--route-blue); box-shadow: 0 0 15px rgba(58, 134, 255, 0.1); }
+.frame-node-box.done-node-box { border-color: var(--matrix-neon-green); color: var(--matrix-neon-green); opacity: 0.6; }
+.frame-arrow-link { color: var(--text-dimmed); font-weight: bold; }
+
+/* ── LIVE INTERACTIVE DATA COMPUTE DISPLAY ── */
+.design-compute-hud {
+  background: linear-gradient(135deg, rgba(58, 134, 255, 0.06), rgba(0, 245, 212, 0.06));
+  border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium);
+  padding: 20px 28px; margin: 36px 0; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--box-shadow-premium);
+}
+.compute-title { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--laser-cyan); display: flex; align-items: center; gap: 8px; }
+.compute-value { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--route-blue); font-weight: bold; }
+
+/* ── FIXED COMPACT HERO ENGINE RADAR ── */
+.hero-radar {
+  min-height: 65vh; display: flex; flex-direction: column; justify-content: center;
+  padding: 120px 48px 80px 48px; border-bottom: 2px solid var(--border-neon-vivid);
+  background: var(--hero-gradient); position: relative; overflow: hidden;
+}
+
+.hero-bg-animations { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.glow-orb {
+  position: absolute; width: 550px; height: 550px; border-radius: 50%;
+  filter: blur(150px); opacity: 0.12; animation: floatingOrb 12s infinite alternate;
+}
+.orb-blue { background: var(--route-blue); top: -10%; right: 10%; }
+.orb-cyan { background: var(--laser-cyan); bottom: 6%; left: -6%; animation-delay: -4s; }
+
+@keyframes floatingOrb {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(30px) scale(1.08); }
+}
+
+.phase-pill {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: rgba(58, 134, 255, 0.06); border: 2px solid rgba(58, 134, 255, 0.3);
+  color: var(--route-blue); font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 8px 20px; border-radius: var(--radius-pill); margin-bottom: 24px; z-index: 2; width: max-content;
+}
+.phase-pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--laser-cyan); box-shadow: 0 0 10px var(--laser-cyan); }
+.hero-eyebrow { font-family: 'Fira Code', monospace; color: var(--laser-pink); font-size: 0.9rem; margin-bottom: 16px; letter-spacing: 0.1em; z-index: 2; }
+
+/* COMPACT PROPORTIONS: Title scale decreased cleanly to optimize text layout scanning balances */
+.hero-title {
+  font-family: 'Orbitron', sans-serif; font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 900;
+  line-height: 1.25; margin-bottom: 20px; z-index: 2; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-hyper-bright) 30%, var(--text-dimmed));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-title em { font-style: italic; font-weight: 900; background: linear-gradient(90deg, var(--route-blue), var(--laser-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dimmed); max-width: 740px; margin-bottom: 40px; z-index: 2; font-weight: 300; }
+
+.hero-meta-hud {
+  display: flex; gap: 36px; flex-wrap: wrap; z-index: 2;
+  background: var(--hud-overlay-bg); border: 2px solid var(--border-neon-vivid);
+  padding: 24px 36px; border-radius: var(--radius-premium);
+  width: max-content; max-width: 100%; backdrop-filter: blur(12px);
+}
+.hud-item { display: flex; flex-direction: column; gap: 6px; }
+.hud-label { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--laser-cyan); text-transform: uppercase; letter-spacing: 0.15em; }
+.hud-value { font-size: 0.95rem; font-weight: 700; color: var(--text-hyper-bright); }
+
+.hero-scroll-indicator {
+  position: absolute; bottom: 30px; left: 64px;
+  display: flex; align-items: center; gap: 14px;
+  color: var(--text-dimmed); font-size: 0.85rem; font-family: 'Fira Code', monospace;
+  animation: bounceHUD 2s infinite; z-index: 2;
+}
+@keyframes bounceHUD { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+/* ── STRUCTURAL MAIN PANELS ── */
+main { padding: 80px 48px 120px; max-width: 1040px; margin: 0 auto; position: relative; z-index: 2; }
+
+.section-card { margin-bottom: 110px; opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+.section-card.visible { opacity: 1; transform: translateY(0); }
+
+.card-header-hud { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border-neon-vivid); }
+.card-hud-num { font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: bold; color: var(--route-blue); background: rgba(58, 134, 255, 0.08); border: 2px solid rgba(58, 134, 255, 0.25); padding: 6px 14px; border-radius: var(--radius-premium); }
+.card-hud-title { font-family: 'Orbitron', sans-serif; font-size: 1.65rem; font-weight: 800; color: var(--text-hyper-bright); letter-spacing: -0.01em; }
+
+p { margin-bottom: 24px; font-size: 1.06rem; line-height: 1.85; color: var(--text-hyper-bright); }
+strong { color: var(--route-blue); font-weight: 600; }
+em { color: var(--laser-cyan); font-style: italic; }
+
+h3 { font-family: 'Orbitron', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text-hyper-bright); margin: 44px 0 20px; }
+h4 { font-family: 'Fira Code', monospace; font-size: 0.88rem; font-weight: 700; color: var(--laser-pink); margin: 32px 0 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+ul, ol { margin: 20px 0 28px 24px; }
+li { margin-bottom: 10px; font-size: 1.06rem; color: var(--text-hyper-bright); }
+li::marker { color: var(--route-blue); }
+
+/* Sci-Fi Tracker Steppers */
+.workboard-matrix { background: var(--bg-surface-dark); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 40px; margin: 36px 0; box-shadow: var(--box-shadow-premium); }
+.workboard-steps { display: flex; flex-direction: column; gap: 0; max-width: 700px; margin: 0 auto; }
+.wb-step { background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 24px 28px; cursor: pointer; transition: var(--transition-smooth); position: relative; }
+.wb-step:hover { border-color: var(--route-blue); transform: scale(1.01); }
+.wb-step.active-node { border-color: var(--laser-cyan); background: rgba(0, 245, 212, 0.02); box-shadow: 0 10px 30px rgba(0, 245, 212, 0.1); }
+.wb-step-header { display: flex; align-items: center; gap: 18px; }
+.wb-step-indicator { width: 36px; height: 36px; border-radius: var(--radius-premium); background: rgba(58, 134, 255, 0.08); border: 2px solid var(--route-blue); color: var(--text-hyper-bright); font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+.wb-step.active-node .wb-step-indicator { background: rgba(0, 245, 212, 0.15); border-color: var(--laser-cyan); color: var(--laser-cyan); }
+.wb-step-title { font-weight: bold; font-size: 1.05rem; flex: 1; font-family: 'Fira Code', monospace; }
+.wb-step-body { max-height: 0; overflow: hidden; transition: var(--transition-smooth); opacity: 0; }
+.wb-step.active-node .wb-step-body { max-height: 300px; padding-top: 20px; opacity: 1; }
+.wb-step-body p { font-size: 0.98rem; color: var(--text-dimmed); margin: 0; }
+.wb-connector { text-align: center; color: var(--border-neon-vivid); font-size: 1.4rem; padding: 8px 0; opacity: 0.5; }
+.flow-action-row { display: flex; justify-content: center; margin-top: 36px; position: relative; z-index: 5; }
+.premium-reset-btn { background: rgba(58, 134, 255, 0.08); border: 2px solid var(--route-blue); color: var(--route-blue); font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: bold; padding: 12px 28px; border-radius: var(--radius-premium); cursor: pointer; transition: var(--transition-smooth); }
+.premium-reset-btn:hover { background: rgba(58, 134, 255, 0.2); box-shadow: 0 0 16px rgba(58, 134, 255, 0.4); transform: translateY(-2px); }
+
+.infographic-wrapper { background: var(--syntax-bg-matrix); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 36px; margin: 36px 0; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; box-shadow: var(--box-shadow-premium); }
+.infographic-graphic { width: 100%; max-width: 680px; height: auto; margin-bottom: 16px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.02); }
+.infographic-caption { font-size: 0.85rem; color: var(--text-dimmed); font-family: 'Fira Code', monospace; text-align: center; display: flex; align-items: center; gap: 8px; }
+
+.hud-callout { border-radius: var(--radius-premium); padding: 24px 28px; margin: 32px 0; border: 1px solid var(--border-neon-vivid); background: var(--bg-surface-dark); box-shadow: var(--box-shadow-premium); }
+.hud-callout-idea { border-left: 4px solid var(--route-blue); }
+.hud-callout-warning { border-left: 4px solid var(--laser-pink); }
+.hud-callout-tip { border-left: 4px solid var(--border-laser-glow); }
+.hud-callout-label { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+.hud-callout-idea .hud-callout-label { color: var(--route-blue); }
+.hud-callout-warning .hud-callout-label { color: var(--laser-pink); }
+.hud-callout-tip .hud-callout-label { color: var(--laser-cyan); }
+
+.premium-code-block { background: var(--syntax-bg-matrix); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); overflow: hidden; margin: 32px 0; box-shadow: var(--box-shadow-premium); }
+.p-code-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--bg-surface-dark); border-bottom: 2px solid var(--border-neon-vivid); }
+.p-code-filename { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--text-muted); }
+.p-code-dots { display: flex; gap: 6px; }
+.p-code-dot { width: 8px; height: 8px; border-radius: 50%; }
+.p-code-dot:nth-child(1) { background: var(--laser-pink); }
+.p-code-dot:nth-child(2) { background: var(--js-yellow); }
+.p-code-dot:nth-child(3) { background: var(--matrix-neon-green); }
+
+pre { padding: 24px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.88rem; line-height: 1.8; }
+p code, li code { background: rgba(58, 134, 255, 0.08); border: 1px solid rgba(58, 134, 255, 0.2); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--route-blue); font-family: 'Fira Code', monospace; }
+
+.matrix-tabs { margin: 32px 0; }
+.tab-trigger-rack { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 2px solid var(--border-neon-vivid); }
+.hud-tab-btn { background: transparent; border: none; font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--text-muted); padding: 10px 20px; cursor: pointer; border-bottom: 3px solid transparent; transition: var(--transition-smooth); }
+.hud-tab-btn:hover { color: var(--text-hyper-bright); }
+.hud-tab-btn.active-hud-tab { color: var(--route-blue); border-bottom-color: var(--route-blue); background: rgba(58, 134, 255, 0.04); font-weight: bold; }
+.hud-tab-panel { display: none; padding-top: 24px; }
+.hud-tab-panel.active-hud-panel { display: block; }
+
+.pitfall-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+.pitfall-node { background: var(--bg-surface-card); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 24px; box-shadow: var(--box-shadow-premium); }
+.pitfall-node:hover { border-color: var(--route-blue); transform: translateY(-2px); }
+.pitfall-id { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--laser-pink); margin-bottom: 8px; font-weight: bold; }
+.pitfall-title { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; }
+.pitfall-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.65; margin-bottom: 16px; }
+.remedy-badge { display: inline-flex; align-items: center; font-family: 'Fira Code', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--matrix-neon-green); background: rgba(57, 255, 20, 0.08); border: 1px solid rgba(57, 255, 20, 0.2); padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; }
+
+.enterprise-radar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 36px 0; }
+.radar-cell { background: var(--bg-surface-card); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 24px; position: relative; overflow: hidden; box-shadow: var(--box-shadow-premium); }
+.radar-cell::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--route-blue), transparent); }
+.cell-tag { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--route-blue); margin-bottom: 10px; font-weight: bold; }
+.cell-desc { font-size: 0.92rem; color: var(--text-muted); line-height: 1.6; }
+
+.playbook-card { background: var(--bg-surface-card); border: 2px solid var(--border-neon-vivid); border-left: 4px solid var(--border-laser-glow); border-radius: var(--radius-premium); padding: 28px; margin-bottom: 20px; transition: var(--transition-smooth); box-shadow: var(--box-shadow-premium); }
+.pb-q-title { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 12px; color: var(--text-hyper-bright); }
+.pb-hud-label { font-family: 'Fira Code', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--laser-cyan); margin-bottom: 8px; }
+.pb-hud-answer { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; }
+
+.retrieval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 32px 0; }
+.retrieval-node { background: var(--bg-surface-card); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); min-height: 200px; position: relative; cursor: pointer; perspective: 1000px; box-shadow: var(--box-shadow-premium); }
+.r-front, .r-back { position: absolute; inset: 0; padding: 28px; display: flex; flex-direction: column; justify-content: center; backface-visibility: hidden; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+.r-back { transform: rotateY(180deg); opacity: 0; background: rgba(58, 134, 255, 0.02); }
+.retrieval-node.flipped .r-front { transform: rotateY(180deg); opacity: 0; }
+.retrieval-node.flipped .r-back { transform: rotateY(360deg); opacity: 1; }
+.r-meta { font-family: 'Fira Code', monospace; font-size: 0.68rem; color: var(--route-blue); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: bold; }
+.r-question-text { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 1.02rem; line-height: 1.5; }
+.r-answer-text { font-size: 0.94rem; color: var(--text-muted); line-height: 1.6; }
+.r-action-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: auto; padding-top: 12px; font-family: 'Fira Code', monospace; }
+
+.milestone-hud-list { display: flex; flex-direction: column; gap: 16px; margin: 32px 0; }
+.milestone-hud-row { background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 20px 24px; display: flex; gap: 20px; align-items: flex-start; transition: var(--transition-smooth); cursor: pointer; box-shadow: var(--box-shadow-premium); }
+.milestone-hud-row:hover { border-color: var(--route-blue); background: rgba(58, 134, 255, 0.01); }
+.milestone-hud-row.completed-node { border-color: var(--matrix-neon-green); background: rgba(57, 255, 20, 0.01); }
+.row-checkbox { width: 24px; height: 24px; border-radius: var(--radius-premium); border: 1px solid var(--border-neon-vivid); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 0.8rem; margin-top: 2px; }
+.milestone-hud-row.completed-node .row-checkbox { border-color: var(--matrix-neon-green); color: var(--text-hyper-bright); }
+.row-body { flex: 1; }
+.row-title { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
+.row-desc { font-size: 0.94rem; color: var(--text-muted); line-height: 1.55; }
+
+.comprehensive-recap-panel { background: var(--bg-surface-dark); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 32px; margin: 48px 0 64px; box-shadow: var(--box-shadow-premium); }
+.recap-title-hud { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--laser-cyan); font-weight: 800; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.05em; }
+.recap-grid-hud { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.recap-item-node { background: var(--bg-surface-card); padding: 16px 20px; border-radius: var(--radius-premium); border: 1px solid var(--border-neon-vivid); }
+.recap-item-title { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text-hyper-bright); margin-bottom: 4px; font-weight: bold; }
+.recap-item-desc { font-size: 0.92rem; color: var(--text-muted); }
+
+.summary-hud-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 32px 0; }
+.summary-hud-cell { background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 28px 20px; text-align: center; box-shadow: var(--box-shadow-premium); }
+.summary-hud-cell::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--route-blue), var(--laser-cyan)); }
+.summary-hud-metric { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; font-weight: 900; color: rgba(58, 134, 255, 0.12); line-height: 1; margin-bottom: 12px; }
+.summary-hud-text { font-weight: 500; font-size: 0.95rem; line-height: 1.6; color: var(--text-hyper-bright); }
+
+.glossary-matrix-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 36px 0; }
+.glossary-cell-node { background: var(--syntax-bg-matrix); border: 2px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 16px 18px; box-shadow: var(--box-shadow-premium); }
+.g-node-term { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--route-blue); margin-bottom: 4px; font-weight: bold; }
+.g-node-definition { font-size: 0.88rem; color: var(--text-muted); }
+
+.matrix-footer { margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border-neon-vivid); display: flex; justify-content: flex-end; }
+.matrix-next-btn { display: flex; align-items: center; gap: 16px; background: var(--bg-surface-card); border: 1px solid var(--border-neon-vivid); border-radius: var(--radius-premium); padding: 20px 32px; cursor: pointer; text-decoration: none; box-shadow: var(--box-shadow-premium); }
+.matrix-next-btn:hover { border-color: var(--route-blue); box-shadow: 0 0 25px rgba(58, 134, 255, 0.2); }
+.footer-btn-label { font-family: 'Fira Code', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--laser-pink); margin-bottom: 4px; }
+.footer-btn-title { font-size: 1rem; font-weight: bold; color: var(--text-hyper-bright); font-family: 'Orbitron', sans-serif; }
+.footer-btn-arrow { font-size: 1.4rem; color: var(--route-blue); transition: transform 0.25s ease; }
+.matrix-next-btn:hover .footer-btn-arrow { transform: translateX(4px); }
+
+@media (max-width: 1120px) {
+  main { padding: 64px 24px 80px; }
+  .hero-radar { padding: 120px 24px 60px; }
+  .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* === INJECTED PREMIUM LAYOUT STYLE START === */
+.controller-rack-hud {
+  position: fixed !important;
+  top: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  z-index: 1009 !important;
+  display: flex !important;
+  gap: 12px !important;
+}
+.hud-btn {
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0 var(--border, #2a2c38);
+  text-decoration: none;
+}
+.hud-btn:hover {
+  background: var(--surface2, #1a1c24);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border, #2a2c38);
+}
+body.light-theme .hud-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 2px 2px 0 var(--border, #cbd5e1) !important;
+}
+body.light-theme .hud-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  box-shadow: 3px 3px 0 var(--border, #cbd5e1) !important;
+}
+
+/* Sidebar toggle button styling */
+.sidebar-toggle-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 1002;
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0 var(--border, #2a2c38);
+  backdrop-filter: blur(8px);
+}
+.sidebar-toggle-btn:hover {
+  background: var(--surface2, #1a1c24);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--border, #2a2c38);
+}
+body.light-theme .sidebar-toggle-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 2px 2px 0 var(--border, #cbd5e1) !important;
+}
+body.light-theme .sidebar-toggle-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  box-shadow: 3px 3px 0 var(--border, #cbd5e1) !important;
+}
+
+/* Sidebar collapse overrides for grid-based layouts (Phase 1 & 2) */
+.sidebar, .sidebar-hud {
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), padding 0.3s, opacity 0.3s, left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  padding-top: 90px !important; /* Ensure room for top-left toggle */
+}
+.layout, .premium-layout {
+  transition: grid-template-columns 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+body.sidebar-closed .sidebar,
+body.sidebar-closed .sidebar-hud {
+  width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border-right-width: 0 !important;
+  overflow: hidden !important;
+}
+body.sidebar-closed .layout,
+body.sidebar-closed .premium-layout {
+  grid-template-columns: 0px 1fr !important;
+}
+
+/* Universal Light Mode Override Variables (All Phases) */
+body.light-theme {
+  /* Background overrides to wipe out hardcoded dark gradients */
+  background: #f8fafc !important;
+  color: #0f172a !important;
+
+  /* Phase 1 variables */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --code-bg: #f8fafc;
+  --amber: #ea580c;
+  --teal: #0d9488;
+  --purple: #7c3aed;
+  --rose: #e11d48;
+  --green: #16a34a;
+  --yellow: #ca8a04;
+
+  /* Phase 2 Cosmic variables */
+  --bg-glow: #f5f3f7;
+  --bg-deep: #eae6f0;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --surface-solid: #ffffff;
+  --surface-bright: #e9e5f3;
+  --border-neon: rgba(109, 40, 217, 0.15);
+  --border-glow: rgba(13, 148, 136, 0.2);
+  --text-primary: #1e1b4b;
+  --text-muted: #6b6a8a;
+  --neon-cyan: #0d9488;
+  --neon-magenta: #db2777;
+  --neon-purple: #6d28d9;
+  --neon-electric-grape: #6d28d9;
+  --neon-cyber-pink: #db2777;
+  --neon-matrix-emerald: #16a34a;
+  --neon-amber: #ca8a04;
+  --neon-green: #16a34a;
+  --neon-tech-blue: #2563eb;
+  --code-bg-dark: #f8fafc;
+
+  /* Phase 3 Cyberpunk variables */
+  --bg-core: #f5f6fa;
+  --bg-surface-dark: #e8eaf2;
+  --bg-surface-card: #ffffff;
+  --bg-surface-bright: #dfdfef;
+  --border-neon-vivid: rgba(58, 134, 255, 0.2);
+  --border-laser-glow: rgba(13, 148, 136, 0.3);
+  --text-hyper-bright: #0c0f1d;
+  --text-dimmed: #475569;
+  --js-yellow: #a16207;
+  --laser-cyan: #0d9488;
+  --laser-pink: #db2777;
+  --synth-purple: #6d28d9;
+  --matrix-neon-green: #16a34a;
+  --syntax-bg-matrix: #f1f5f9;
+
+  /* Phase 4 variables */
+  --react-blue: #0369a1;
+  --violet-glow: #6d28d9;
+  --matrix-green: #15803d;
+  --hero-gradient: linear-gradient(180deg, #e0f2fe 0%, #f5f6fa 100%);
+  --hud-overlay-bg: rgba(232, 234, 242, 0.9);
+}
+
+/* Phase-specific background gradient overrides in light mode */
+body.light-theme.phase-1 {
+  background: #f8fafc !important;
+}
+body.light-theme.phase-2 {
+  background: radial-gradient(circle at 50% 0%, #eae6f0 0%, #f5f3f7 70%) !important;
+}
+body.light-theme.phase-3 {
+  background: radial-gradient(circle at 50% 0%, #e8eaf2 0%, #f5f6fa 80%) !important;
+}
+body.light-theme.phase-4 {
+  background: #fafafa !important;
+}
+body.light-theme.phase-5 {
+  background: var(--bg-main) !important;
+}
+body.light-theme.phase-6 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-7 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-8 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-9 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-10 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-11 {
+  background: var(--bg-core) !important;
+}
+body.light-theme.phase-12 {
+  background: var(--bg-core) !important;
+}
+
+/* Clean light layout updates for containers and panels */
+body.light-theme .sidebar-hud {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-right-color: rgba(109, 40, 217, 0.15) !important;
+}
+body.light-theme .radar-cell {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(109, 40, 217, 0.15) !important;
+}
+body.light-theme .recap-item-node {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-left-color: var(--teal, #0d9488) !important;
+}
+body.light-theme .terminal {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+body.light-theme .terminal-bar {
+  background: #e2e8f0 !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+body.light-theme .terminal-body {
+  color: #0f172a !important;
+}
+
+/* GitHub-Style Premium Code Syntax Highlighting inside Light Mode */
+body.light-theme .code-block,
+body.light-theme .premium-code-block {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+}
+body.light-theme .code-header,
+body.light-theme .p-code-header {
+  background: #e2e8f0 !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+body.light-theme pre,
+body.light-theme code {
+  color: #0f172a !important;
+}
+body.light-theme p code,
+body.light-theme li code {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: #cbd5e1 !important;
+  color: var(--teal, #0d9488) !important;
+}
+body.light-theme .token-kw, body.light-theme .t-kw { color: #d73a49 !important; font-weight: bold; }
+body.light-theme .token-str, body.light-theme .t-val { color: #032f62 !important; }
+body.light-theme .token-comment, body.light-theme .t-comment { color: #6a737d !important; font-style: italic; }
+body.light-theme .token-fn, body.light-theme .token-var { color: #6f42c1 !important; }
+body.light-theme .token-num, body.light-theme .t-num { color: #005cc5 !important; }
+body.light-theme .token-tag, body.light-theme .t-sel { color: #22863a !important; font-weight: bold; }
+body.light-theme .token-attr { color: #e36209 !important; }
+
+/* Interactive code playground light overrides */
+body.light-theme #code-playground-drawer {
+  background: #ffffff !important;
+  border-left-color: #cbd5e1 !important;
+}
+body.light-theme #code-playground-drawer h3 {
+  color: #0f172a !important;
+}
+body.light-theme #code-playground-drawer #playground-filename {
+  color: #64748b !important;
+}
+body.light-theme #playground-code-input {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+/* Study Notes Scratchpad styling overrides in light mode */
+body.light-theme #scratchpad-window {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important;
+}
+body.light-theme #scratchpad-window span {
+  color: #0f172a !important;
+}
+body.light-theme #scratchpad-textarea {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Style adjustments for code blocks run live button */
+.run-code-btn {
+  border: 1px solid var(--teal, #2ec4b6);
+  color: var(--teal, #2ec4b6);
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.run-code-btn:hover {
+  background: rgba(46, 196, 182, 0.1) !important;
+  color: var(--teal, #2ec4b6) !important;
+  box-shadow: 0 0 10px rgba(46, 196, 182, 0.2);
+}
+body.light-theme .run-code-btn {
+  border-color: var(--teal, #0d9488) !important;
+  color: var(--teal, #0d9488) !important;
+}
+body.light-theme .run-code-btn:hover {
+  background: rgba(13, 148, 136, 0.1) !important;
+  color: var(--teal, #0d9488) !important;
+}
+
+/* Reading Focus Mode */
+body.focus-mode {
+  padding-left: 0 !important;
+}
+body.focus-mode .sidebar,
+body.focus-mode .sidebar-hud,
+body.focus-mode .sidebar-toggle-btn {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.focus-mode main {
+  max-width: 880px !important;
+  margin: 0 auto !important;
+  padding: 80px 24px 120px 24px !important;
+  transition: all 0.3s ease;
+}
+/* Force grid layouts to collapse to single columns in Focus Mode to avoid text truncation and layout spoiling */
+body.focus-mode .pitfall-matrix,
+body.focus-mode .retrieval-grid,
+body.focus-mode .enterprise-radar,
+body.focus-mode .summary-hud-grid,
+body.focus-mode .glossary-matrix-grid,
+body.focus-mode .recap-grid-hud {
+  grid-template-columns: 1fr !important;
+}
+body.focus-mode .controller-rack-hud {
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+body.focus-mode .controller-rack-hud:hover {
+  opacity: 1;
+}
+body.focus-mode .controller-rack-hud a {
+  display: none !important;
+}
+
+/* Premium Floating Back to Top Button */
+#back-to-top-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#back-to-top-btn:hover {
+  background: var(--surface2, #1a1c24) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  border-color: var(--border-active, var(--border, #cbd5e1)) !important;
+}
+body.light-theme #back-to-top-btn {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08) !important;
+}
+body.light-theme #back-to-top-btn:hover {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border-active, #16a34a) !important;
+}
+
+/* Scratchpad Tab Styling */
+.scratch-tab-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.scratch-tab-btn:hover {
+  color: #e4e2dc;
+}
+.scratch-tab-btn.active {
+  color: #8b5cf6;
+  border-bottom-color: #8b5cf6;
+}
+body.light-theme .scratch-tab-btn:hover {
+  color: #0f172a !important;
+}
+body.light-theme .scratch-tab-btn.active {
+  color: #7c3aed !important;
+  border-bottom-color: #7c3aed !important;
+}
+
+/* Flashcard Styles */
+.flashcard-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 160px;
+  cursor: pointer;
+  margin: 6px 0;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+.flashcard-container.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.flashcard-front {
+  background: #0d1117;
+  color: #f8fafc;
+}
+body.light-theme .flashcard-front {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.flashcard-back {
+  background: #1e1b4b;
+  color: #a78bfa;
+  transform: rotateY(180deg);
+}
+body.light-theme .flashcard-back {
+  background: #eae6f0 !important;
+  color: #6d28d9 !important;
+  border-color: #cbd5e1 !important;
+}
+.flashcard-prompt {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  color: #8b5cf6;
+  margin-top: auto;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Quiz Styles */
+.quiz-option-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 6px;
+}
+.quiz-option-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+body.light-theme .quiz-option-btn {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+body.light-theme .quiz-option-btn:hover {
+  background: #e2e8f0 !important;
+}
+.quiz-option-btn.correct {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10b981 !important;
+  color: #34d399 !important;
+}
+.quiz-option-btn.incorrect {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444 !important;
+  color: #f87171 !important;
+}
+
+/* Active paragraph segment highlighting */
+main p, main h3, main h4, main li, main .hud-callout p {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.voice-active-segment {
+  border-left: 6px solid var(--border-active, #8b5cf6) !important;
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-radius: var(--radius-sm, 8px) !important;
+  padding: 12px 20px !important;
+  margin-left: -12px !important;
+  transform: scale(1.025);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15), inset 4px 0 20px rgba(139, 92, 246, 0.08) !important;
+  z-index: 10;
+}
+body.light-theme .voice-active-segment {
+  background: rgba(109, 40, 217, 0.06) !important;
+  border-left-color: var(--purple, #7c3aed) !important;
+  box-shadow: 0 10px 35px rgba(109, 40, 217, 0.1), inset 4px 0 20px rgba(109, 40, 217, 0.04) !important;
+}
+
+/* Click-to-Play Interactive Mode Hover Effects */
+body.audio-interactive-mode main p,
+body.audio-interactive-mode main h3,
+body.audio-interactive-mode main h4,
+body.audio-interactive-mode main li,
+body.audio-interactive-mode main .hud-callout p {
+  cursor: pointer;
+  position: relative;
+}
+body.audio-interactive-mode main p:hover,
+body.audio-interactive-mode main h3:hover,
+body.audio-interactive-mode main h4:hover,
+body.audio-interactive-mode main li:hover,
+body.audio-interactive-mode main .hud-callout p:hover {
+  background: rgba(139, 92, 246, 0.03) !important;
+  border-left: 3px solid rgba(139, 92, 246, 0.3) !important;
+  padding-left: 12px !important;
+  margin-left: -6px !important;
+  transform: scale(1.01);
+}
+body.light-theme.audio-interactive-mode main p:hover,
+body.light-theme.audio-interactive-mode main h3:hover,
+body.light-theme.audio-interactive-mode main h4:hover,
+body.light-theme.audio-interactive-mode main li:hover,
+body.light-theme.audio-interactive-mode main .hud-callout p:hover {
+  background: rgba(109, 40, 217, 0.02) !important;
+  border-left-color: rgba(109, 40, 217, 0.3) !important;
+}
+
+/* Audio Equalizer animation */
+.audio-equalizer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  margin: 6px 0;
+}
+.eq-bar {
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to top, #8b5cf6, #d946ef);
+  border-radius: 1px;
+  animation: eq-bounce 0.8s ease-in-out infinite alternate;
+}
+body.light-theme .eq-bar {
+  background: linear-gradient(to top, #7c3aed, #db2777) !important;
+}
+@keyframes eq-bounce {
+  0% { height: 15%; }
+  100% { height: 100%; }
+}
+
+/* Audio Control Panel Drawer Overlay */
+#audio-control-panel {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  width: 320px;
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  border-radius: var(--radius-sm, 12px);
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 1008;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  backdrop-filter: blur(8px);
+}
+body.light-theme #audio-control-panel {
+  background: var(--surface, #ffffff) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.audio-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 8px;
+}
+body.light-theme .audio-panel-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.audio-panel-header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--purple, #8b5cf6);
+  letter-spacing: 0.05em;
+}
+body.light-theme .audio-panel-header h3 {
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-panel-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.audio-panel-close:hover {
+  color: var(--text, #e4e2dc);
+}
+body.light-theme .audio-panel-close:hover {
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audio-control-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  letter-spacing: 0.02em;
+}
+
+.audio-select {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  outline: none;
+  font-family: inherit;
+  width: 100%;
+}
+body.light-theme .audio-select {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.audio-slider {
+  flex: 1;
+  height: 4px;
+  background: var(--border, #2a2c38);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+body.light-theme .audio-slider {
+  background: var(--border, #cbd5e1) !important;
+}
+
+.audio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--purple, #8b5cf6);
+  cursor: pointer;
+}
+body.light-theme .audio-slider::-webkit-slider-thumb {
+  background: var(--purple, #7c3aed) !important;
+}
+
+.audio-slider-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text, #e4e2dc);
+  min-width: 28px;
+  text-align: right;
+}
+body.light-theme .audio-slider-val {
+  color: var(--text, #0f172a) !important;
+}
+
+.audio-mode-selector {
+  display: flex;
+  border: 1px solid var(--border, #2a2c38);
+  border-radius: 6px;
+  overflow: hidden;
+}
+body.light-theme .audio-mode-selector {
+  border-color: var(--border, #cbd5e1) !important;
+}
+
+.audio-mode-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  padding: 6px;
+  font-size: 0.7rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.audio-mode-btn.active {
+  background: var(--surface2, #1a1c24);
+  color: var(--purple, #8b5cf6);
+}
+body.light-theme .audio-mode-btn.active {
+  background: var(--surface2, #f1f5f9) !important;
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-playback-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.audio-play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+  transition: all 0.2s;
+}
+.audio-play-btn:hover {
+  transform: scale(1.05);
+}
+
+.audio-nav-btn {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.audio-nav-btn:hover {
+  background: var(--surface, #13141a);
+  color: var(--purple, #8b5cf6);
+}
+body.light-theme .audio-nav-btn {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+body.light-theme .audio-nav-btn:hover {
+  background: var(--surface, #ffffff) !important;
+  color: var(--purple, #7c3aed) !important;
+}
+
+.audio-accent-notice {
+  font-size: 0.62rem;
+  color: var(--text-muted, #64748b);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+  line-height: 1.4;
+}
+body.light-theme .audio-accent-notice {
+  border-top-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* AI Tutor Drawer */
+#ai-tutor-drawer {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: var(--surface, #13141a);
+  border-left: 2px solid var(--border, #2a2c38);
+  z-index: 2000;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-direction: column;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  backdrop-filter: blur(12px);
+}
+body.light-theme #ai-tutor-drawer {
+  background: #ffffff !important;
+  border-left-color: #cbd5e1 !important;
+  box-shadow: -10px 0 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* AI Tutor Chat Bubbles */
+.ai-msg-bubble {
+  align-self: flex-start;
+  max-width: 85%;
+  border-radius: 8px 8px 8px 0px;
+  padding: 10px 12px;
+  color: var(--text, #e4e2dc);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin-top: 4px;
+  word-break: break-word;
+}
+.ai-msg-bubble.tutor {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+body.light-theme .ai-msg-bubble.tutor {
+  background: rgba(124, 58, 237, 0.05) !important;
+  border-color: rgba(124, 58, 237, 0.15) !important;
+  color: #0f172a !important;
+}
+.ai-msg-bubble.user {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px 8px 0px 8px;
+  color: #ffffff;
+}
+body.light-theme .ai-msg-bubble.user {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Blink Animation for thinking dot */
+@keyframes blink {
+  0% { opacity: .2; }
+  20% { opacity: 1; }
+  100% { opacity: .2; }
+}
+
+/* AI Tutor resize handle */
+#ai-tutor-resize-handle {
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 100;
+  transition: background 0.2s;
+}
+#ai-tutor-resize-handle:hover {
+  background: rgba(139, 92, 246, 0.2);
+}
+body.light-theme #ai-tutor-resize-handle:hover {
+  background: rgba(109, 40, 217, 0.15) !important;
+}
+
+/* === AUTH MODAL & SYNCHRONIZATION PREMIUM STYLING === */
+#auth-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 11, 16, 0.6);
+  backdrop-filter: blur(10px);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+}
+.auth-container {
+  background: var(--surface, #13141a);
+  border: 2px solid var(--border, #2a2c38);
+  border-radius: var(--radius-sm, 12px);
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+body.light-theme .auth-container {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08) !important;
+}
+.auth-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.15);
+}
+body.light-theme .auth-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+.auth-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--purple, #8b5cf6);
+  font-family: 'Outfit', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+body.light-theme .auth-header h3 {
+  color: var(--purple, #7c3aed) !important;
+}
+.auth-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.auth-close:hover {
+  color: var(--text, #e4e2dc);
+}
+body.light-theme .auth-close:hover {
+  color: var(--text, #0f172a) !important;
+}
+.auth-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+body.light-theme .auth-tabs {
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+.auth-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748b);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  text-align: center;
+}
+.auth-tab-btn.active {
+  color: var(--purple, #8b5cf6);
+  border-bottom-color: var(--purple, #8b5cf6);
+}
+body.light-theme .auth-tab-btn.active {
+  color: var(--purple, #7c3aed) !important;
+  border-bottom-color: var(--purple, #7c3aed) !important;
+}
+.auth-form {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-form.active {
+  display: flex;
+}
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.auth-input-group label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+}
+.auth-input {
+  background: var(--surface2, #1a1c24);
+  border: 1px solid var(--border, #2a2c38);
+  color: var(--text, #e4e2dc);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  outline: none;
+  font-family: inherit;
+}
+body.light-theme .auth-input {
+  background: var(--surface2, #f1f5f9) !important;
+  border-color: var(--border, #cbd5e1) !important;
+  color: var(--text, #0f172a) !important;
+}
+.auth-btn-submit {
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+.auth-btn-submit:hover {
+  transform: translateY(-1px);
+}
+.auth-error {
+  color: #ef4444;
+  font-size: 0.72rem;
+  display: none;
+  margin-top: -4px;
+}
+.sync-status-indicator {
+  font-size: 0.65rem;
+  color: var(--text-muted, #64748b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sync-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  display: inline-block;
+}
+.sync-status-dot.synced {
+  background: #10b981;
+}
+.sync-status-dot.error {
+  background: #ef4444;
+}
+.sync-status-dot.pending {
+  background: #ca8a04;
+  animation: pulse-sync 1.5s infinite;
+}
+@keyframes pulse-sync {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+/* === INJECTED PREMIUM LAYOUT STYLE END === */
+
+# === INJECTED PREMIUM JS CODE ===
+// === INJECTED PREMIUM MODULE JS START ===
+const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
+let syncTimeout = null;
+
+function queueNotesSync() {
+  if (!localStorage.getItem('faang-auth-token')) return;
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Saving notes to cloud...';
+  }
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    await syncProgressToServer();
+  }, 2000);
+}
+
+function toggleAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+  modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+  if (modal.style.display === 'flex') {
+    const errorEl = document.getElementById('auth-error-msg');
+    if (errorEl) errorEl.style.display = 'none';
+  }
+}
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('auth-form-login');
+  const registerForm = document.getElementById('auth-form-register');
+  const loginTab = document.getElementById('auth-tab-login');
+  const registerTab = document.getElementById('auth-tab-register');
+  
+  if (tab === 'login') {
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+  } else {
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+    loginTab.classList.remove('active');
+    registerTab.classList.add('active');
+  }
+}
+
+async function submitAuth(event, type) {
+  event.preventDefault();
+  const errorEl = document.getElementById('auth-error-msg');
+  if (errorEl) errorEl.style.display = 'none';
+  
+  const suffix = type === 'login' ? 'login' : 'register';
+  const usernameInput = document.getElementById(`auth-username-${suffix}`);
+  const passwordInput = document.getElementById(`auth-password-${suffix}`);
+  
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+  
+  if (!username || !password) {
+    showAuthError("Username and password are required.");
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/auth/${suffix}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Authentication failed.');
+    }
+    
+    localStorage.setItem('faang-auth-token', data.token);
+    localStorage.setItem('faang-username', data.username);
+    
+    toggleAuthModal();
+    usernameInput.value = '';
+    passwordInput.value = '';
+    
+    await syncProgressFromServer();
+    updateAuthHUD();
+    
+  } catch (err) {
+    showAuthError(err.message);
+  }
+}
+
+function showAuthError(msg) {
+  const errorEl = document.getElementById('auth-error-msg');
+  if (errorEl) {
+    errorEl.innerText = msg;
+    errorEl.style.display = 'block';
+  }
+}
+
+function logOut() {
+  if (confirm("Are you sure you want to log out? Local data will remain but cloud syncing will stop.")) {
+    localStorage.removeItem('faang-auth-token');
+    localStorage.removeItem('faang-username');
+    updateAuthHUD();
+    alert("Logged out successfully.");
+  }
+}
+
+function updateAuthHUD() {
+  const token = localStorage.getItem('faang-auth-token');
+  const username = localStorage.getItem('faang-username');
+  const hudBtn = document.getElementById('auth-hud-btn');
+  if (!hudBtn) return;
+  
+  if (token && username) {
+    hudBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>ðŸ‘¤ ${username}</span>
+      <span class="sync-status-indicator" style="margin-left: 6px;" id="sync-indicator-container">
+        <span class="sync-status-dot synced" id="sync-indicator-status" title="Synced with cloud"></span>
+      </span>
+      <span onclick="event.stopPropagation(); logOut();" style="margin-left: 8px; color: var(--rose, #ef4444); cursor: pointer; font-weight: bold;" title="Log Out">&#10005;</span>
+    `;
+    hudBtn.onclick = () => {
+      syncProgressToServer();
+    };
+  } else {
+    hudBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Log In</span>
+    `;
+    hudBtn.onclick = toggleAuthModal;
+  }
+}
+
+async function syncProgressToServer() {
+  const token = localStorage.getItem('faang-auth-token');
+  if (!token) return;
+  
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Syncing...';
+  }
+  
+  const completed = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+  const notes = localStorage.getItem('faang-student-notes') || '';
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token
+      },
+      body: JSON.stringify({
+        completedEssays: completed,
+        studyNotes: notes
+      })
+    });
+    
+    if (!res.ok) throw new Error('Failed to sync to cloud');
+    
+    if (indicator) {
+      indicator.className = 'sync-status-dot synced';
+      indicator.title = 'Synced with cloud';
+    }
+  } catch (err) {
+    console.error('Sync to server error:', err);
+    if (indicator) {
+      indicator.className = 'sync-status-dot error';
+      indicator.title = 'Sync error: ' + err.message;
+    }
+  }
+}
+
+async function syncProgressFromServer() {
+  const token = localStorage.getItem('faang-auth-token');
+  if (!token) return;
+  
+  const indicator = document.getElementById('sync-indicator-status');
+  if (indicator) {
+    indicator.className = 'sync-status-dot pending';
+    indicator.title = 'Fetching cloud progress...';
+  }
+  
+  try {
+    const res = await fetch(`${getBackendUrl()}/api/progress`, {
+      method: 'GET',
+      headers: { 'x-auth-token': token }
+    });
+    
+    if (!res.ok) throw new Error('Failed to fetch from cloud');
+    
+    const data = await res.json();
+    
+    const localCompleted = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+    const serverCompleted = data.completedEssays || [];
+    const mergedCompleted = Array.from(new Set([...localCompleted, ...serverCompleted]));
+    localStorage.setItem('faang-completed-essays', JSON.stringify(mergedCompleted));
+    
+    const localNotes = localStorage.getItem('faang-student-notes') || '';
+    const serverNotes = data.studyNotes || '';
+    if (serverNotes && serverNotes !== localNotes) {
+      localStorage.setItem('faang-student-notes', serverNotes);
+      const textarea = document.getElementById('scratchpad-textarea');
+      if (textarea) {
+        textarea.value = serverNotes;
+        if (typeof updateWordCount === 'function') updateWordCount(serverNotes);
+      }
+    }
+    
+    if (typeof loadProgress === 'function') loadProgress();
+    if (typeof updateProgressHUD === 'function') updateProgressHUD();
+    
+    if (indicator) {
+      indicator.className = 'sync-status-dot synced';
+      indicator.title = 'Synced with cloud';
+    }
+  } catch (err) {
+    console.error('Sync from server error:', err);
+    if (indicator) {
+      indicator.className = 'sync-status-dot error';
+      indicator.title = 'Sync error: ' + err.message;
+    }
+  }
+}
+
+function saveBackendUrl() {
+  const input = document.getElementById('ai-backend-url-input');
+  if (!input) return;
+  const url = input.value.trim();
+  if (url) {
+    localStorage.setItem('faang-backend-url', url);
+    alert("Backend Server API URL updated successfully!");
+  } else {
+    localStorage.removeItem('faang-backend-url');
+    alert("Backend Server API URL reset to default.");
+  }
+}
+
+// Synchronously apply theme before DOMContentLoaded to prevent flash
+(function() {
+  const savedTheme = localStorage.getItem('faang-course-theme');
+  const body = document.body;
+  if (savedTheme === 'light') {
+    body.classList.add('light-theme');
+  } else {
+    body.classList.remove('light-theme');
+  }
+})();
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  body.classList.toggle('light-theme');
+  const isLight = body.classList.contains('light-theme');
+  localStorage.setItem('faang-course-theme', isLight ? 'light' : 'dark');
+  if (themeText) {
+    themeText.innerText = isLight ? "Light Lab" : "Dark Cyber";
+  }
+  syncScratchpadTheme(isLight ? 'light' : 'dark');
+}
+
+function syncScratchpadTheme(theme) {
+  const scratchWin = document.getElementById('scratchpad-window');
+  const scratchText = document.getElementById('scratchpad-textarea');
+  if (theme === 'light') {
+    if (scratchWin) {
+      scratchWin.style.background = '#ffffff';
+      scratchWin.style.borderColor = '#cbd5e1';
+    }
+    if (scratchText) {
+      scratchText.style.background = '#f8fafc';
+      scratchText.style.color = '#0f172a';
+    }
+  } else {
+    if (scratchWin) {
+      scratchWin.style.background = '#111425';
+      scratchWin.style.borderColor = 'rgba(97, 218, 251, 0.2)';
+    }
+    if (scratchText) {
+      scratchText.style.background = '#0b0d19';
+      scratchText.style.color = '#f8fafc';
+    }
+  }
+}
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+  
+  if (!sidebar) return;
+  
+  const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+  let isClosed = false;
+  
+  if (isFixedSidebar) {
+    body.classList.toggle('sidebar-open');
+    sidebar.classList.toggle('open');
+    isClosed = !sidebar.classList.contains('open');
+  } else {
+    body.classList.toggle('sidebar-closed');
+    isClosed = body.classList.contains('sidebar-closed');
+  }
+  
+  // Save state in localStorage
+  localStorage.setItem('faang-sidebar-state', isClosed ? 'closed' : 'open');
+  
+  // Update all toggle texts and icons
+  const textLeft = document.getElementById('sidebar-toggle-text-left');
+  const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+  
+  const textValue = isClosed ? "Expand Map" : "Collapse Map";
+  if (textLeft) textLeft.innerText = textValue;
+  if (textRight) textRight.innerText = textValue;
+  
+  const leftBtn = document.querySelector('.sidebar-toggle-btn');
+  if (leftBtn) {
+    const icon = leftBtn.querySelector('.toggle-icon');
+    if (icon) {
+      icon.innerHTML = isClosed ? "&#9776;" : "&#10005;";
+    }
+  }
+}
+
+function initSidebarState() {
+  const savedState = localStorage.getItem('faang-sidebar-state');
+  const body = document.body;
+  const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+  if (!sidebar) return;
+  
+  const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+  
+  if (savedState === 'closed') {
+    if (isFixedSidebar) {
+      body.classList.remove('sidebar-open');
+      sidebar.classList.remove('open');
+    } else {
+      body.classList.add('sidebar-closed');
+    }
+    
+    // Update texts
+    const textLeft = document.getElementById('sidebar-toggle-text-left');
+    const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+    if (textLeft) textLeft.innerText = "Expand Map";
+    if (textRight) textRight.innerText = "Expand Map";
+    
+    const leftBtn = document.querySelector('.sidebar-toggle-btn');
+    if (leftBtn) {
+      const icon = leftBtn.querySelector('.toggle-icon');
+      if (icon) icon.innerHTML = "&#9776;";
+    }
+  } else {
+    if (isFixedSidebar) {
+      body.classList.add('sidebar-open');
+      sidebar.classList.add('open');
+    } else {
+      body.classList.remove('sidebar-closed');
+    }
+    
+    // Update texts
+    const textLeft = document.getElementById('sidebar-toggle-text-left');
+    const textRight = document.getElementById('sidebar-toggle-text') || document.getElementById('toggle-text');
+    if (textLeft) textLeft.innerText = "Collapse Map";
+    if (textRight) textRight.innerText = "Collapse Map";
+    
+    const leftBtn = document.querySelector('.sidebar-toggle-btn');
+    if (leftBtn) {
+      const icon = leftBtn.querySelector('.toggle-icon');
+      if (icon) icon.innerHTML = "&#10005;";
+    }
+  }
+}
+
+function initScrollProgressTracker() {
+  const sections = document.querySelectorAll('.section, .section-card');
+  const navItems = document.querySelectorAll('.nav-item, .hud-nav-item');
+  
+  if (sections.length === 0 || navItems.length === 0) return;
+  
+  const observerOptions = {
+    root: null,
+    rootMargin: '-20% 0px -60% 0px',
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        if (!id) return;
+        
+        navItems.forEach(item => {
+          const href = item.getAttribute('href');
+          if (!href || !href.startsWith('#')) return;
+          if (href === `#${id}`) {
+            item.classList.add('active');
+            const numEl = item.querySelector('.nav-num, .nav-hud-num');
+            if (numEl && !numEl.dataset.original) {
+              numEl.dataset.original = numEl.innerText;
+              numEl.innerHTML = '&#9679;';
+            }
+          } else {
+            item.classList.remove('active');
+            const numEl = item.querySelector('.nav-num, .nav-hud-num');
+            if (numEl && numEl.dataset.original) {
+              const currentIdx = Array.from(sections).findIndex(s => s.getAttribute('id') === id);
+              const itemSecId = href.replace('#', '');
+              const itemIdx = Array.from(sections).findIndex(s => s.getAttribute('id') === itemSecId);
+              
+              if (itemIdx < currentIdx) {
+                numEl.innerHTML = '&#10003;';
+                numEl.style.color = 'var(--green, #4ade80)';
+              } else {
+                numEl.innerText = numEl.dataset.original;
+                numEl.style.color = '';
+              }
+            }
+          }
+        });
+      }
+    });
+  }, observerOptions);
+  
+  sections.forEach(section => observer.observe(section));
+}
+
+function updatePlaygroundPreview(code) {
+  const iframe = document.getElementById('playground-preview-frame');
+  if (!iframe) return;
+  
+  let formattedCode = code;
+  if (!code.includes('<html') && !code.includes('<body')) {
+    formattedCode = `
+      <!DOCTYPE html>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
+
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              padding: 24px;
+              color: #1e293b;
+              background-color: #f8fafc;
+            }
+          </style>
+        </head>
+        <body>
+          ${code}
+        </body>
+      </html>
+    `;
+  }
+  
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(formattedCode);
+  doc.close();
+}
+
+function initCodePlayground() {
+  const codeBlocks = document.querySelectorAll('.code-block, .premium-code-block');
+  
+  codeBlocks.forEach(block => {
+    const header = block.querySelector('.code-header, .p-code-header');
+    const codeEl = block.querySelector('code');
+    const filenameEl = block.querySelector('.code-filename, .p-code-filename');
+    
+    if (!header || !codeEl) return;
+    
+    const filename = filenameEl ? filenameEl.innerText : 'sandbox.html';
+    
+    // Check if run code button already exists
+    if (header.querySelector('.run-code-btn')) return;
+    
+    const btn = document.createElement('button');
+    btn.className = 'run-code-btn';
+    btn.innerHTML = '&#9889; Run Live';
+    btn.style.marginLeft = '12px';
+    
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openPlayground(codeEl.textContent, filename);
+    });
+    
+    const dots = header.querySelector('.code-dots, .p-code-dots');
+    if (dots) {
+      header.insertBefore(btn, dots);
+    } else {
+      header.appendChild(btn);
+    }
+  });
+}
+
+function openPlayground(code, filename) {
+  const drawer = document.getElementById('code-playground-drawer');
+  const input = document.getElementById('playground-code-input');
+  const filenameEl = document.getElementById('playground-filename');
+  
+  if (!drawer || !input) return;
+  
+  filenameEl.innerText = filename;
+  input.value = code;
+  drawer.style.display = 'flex';
+  setTimeout(() => {
+    drawer.style.right = '0';
+  }, 10);
+  
+  updatePlaygroundPreview(code);
+  
+  input.oninput = (e) => {
+    updatePlaygroundPreview(e.target.value);
+  };
+}
+
+function closePlayground() {
+  const drawer = document.getElementById('code-playground-drawer');
+  if (!drawer) return;
+  drawer.style.right = '-600px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleScratchpadHUD() {
+  const win = document.getElementById('scratchpad-window');
+  if (!win) return;
+  if (win.style.display === 'none' || win.style.display === '') {
+    win.style.display = 'flex';
+  } else {
+    win.style.display = 'none';
+  }
+}
+
+function updateWordCount(text) {
+  const wordCountEl = document.getElementById('scratchpad-word-count');
+  if (!wordCountEl) return;
+  const trimmed = text.trim();
+  const words = trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+  wordCountEl.innerText = words + (words === 1 ? " word" : " words");
+}
+
+function downloadStudentNotes() {
+  const text = localStorage.getItem('faang-student-notes') || "";
+  if (text.trim() === "") {
+    alert("Scratchpad is empty. Add some study notes before exporting.");
+    return;
+  }
+  const blob = new Blob([text], { type: 'text/plain' });
+  const anchor = document.createElement('a');
+  anchor.download = 'FAANG_Roadmap_Study_Notes.txt';
+  anchor.href = window.URL.createObjectURL(blob);
+  anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+}
+
+// --- PREMIUM FOCUS MODE ---
+function toggleFocusMode() {
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  body.classList.toggle('focus-mode');
+  const isFocus = body.classList.contains('focus-mode');
+  localStorage.setItem('faang-focus-mode', isFocus ? 'on' : 'off');
+  if (focusBtnText) {
+    focusBtnText.innerText = isFocus ? "Focus On" : "Focus Off";
+  }
+}
+
+function initFocusMode() {
+  const savedFocus = localStorage.getItem('faang-focus-mode');
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  if (savedFocus === 'on') {
+    body.classList.add('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus On";
+  } else {
+    body.classList.remove('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus Off";
+  }
+}
+
+function scrollToTopHUD() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- PREMIUM AUDIO READER SYSTEM ---
+let audioSegments = [];
+let currentSegmentIndex = 0;
+let currentUtterance = null;
+let readingMode = 'summary'; // 'summary' or 'full'
+let selectedVoice = null;
+let speechRate = 1.0;
+let isAudioPlaying = false;
+let speechTimeout = null;
+
+function toggleAudioPanel() {
+  const panel = document.getElementById('audio-control-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'flex';
+    document.body.classList.add('audio-interactive-mode');
+    populateVoices();
+    initClickToPlay();
+    updateAudioProgress();
+  } else {
+    panel.style.display = 'none';
+    document.body.classList.remove('audio-interactive-mode');
+  }
+}
+
+function populateVoices() {
+  if (!window.speechSynthesis) return;
+  const select = document.getElementById('audio-voice-select');
+  if (!select) return;
+  
+  const voices = window.speechSynthesis.getVoices();
+  select.innerHTML = '';
+  
+  // Sort voices: Local Indian English first (en-IN + localService), then online Indian English, then local English, then the rest
+  const sortedVoices = [...voices].sort((a, b) => {
+    const aIsIn = a.lang.toLowerCase().includes('en-in');
+    const bIsIn = b.lang.toLowerCase().includes('en-in');
+    
+    const aIsLocal = a.localService;
+    const bIsLocal = b.localService;
+    
+    if (aIsIn && !bIsIn) return -1;
+    if (!aIsIn && bIsIn) return 1;
+    
+    if (aIsIn && bIsIn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    const aIsEn = a.lang.toLowerCase().startsWith('en');
+    const bIsEn = b.lang.toLowerCase().startsWith('en');
+    
+    if (aIsEn && !bIsEn) return -1;
+    if (!aIsEn && bIsEn) return 1;
+    
+    if (aIsEn && bIsEn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    return a.name.localeCompare(b.name);
+  });
+  
+  sortedVoices.forEach(voice => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    // Add [Offline] badge for local services to highlight rate support
+    const serviceType = voice.localService ? ' [Offline]' : ' [Cloud]';
+    option.innerText = voice.name + ' (' + voice.lang + ')' + serviceType;
+    if (voice.lang.toLowerCase().includes('en-in') && !selectedVoice) {
+      option.selected = true;
+      selectedVoice = voice;
+    }
+    select.appendChild(option);
+  });
+  
+  // Default to first voice if no en-IN found and selectedVoice not set
+  if (!selectedVoice && sortedVoices.length > 0) {
+    selectedVoice = sortedVoices[0];
+  }
+  
+  // Show/hide help alert about en-IN accent based on availability
+  const notice = document.getElementById('audio-accent-notice');
+  if (notice) {
+    const hasIndianVoice = voices.some(v => v.lang.toLowerCase().includes('en-in'));
+    notice.style.display = hasIndianVoice ? 'none' : 'block';
+  }
+}
+
+// Handle asynchronous voice loading
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = populateVoices;
+}
+
+function changeVoice() {
+  const select = document.getElementById('audio-voice-select');
+  if (!select || !window.speechSynthesis) return;
+  const voices = window.speechSynthesis.getVoices();
+  selectedVoice = voices.find(v => v.name === select.value);
+  
+  // If speaking, restart from current segment
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function updateRateLabel(val) {
+  const valEl = document.getElementById('audio-rate-val');
+  if (valEl) valEl.innerText = parseFloat(val).toFixed(1) + 'x';
+}
+
+function changeRate(val) {
+  speechRate = parseFloat(val);
+  updateRateLabel(val);
+  
+  // If speaking, restart from current segment to apply rate change
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function setReadingMode(mode) {
+  readingMode = mode;
+  const sumBtn = document.getElementById('audio-mode-summary');
+  const fullBtn = document.getElementById('audio-mode-full');
+  
+  if (mode === 'summary') {
+    sumBtn.classList.add('active');
+    fullBtn.classList.remove('active');
+  } else {
+    sumBtn.classList.remove('active');
+    fullBtn.classList.add('active');
+  }
+  
+  stopAudioPlayback();
+}
+
+function buildSegments() {
+  audioSegments = [];
+  if (readingMode === 'summary') {
+    const summaryTextEl = document.querySelector('.executive-summary-panel .summary-text-hud');
+    if (summaryTextEl) {
+      audioSegments = [summaryTextEl];
+    }
+  } else {
+    const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+    audioSegments = elements.filter(el => {
+      if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+        return false;
+      }
+      if (!el.innerText.trim()) return false;
+      return true;
+    });
+  }
+}
+
+function toggleAudioPlayback() {
+  if (!window.speechSynthesis) {
+    alert("Speech Synthesis is not supported in this browser.");
+    return;
+  }
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  const eq = document.getElementById('audio-eq-wave');
+  
+  if (isAudioPlaying) {
+    // We are playing, so pause it
+    window.speechSynthesis.pause();
+    isAudioPlaying = false;
+    if (playBtn) playBtn.innerHTML = '\u25B6';
+    if (eq) eq.style.display = 'none';
+    updateAudioProgress();
+    return;
+  }
+  
+  // We are paused, try to resume
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    isAudioPlaying = true;
+    if (playBtn) playBtn.innerHTML = '\u23F8';
+    if (eq) eq.style.display = 'flex';
+    updateAudioProgress();
+    return;
+  }
+  
+  // Starting playback from scratch or resuming cancelled speech
+  buildSegments();
+  if (audioSegments.length === 0) {
+    alert("No readable text found for audio playback.");
+    return;
+  }
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    currentSegmentIndex = 0;
+  }
+  
+  isAudioPlaying = true;
+  if (playBtn) playBtn.innerHTML = '\u23F8';
+  playCurrentSegment();
+}
+
+function playCurrentSegment() {
+  if (!window.speechSynthesis || audioSegments.length === 0) return;
+  
+  // Clear event listeners on current utterance to prevent cancel event triggers from skipping lines
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  
+  // Stop existing speech first
+  window.speechSynthesis.cancel();
+  
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clean all previous highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+    return;
+  }
+  
+  const currentEl = audioSegments[currentSegmentIndex];
+  currentEl.classList.add('voice-active-segment');
+  currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  const text = currentEl.innerText;
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  
+  if (selectedVoice) {
+    currentUtterance.voice = selectedVoice;
+  }
+  currentUtterance.rate = speechRate;
+  
+  currentUtterance.onend = () => {
+    // Only proceed to next if we are actively playing and not paused/cancelled
+    if (isAudioPlaying) {
+      currentSegmentIndex++;
+      if (currentSegmentIndex < audioSegments.length) {
+        playCurrentSegment();
+      } else {
+        stopAudioPlayback();
+      }
+    }
+  };
+  
+  currentUtterance.onerror = (e) => {
+    // If it was interrupted by user, do nothing. Otherwise, handle error.
+    if (e.error !== 'interrupted') {
+      console.error("SpeechSynthesis error:", e);
+      stopAudioPlayback();
+    }
+  };
+  
+  updateAudioProgress();
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) eq.style.display = 'flex';
+  
+  // Settle delay (150ms) to ensure speech cancel completely finishes before speak triggers (stabilizes local speed rate changes)
+  speechTimeout = setTimeout(() => {
+    window.speechSynthesis.speak(currentUtterance);
+  }, 150);
+}
+
+function stopAudioPlayback() {
+  isAudioPlaying = false;
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clear highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  if (playBtn) playBtn.innerHTML = '\u25B6';
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) eq.style.display = 'none';
+  
+  currentSegmentIndex = 0;
+  
+  const progressText = document.getElementById('audio-progress-text');
+  if (progressText) progressText.innerText = "Status: Stopped";
+}
+
+function nextAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex++;
+  if (currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+  } else {
+    if (isAudioPlaying) {
+      playCurrentSegment();
+    } else {
+      // Just highlight and scroll, don't speak
+      audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+      const currentEl = audioSegments[currentSegmentIndex];
+      currentEl.classList.add('voice-active-segment');
+      currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      updateAudioProgress();
+    }
+  }
+}
+
+// --- RESET UTTERANCE STATE ON BEFOREUNLOAD ---
+function prevAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex--;
+  if (currentSegmentIndex < 0) {
+    currentSegmentIndex = 0;
+  }
+  
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  } else {
+    // Just highlight and scroll, don't speak
+    audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+    const currentEl = audioSegments[currentSegmentIndex];
+    currentEl.classList.add('voice-active-segment');
+    currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateAudioProgress();
+  }
+}
+
+function updateAudioProgress() {
+  const progressText = document.getElementById('audio-progress-text');
+  if (!progressText || audioSegments.length === 0) return;
+  
+  const current = currentSegmentIndex + 1;
+  const total = audioSegments.length;
+  
+  // Calculate remaining words
+  let remainingWords = 0;
+  for (let i = currentSegmentIndex; i < audioSegments.length; i++) {
+    remainingWords += audioSegments[i].innerText.split(/\s+/).length;
+  }
+  
+  // Average reading speed is 150 words per minute
+  const baseWPM = 150;
+  const actualWPM = baseWPM * speechRate;
+  const minutesLeft = Math.ceil(remainingWords / actualWPM);
+  
+  progressText.innerText = 'Segment ' + current + ' of ' + total + ' (' + minutesLeft + ' min left)';
+}
+
+function initClickToPlay() {
+  // Pull all readable text blocks directly from layout body main
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const readableElements = elements.filter(el => {
+    if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+      return false;
+    }
+    if (!el.innerText.trim()) return false;
+    return true;
+  });
+  
+  readableElements.forEach(el => {
+    if (el.dataset.hasAudioListener) return;
+    el.dataset.hasAudioListener = "true";
+    
+    el.addEventListener('click', (e) => {
+      // Only execute if settings panel is open
+      if (!document.body.classList.contains('audio-interactive-mode')) return;
+      
+      // Prevent triggers on code frames, inputs, link tags
+      if (e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('input') || e.target.closest('code') || e.target.closest('pre')) {
+        return;
+      }
+      
+      // Force change to Full Essay mode if summary mode is active
+      if (readingMode === 'summary') {
+        readingMode = 'full';
+        const sumBtn = document.getElementById('audio-mode-summary');
+        const fullBtn = document.getElementById('audio-mode-full');
+        if (sumBtn) sumBtn.classList.remove('active');
+        if (fullBtn) fullBtn.classList.add('active');
+      }
+      
+      // Re-build essay segments list
+      buildSegments();
+      
+      const index = audioSegments.indexOf(el);
+      if (index !== -1) {
+        currentSegmentIndex = index;
+        isAudioPlaying = true;
+        
+        const playBtn = document.getElementById('audio-play-pause-btn');
+        if (playBtn) playBtn.innerHTML = '\u23F8';
+        
+        playCurrentSegment();
+      }
+    });
+  });
+}
+
+window.addEventListener('beforeunload', () => {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+});
+
+// --- TABBED SCRATCHPAD SYSTEM ---
+function switchScratchTab(tabName) {
+  const tabs = document.querySelectorAll('.scratch-tab-btn');
+  tabs.forEach(tab => {
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  
+  const panes = ['notes', 'flashcards', 'quiz'];
+  panes.forEach(pane => {
+    const paneEl = document.getElementById(`scratch-pane-${pane}`);
+    if (paneEl) {
+      paneEl.style.display = (pane === tabName) ? 'flex' : 'none';
+    }
+  });
+  
+  if (tabName === 'flashcards') {
+    renderFlashcard();
+  } else if (tabName === 'quiz') {
+    renderQuiz();
+  }
+}
+
+function getCurrentPhase() {
+  const body = document.body;
+  if (body.classList.contains('phase-1')) return 'phase-1';
+  if (body.classList.contains('phase-2')) return 'phase-2';
+  if (body.classList.contains('phase-3')) return 'phase-3';
+  if (body.classList.contains('phase-4')) return 'phase-4';
+  return 'phase-1';
+}
+
+const flashcardData = {
+  "phase-1": [
+    { q: "What is the difference between Block and Inline elements?", a: "Block elements start on a new line and occupy the full width (e.g., div, p). Inline elements take only as much width as necessary (e.g., span, a)." },
+    { q: "How is CSS selector specificity calculated?", a: "Calculated as a weight: Inline Styles (1000) > IDs (100) > Classes/attributes (10) > Elements/pseudo-elements (1)." },
+    { q: "How does 'flex-grow' work in Flexbox?", a: "It defines the ability for a flex item to grow if necessary. It accepts a unitless value that serves as a proportion of free space." }
+  ],
+  "phase-2": [
+    { q: "What is the difference between Grid's implicit and explicit grids?", a: "Explicit grid is defined using grid-template-columns/rows. Implicit grid is automatically created by the browser to hold items outside that explicit grid." },
+    { q: "What do CSS Container Queries solve?", a: "They let you apply styles to an element based on the size of its parent container rather than the viewport, enabling true component-driven design." },
+    { q: "What does the 'contain' property do in CSS?", a: "It tells the browser that the element's subtree is independent of the rest of the page, allowing layout, paint, and size optimization." }
+  ],
+  "phase-3": [
+    { q: "Explain the Event Loop task execution order.", a: "1. Run Call Stack. 2. Run all Microtasks (Promise callbacks, MutationObserver). 3. Run Macrotasks (setTimeout, events). 4. RequestAnimationFrame & Render." },
+    { q: "What is the difference between debounce and throttle?", a: "Debounce delays execution until a certain time of inactivity passes. Throttle limits the maximum number of times a function can be called over time." },
+    { q: "What are closures in JavaScript?", a: "A closure is a function that retains access to its outer scope variables even after the outer function has returned. Keeps the lexical environment in memory." }
+  ],
+  "phase-4": [
+    { q: "What is React's Virtual DOM and Reconciliation?", a: "React keeps a virtual representation of the DOM. Reconciliation is the diffing algorithm React uses to update the real DOM with minimal changes." },
+    { q: "How does a Client-Side SPA Router work?", a: "It intercepts link clicks, changes the URL using History API (pushState) without reloading the page, and loads the corresponding JS components." },
+    { q: "What is hydration in React SSR?", a: "The process of React checking pre-rendered HTML sent by the server, attaching event listeners, and making the markup interactive on the client." }
+  ]
+};
+
+let currentFlashcardIndex = 0;
+function renderFlashcard() {
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  const card = deck[currentFlashcardIndex];
+  
+  const pane = document.getElementById('scratch-pane-flashcards');
+  if (!pane) return;
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Card ${currentFlashcardIndex + 1} of ${deck.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: var(--teal, #0d9488); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+    </div>
+    
+    <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div style="font-size: 0.78rem; font-weight: 500; line-height: 1.4;">${card.q}</div>
+          <div class="flashcard-prompt">&#128260; Tap to Flip</div>
+        </div>
+        <div class="flashcard-back">
+          <div style="font-size: 0.75rem; font-weight: 400; line-height: 1.4;">${card.a}</div>
+          <div class="flashcard-prompt" style="color: #6d28d9;">&#128260; Tap to Flip</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 4px;">
+      <button class="hud-btn" onclick="prevFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">&larr; Prev</button>
+      <button class="hud-btn" onclick="nextFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">Next &rarr;</button>
+    </div>
+  `;
+}
+
+function prevFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  currentFlashcardIndex = (currentFlashcardIndex - 1 + deck.length) % deck.length;
+  renderFlashcard();
+}
+
+function nextFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  currentFlashcardIndex = (currentFlashcardIndex + 1) % deck.length;
+  renderFlashcard();
+}
+
+const quizData = {
+  "phase-1": [
+    {
+      q: "Which HTML element is semantically correct for main site navigation?",
+      o: ["&lt;nav&gt;", "&lt;div class='nav'&gt;", "&lt;ul&gt;", "&lt;section&gt;"],
+      a: 0
+    },
+    {
+      q: "Which Flexbox property aligns items along the cross-axis?",
+      o: ["justify-content", "align-items", "flex-direction", "align-self"],
+      a: 1
+    }
+  ],
+  "phase-2": [
+    {
+      q: "Which CSS contain value isolates layout, style, and paint?",
+      o: ["contain: strict", "contain: content", "contain: paint", "contain: layout"],
+      a: 0
+    },
+    {
+      q: "How are Container Queries specified in CSS?",
+      o: ["@media (min-width: 400px)", "@container (min-width: 400px)", "@parent (min-width: 400px)", "@element (min-width: 400px)"],
+      a: 1
+    }
+  ],
+  "phase-3": [
+    {
+      q: "Which queue are Promise callbacks appended to?",
+      o: ["Macrotask Queue", "Render Queue", "Microtask Queue", "RequestAnimationFrame Queue"],
+      a: 2
+    },
+    {
+      q: "What is the GC strategy used by modern V8 engines?",
+      o: ["Reference Counting", "Mark-and-Sweep (Generational)", "Manual Deallocation", "Stop-and-Copy Only"],
+      a: 1
+    }
+  ],
+  "phase-4": [
+    {
+      q: "What is the main role of standard key props in React lists?",
+      o: ["To apply styling", "To uniquely identify siblings for diff optimization", "To store element states", "To bind click events"],
+      a: 1
+    },
+    {
+      q: "Which hook handles side effects in React function components?",
+      o: ["useState", "useContext", "useEffect", "useMemo"],
+      a: 2
+    }
+  ]
+};
+
+let currentQuizIndex = 0;
+let answeredIndex = -1;
+
+function renderQuiz() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  const item = pool[currentQuizIndex];
+  
+  const pane = document.getElementById('scratch-pane-quiz');
+  if (!pane) return;
+  
+  let optionsHtml = '';
+  item.o.forEach((opt, idx) => {
+    let btnClass = 'quiz-option-btn';
+    if (answeredIndex !== -1) {
+      if (idx === item.a) {
+        btnClass += ' correct';
+      } else if (idx === answeredIndex) {
+        btnClass += ' incorrect';
+      }
+    }
+    optionsHtml += `
+      <button class="${btnClass}" onclick="submitQuizAnswer(${idx})" ${answeredIndex !== -1 ? 'disabled' : ''}>
+        ${opt}
+      </button>
+    `;
+  });
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Question ${currentQuizIndex + 1} of ${pool.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: var(--laser-pink, #ff007f); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+    </div>
+    
+    <div style="font-size: 0.76rem; font-weight: 500; line-height: 1.4; margin: 8px 0; color: var(--text-primary, #f8fafc);">
+      ${item.q}
+    </div>
+    
+    <div style="display: flex; flex-direction: column; width: 100%;">
+      ${optionsHtml}
+    </div>
+    
+    ${answeredIndex !== -1 ? `
+      <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 6px;">
+        <span style="font-size: 0.68rem; font-weight: bold; color: ${answeredIndex === item.a ? 'var(--green, #4ade80)' : 'var(--rose, #f87171)'}; display: flex; align-items: center;">
+          ${answeredIndex === item.a ? '&#10003; Correct!' : '&#10007; Incorrect'}
+        </span>
+        <button class="hud-btn" onclick="nextQuizQuestion()" style="padding: 6px 12px; font-size: 0.65rem;">
+          ${currentQuizIndex === pool.length - 1 ? 'Restart' : 'Next &rarr;'}
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
+function submitQuizAnswer(idx) {
+  answeredIndex = idx;
+  renderQuiz();
+}
+
+function nextQuizQuestion() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  currentQuizIndex = (currentQuizIndex + 1) % pool.length;
+  answeredIndex = -1;
+  renderQuiz();
+}
+
+// Bind functions to the window object to prevent namespace resolution failures
+window.toggleThemeHUD = toggleThemeHUD;
+window.toggleSidebarHUD = toggleSidebarHUD;
+window.toggleScratchpadHUD = toggleScratchpadHUD;
+window.downloadStudentNotes = downloadStudentNotes;
+window.closePlayground = closePlayground;
+window.toggleFocusMode = toggleFocusMode;
+window.switchScratchTab = switchScratchTab;
+window.prevFlashcard = prevFlashcard;
+window.nextFlashcard = nextFlashcard;
+window.submitQuizAnswer = submitQuizAnswer;
+window.nextQuizQuestion = nextQuizQuestion;
+window.scrollToTopHUD = scrollToTopHUD;
+window.toggleAudioPanel = toggleAudioPanel;
+window.changeVoice = changeVoice;
+window.updateRateLabel = updateRateLabel;
+window.changeRate = changeRate;
+window.setReadingMode = setReadingMode;
+window.toggleAudioPlayback = toggleAudioPlayback;
+window.stopAudioPlayback = stopAudioPlayback;
+window.prevAudioSegment = prevAudioSegment;
+window.nextAudioSegment = nextAudioSegment;
+window.initClickToPlay = initClickToPlay;
+window.updateAudioProgress = updateAudioProgress;
+
+// Account Auth and Sync Bindings
+window.toggleAuthModal = toggleAuthModal;
+window.switchAuthTab = switchAuthTab;
+window.submitAuth = submitAuth;
+window.logOut = logOut;
+window.saveBackendUrl = saveBackendUrl;
+window.syncProgressToServer = syncProgressToServer;
+window.syncProgressFromServer = syncProgressFromServer;
+
+// Hook up functions on load
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebarState();
+  initScrollProgressTracker();
+  initCodePlayground();
+  initFocusMode();
+  switchScratchTab('notes');
+  initAITutorResizer();
+  updateAuthHUD();
+  if (localStorage.getItem('faang-auth-token')) {
+    syncProgressFromServer();
+  }
+  
+  // Back to Top Button Scroll Listener
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 350) {
+        backToTopBtn.style.display = 'flex';
+      } else {
+        backToTopBtn.style.display = 'none';
+      }
+    });
+  }
+  
+  // Scratchpad Bindings
+  const notesText = localStorage.getItem('faang-student-notes') || "";
+  const textarea = document.getElementById('scratchpad-textarea');
+  if (textarea) {
+    textarea.value = notesText;
+    updateWordCount(notesText);
+    textarea.addEventListener('input', (e) => {
+      const text = e.target.value;
+      localStorage.setItem('faang-student-notes', text);
+      updateWordCount(text);
+      if (localStorage.getItem('faang-auth-token')) {
+        queueNotesSync();
+      }
+    });
+  }
+  
+  const savedTheme = localStorage.getItem('faang-course-theme');
+  const themeText = document.getElementById('theme-text');
+  if (themeText) {
+    themeText.innerText = savedTheme === 'light' ? "Light Lab" : "Dark Cyber";
+  }
+  syncScratchpadTheme(savedTheme === 'light' ? 'light' : 'dark');
+  
+  initClickToPlay();
+});
+
+// Custom storage synchronization
+window.addEventListener('storage', (e) => {
+  if (e.key === 'faang-student-notes') {
+    const textarea = document.getElementById('scratchpad-textarea');
+    if (textarea) {
+      textarea.value = e.newValue || '';
+      updateWordCount(e.newValue || '');
+    }
+  }
+  if (e.key === 'faang-course-theme') {
+    const theme = e.newValue;
+    const body = document.body;
+    const themeText = document.getElementById('theme-text');
+    if (theme === 'light') {
+      body.classList.add('light-theme');
+      if (themeText) themeText.innerText = "Light Lab";
+    } else {
+      body.classList.remove('light-theme');
+      if (themeText) themeText.innerText = "Dark Cyber";
+    }
+    syncScratchpadTheme(theme);
+  }
+});
+// --- PREMIUM GEMINI AI TUTOR SYSTEM ---
+function toggleAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  if (drawer.style.display === 'none' || drawer.style.display === '') {
+    drawer.style.display = 'flex';
+    setTimeout(() => {
+      drawer.style.right = '0';
+    }, 10);
+    const input = document.getElementById('ai-chat-input');
+    if (input) input.focus();
+    const key = localStorage.getItem('faang-gemini-api-key') || '';
+    const keyInput = document.getElementById('ai-api-key-input');
+    if (keyInput) keyInput.value = key;
+    if (!key) {
+      document.getElementById('ai-key-config').style.display = 'flex';
+    }
+  } else {
+    closeAITutorDrawer();
+  }
+}
+
+function closeAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  drawer.style.right = '-400px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleAIKeyConfig() {
+  const config = document.getElementById('ai-key-config');
+  if (!config) return;
+  config.style.display = (config.style.display === 'none' || config.style.display === '') ? 'flex' : 'none';
+}
+
+function saveAIKey() {
+  const input = document.getElementById('ai-api-key-input');
+  if (!input) return;
+  const key = input.value.trim();
+  localStorage.setItem('faang-gemini-api-key', key);
+  alert(key ? "Gemini API Key saved successfully!" : "API Key cleared.");
+  if (key) {
+    document.getElementById('ai-key-config').style.display = 'none';
+  }
+}
+
+function handleAITutorKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAITutorMessage();
+  }
+}
+
+async function sendAITutorMessage() {
+  const input = document.getElementById('ai-chat-input');
+  if (!input) return;
+  const question = input.value.trim();
+  if (!question) return;
+
+  const key = localStorage.getItem('faang-gemini-api-key') || '';
+  const token = localStorage.getItem('faang-auth-token');
+  if (!key && !token) {
+    document.getElementById('ai-key-config').style.display = 'flex';
+    alert("Please enter a Gemini API Key or log in to use the secure cloud proxy.");
+    return;
+  }
+
+  input.value = '';
+  const history = document.getElementById('ai-chat-history');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'ai-msg-bubble user';
+  userMsg.style.cssText = 'align-self: flex-end; max-width: 85%; background: rgba(255,255,255,0.06); border-radius: 8px 8px 0px 8px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; line-height: 1.5; word-break: break-word; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    userMsg.style.background = '#f1f5f9';
+    userMsg.style.color = '#0f172a';
+  }
+  
+  userMsg.innerText = question;
+  history.appendChild(userMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'ai-msg-bubble tutor loading';
+  loadingMsg.style.cssText = 'align-self: flex-start; max-width: 85%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 8px 8px 8px 0px; padding: 10px 12px; color: #e4e2dc; font-size: 0.8rem; line-height: 1.5; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    loadingMsg.style.background = 'rgba(124, 58, 237, 0.05)';
+    loadingMsg.style.borderColor = 'rgba(124, 58, 237, 0.15)';
+    loadingMsg.style.color = '#0f172a';
+  }
+  
+  loadingMsg.innerHTML = '<span class="dots" style="display:inline-block; animation: blink 1.4s infinite both;">Thinking...</span>';
+  history.appendChild(loadingMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const essayText = getEssayTextForContext();
+  const systemPrompt = `You are an expert FAANG Web Development Roadmap Tutor.
+Below is the text of the syllabus module the student is currently reading:
+---
+${essayText}
+---
+The student has asked the following question. Respond to the question, help them understand, give code examples if relevant, or suggest quick practice tasks. Keep your response highly structured, clear, and engaging. Limit formatting to basic Markdown: bold (**text**), lists (- item), inline code (\`code\`), and code blocks (\`\`\`language ... \`\`\`). Keep your response concise (usually under 250 words) so it fits nicely in the chat drawer.`;
+
+  try {
+    let response;
+    if (key) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + "\n\nStudent Question: " + question }] }]
+        })
+      });
+    } else {
+      response = await fetch(`${getBackendUrl()}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          prompt: systemPrompt + "\n\nStudent Question: " + question
+        })
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const responseText = key ? data.candidates[0].content.parts[0].text : data.reply;
+    
+    loadingMsg.classList.remove('loading');
+    loadingMsg.innerHTML = formatMarkdown(responseText);
+  } catch (error) {
+    loadingMsg.classList.remove('loading');
+    loadingMsg.style.color = '#ef4444';
+    loadingMsg.innerText = "Error: " + error.message + ". Please verify your connection or API configuration.";
+  }
+  
+  history.scrollTop = history.scrollHeight;
+}
+
+function getEssayTextForContext() {
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const text = elements.map(el => el.innerText).join('\n');
+  return text.substring(0, 8000);
+}
+
+function formatMarkdown(text) {
+  let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Hoist code blocks to prevent splits on double newlines
+  const codeBlocks = [];
+  escaped = escaped.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<div class="code-block" style="background:#090b10; border:1px solid #2a2c38; padding:12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; margin:10px 0; overflow-x:auto; color:#f8fafc;"><div style="font-size:0.6rem; color:#64748b; border-bottom:1px solid #1a1c24; margin-bottom:8px; padding-bottom:4px; text-transform:uppercase;">${lang || 'code'}</div><pre><code>${code}</code></pre></div>`);
+    return placeholder;
+  });
+  
+  // Format inline code
+  escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-family:\'JetBrains Mono\',monospace; font-size:0.75rem; color:#2ec4b6;">$1</code>');
+  
+  // Format bold
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Format bullet lists
+  escaped = escaped.replace(/^\s*-\s+(.+)$/gm, '<li style="margin-left:20px; font-size:0.8rem; line-height:1.5; margin-bottom:4px;">$1</li>');
+  
+  // Format paragraphs
+  escaped = escaped.split('\n\n').map(p => {
+    const trimmed = p.trim();
+    if (trimmed.startsWith('__CODE_BLOCK_') && trimmed.endsWith('__') && trimmed.split('_').length === 5) {
+      return p;
+    }
+    if (trimmed.startsWith('<li')) return p;
+    return `<p style="margin-bottom:10px; line-height:1.6; font-size:0.82rem;">${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+  
+  // Restore code blocks
+  codeBlocks.forEach((block, idx) => {
+    escaped = escaped.replace(`__CODE_BLOCK_${idx}__`, block);
+  });
+  
+  return escaped;
+}
+
+function initAITutorResizer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  const handle = document.getElementById('ai-tutor-resize-handle');
+  if (!drawer || !handle) return;
+  
+  let startX, startWidth;
+  
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    startWidth = parseInt(document.defaultView.getComputedStyle(drawer).width, 10);
+    document.documentElement.addEventListener('mousemove', doDrag, false);
+    document.documentElement.addEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'none';
+  });
+  
+  function doDrag(e) {
+    const newWidth = startWidth + (startX - e.clientX);
+    if (newWidth > 280 && newWidth < 800) {
+      drawer.style.width = newWidth + 'px';
+    }
+  }
+  
+  function stopDrag(e) {
+    document.documentElement.removeEventListener('mousemove', doDrag, false);
+    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'right 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+  }
+}
+
+window.initAITutorResizer = initAITutorResizer;
+window.toggleAITutorDrawer = toggleAITutorDrawer;
+window.closeAITutorDrawer = closeAITutorDrawer;
+window.toggleAIKeyConfig = toggleAIKeyConfig;
+window.saveAIKey = saveAIKey;
+window.handleAITutorKeyDown = handleAITutorKeyDown;
+window.sendAITutorMessage = sendAITutorMessage;
+
+// === INJECTED PREMIUM MODULE JS END ===
+</style>
+</head>
+<body class="sidebar-open phase-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<!-- ── RE-ENGINEERED CONTROLLER PLACEMENT ── -->
+
+
+<!-- ═══════════════════════════════ Sleek Collapsible Horizontal Header Hub (New Layout Architecture) ═══════════════════════════════ -->
+/* Structurally decoupled from body wrappers to guarantee crisp visibility without text collisions */
+<div class="top-navigation-hub" id="topNavNode">
+  <div class="nav-logo-hud">React Router V6 Core</div>
+  <div class="nav-scroll-rack">
+    <a class="top-nav-item active-top-link" href="#s1">01 Ingestions</a>
+    <a class="top-nav-item" href="#s3">02 Intuitions</a>
+    <a class="top-nav-item" href="#s4">03 Lifecycles</a>
+    <a class="top-nav-item" href="#s5">04 Configurations</a>
+    <a class="top-nav-item" href="#s6">05 Code Lab</a>
+    <a class="top-nav-item" href="#s7">06 Common Pitfalls</a>
+    <a class="top-nav-item" href="#s9">07 Interview Angles</a>
+    <a class="top-nav-item" href="#s10">08 Verification</a>
+  </div>
+  <div class="theme-trigger-container">
+    <span style="font-family:'Fira Code', monospace; font-size:0.7rem; color:var(--text-dimmed); margin-right:8px;">HUD_MODE:</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ HIGH-ENERGY HERO ENGINE RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-blue"></div>
+    <div class="glow-orb orb-cyan"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 4 — Component-Driven Architecture[cite: 2]</div>
+  <div class="hero-eyebrow">essay 4.4 of 88 &nbsp;·&nbsp; series: faang roadmap[cite: 2]</div>
+  
+  <h1 class="hero-title">
+    React Router:<br>
+    Multi-Page Apps & <em>URL Parameters</em>[cite: 2]
+  </h1>
+  <p class="hero-subtitle">
+    Deconstructing declarative client-side route mapping, history state integration, context parameter matching algorithms, variable URL parsing tokens, and protective navigational route guards.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">4.4 — Client Routing[cite: 2]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~55 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 4.3 (useEffect Side Effects)[cite: 2]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">BrowserRouter · Dynamic Segments · useParams Hook · Navigation Interceptions</span>
+    </div>
+  </div>
+  <div class="hero-scroll-indicator">↓ &nbsp; inspect client routing frameworks</div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN CONTENT WORKSPACE PANEL ═══════════════════════════════ -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        Traditional multi-page architectures request new document fragments from servers upon every link click, destroying client state memory caches and introducing heavy transit network latency. This module explores how to master React Router context providers, implement client-side route tracking via History APIs, extract dynamic variable URL tokens safely, and configure navigation guards to manage multi-page apps smoothly[cite: 2].
+      </div>
+    </div>
+
+    <!-- ── PROGRESS TIMELINE STRUCTURE PANEL ── -->
+    <div class="interactive-framework-sector">
+      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
+      <div class="framework-flex-track">
+        <div class="frame-node-box done-node-box">State Hooks (4.2)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box done-node-box">Effects Modules (4.3)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box active-node-box">React Router (4.4)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">React Forms (4.5)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Context Engine (4.6)[cite: 2]</div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>When engineering large application shells, relying on classic anchor tags (<code>&lt;a href="..."&gt;</code>) to route users between views creates significant inefficiencies. Standard links force the browser engine to wipe out your active runtime Heap storage completely and fetch a fresh HTML document from the server on every click. **This full page reload model destroys in-memory application states and compromises performance.**</p>
+      <p>Modern full-stack frontend systems build Single Page Applications (SPAs) to keep views fluid and maintain persistent state caches. **React Router V6** provides an expressive client-side routing framework that intercepts browser navigation clicks natively[cite: 2]. Instead of querying backend servers for whole new files, the routing engine updates the browser URL address bar using HTML5 History APIs, matching route configurations instantly to swap component subtrees in place without a page reload.</p>
+      
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Client-Side Single Page Routing Speed Advantage Formula:</div>
+        <div class="compute-value">SPA Transition Time = Component Swap Compute Pass &lt;&lt; Legacy Server Document Fetch Latency</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The operational marker of a senior systems developer is how they structure application navigation views. Junior developers link pages using raw anchors, causing performance to stutter during view shifts. Masters configure decoupled route matrices, utilizing dynamic token segments and declarative route parameters to build fast, scalable multi-page architectures[cite: 2].</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Department Store Elevator System</h3>
+      <p>Imagine shopping inside a large multi-story department store. To view products on a different floor, you could choose to exit the building completely, walk out to the street sidewalk, run around to a secondary exterior entrance, and pass back through main security checkpoints just to browse a new section. This tedious process causes massive delays and frustrates customers.</p>
+      <p>Alternatively, you can step into **a high-speed internal elevator system that glides smoothly between floors within the same structural steel frame.** You select a floor index, the automated doors slide open, and you browse new display areas instantly without leaving the building envelope. Client-side routing functions exactly like that internal elevator system, swapping interface component modules in place immediately without refreshing the document core.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When cross-view state parameters reset or page transitions trigger unexpected layout refreshes, drop temporary code fixes. Ask an analytical question: <strong>"This navigational routing path is forcing a full document reload. How can I deploy declarative route providers and semantic links to manage view context client-side?"</strong> This focus guides optimization adjustments.</p>
+      </div>
+
+      <h3>The Variable Mail Slot Identifier Paradigm</h3>
+      <p>To master advanced parameter tracking, visualize a wall of mail sorting slots inside an enterprise corporate mailing room. Sorters don't build a new physical wood slot every time a new employee joins the company. They label a single permanent mailbox cell with a generic, mutable variable slot holder (like <code>/employee/:id</code>). As mail items arrive, handlers read the specific ID badge token on the envelope and slide the contents into the shared layout cell natively. Dynamic URL parameters follow this identical pattern: parsing token variables straight from active paths to populate views cleanly.</p>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Visual — Navigational Interception Lifecycle</h2>
+      </div>
+      <p>Understanding how the client-side routing engine intercepts user clicks and updates history states is essential for preventing full reloads. Click through each sequential lifecycle block to trace route transformation paths.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>🖥️ &nbsp; React Router V6 Context Matching & Navigation Lifecycle &nbsp;·&nbsp; Click steps to trace data states.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <span class="wb-step-indicator">1</span>
+              <div class="wb-step-title">Declarative Link Click & Browser Hijack pass</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The user triggers a navigation update by clicking a declarative link component (e.g., <code>&lt;Link to="/jobs/42"&gt;</code>)[cite: 2]. The routing layer intercepts the standard browser event, blocking the default full page reload behavior natively.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <span class="wb-step-indicator">2</span>
+              <div class="wb-step-title">History State Modification & URL Token Parsing</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The routing engine updates the browser address bar using the HTML5 History API (<code>history.pushState()</code>). It extracts dynamic path variables (like matching ID token <code>42</code>) from the updated URL path string, making them accessible to hooks.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <span class="wb-step-indicator">3</span>
+              <div class="wb-step-title">Route Matrix Reconciliation & Component Mounting</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The router evaluates the new path string against your project's centralized route configuration matrix. It finds the matching rule, detaches the old view layout, and mounts the target component subtree in place instantly without a layout refresh.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-action-row">
+          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Navigational Lifecycle</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Route Matrix Declarations & Nested Layout Outlets</h3>
+      <p>React Router V6 organizes application views using a centralized, component-driven configuration tree[cite: 2]. Let us inspect how to declare structural route matrices and nested layouts cleanly:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">app-routing-shell.jsx</span></div>
+        <pre><span class="t-comment">// Centralized layout matrix mapping application paths[cite: 2]</span>
+<span class="t-kw">import</span> { BrowserRouter, Routes, Route, Outlet } <span class="t-kw">from</span> <span class="t-str">'react-router-dom'</span>;[cite: 2]
+
+<span class="t-kw">function</span> DashboardLayoutContainer() {
+  <span class="t-kw">return</span> (
+    <span class="t-sel">&lt;div className="dashboard-shell"&gt;</span>
+      <span class="t-sel">&lt;aside&gt;</span>Navigation Controls Panel<span class="t-sel">&lt;/aside&gt;</span>
+      <span class="t-comment">&lt;!-- The Outlet token acts as a placeholder frame for nested sub-routes --&gt;</span>
+      <span class="t-sel">&lt;Outlet /&gt;</span>
+    <span class="t-sel">&lt;/div&gt;</span>
+  );
+}
+
+<span class="t-kw">export default function</span> App() {
+  <span class="t-kw">return</span> (
+    <span class="t-sel">&lt;BrowserRouter&gt;</span>
+      <span class="t-sel">&lt;Routes&gt;</span>
+        <span class="t-kw">&lt;Route</span> <span class="t-prop">path</span>=<span class="t-val">"/"</span> <span class="t-prop">element</span>={<span class="t-sel">&lt;DashboardLayoutContainer /&gt;</span>}<span class="t-kw">&gt;</span>
+          <span class="t-kw">&lt;Route</span> <span class="t-prop">path</span>=<span class="t-val">"jobs"</span> <span class="t-prop">element</span>={<span class="t-sel">&lt;JobDirectoryFeed /&gt;</span>}<span class="t-kw"> /&gt;</span>[cite: 2]
+          <span class="t-comment">/* Dynamic segment token defined via colon variable identifiers */</span>
+          <span class="t-kw">&lt;Route</span> <span class="t-prop">path</span>=<span class="t-val">"jobs/:jobId"</span> <span class="t-prop">element</span>={<span class="t-sel">&lt;JobDetailWorkspace /&gt;</span>}<span class="t-kw"> /&gt;</span>[cite: 2]
+        <span class="t-kw">&lt;/Route&gt;</span>
+      <span class="t-sel">&lt;/Routes&gt;</span>
+    <span class="t-sel">&lt;/BrowserRouter&gt;</span>
+  );
+}</pre>
+      </div>
+
+      <p>Nesting routes inside a parent Route configuration sets up a hierarchical view system. The parent component uses the <code>&lt;Outlet /&gt;</code> placeholder element to specify exactly where nested child components should mount, helping you keep shared layouts (like sidebars or global headers) uniform across views.</p>
+      <p>Dynamic segments are declared inside path strings using colon prefix markers: <code>path="jobs/:jobId"</code>[cite: 2]. This notation tells the router's matching engine to treat that path section as a variable parameter, matching varying URL variations to a single component template cleanly.</p>
+
+      <h3>Part B — Extracting Variable URL Tokens via useParams</h3>
+      <p>To consume variable URL parameters inside your workspace components, React Router provides dedicated tracking hooks like <code>useParams</code>[cite: 2]. This tool parses path strings automatically, mapping tokens into a accessible object configuration:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">detail-workspace.jsx</span></div>
+        <pre><span class="t-kw">import</span> { useParams } <span class="t-kw">from</span> <span class="t-str">'react-router-dom'</span>;[cite: 2]
+
+<span class="t-kw">function</span> JobDetailWorkspace() {
+  <span class="t-comment">// Destructure the dynamic path variable token from the URL context[cite: 2]</span>
+  <span class="t-kw">const</span> { jobId } = useParams();[cite: 2]
+  
+  useEffect(() => {
+    <span class="t-comment">// Trigger network requests dynamically whenever the path variable updates[cite: 2]</span>
+    fetchTargetJobMetadata(jobId);
+  }, [jobId]);
+
+  <span class="t-kw">return</span> <span class="t-sel">&lt;div&gt;</span>Displaying records data for configuration ID: {jobId}<span class="t-sel">&lt;/div&gt;</span>;
+}</pre>
+      </div>
+
+      <p>The <code>useParams</code> hook updates your local component variables automatically whenever the active URL path changes[cite: 2]. Including the extracted token variable inside your hook dependency arrays ensures data fetching sub-routines sync cleanly with route transitions.</p>
+
+      <h3>Part C — Programmatic Navigations vs. Declarative Links</h3>
+      <p>React Router provides two distinct ways to transition between application views depending on user interaction scenarios:</p>
+      
+      <ul>
+        <li><strong>Declarative Link Elements (<code>&lt;Link to="..."&gt;</code>):</strong> Standard component tags used for standard directory layouts. They compile into clean, standard anchor elements under the hood while blocking full page reloads natively[cite: 2].</li>
+        <li><strong>Programmatic Navigation Hooks (<code>useNavigate</code>):</strong> Exposes a direct execution method to trigger route transitions programmatically within javascript functions. Use this tool to route users automatically after specific code events complete, like redirecting to a dashboard after a form submission finishes successfully.</li>
+      </ul>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">The Wildcard Fallback Gateway</div>
+        <p>Always incorporate a wildcard route path rule (<code>path="*"</code>) at the absolute bottom of your centralized route matrix tree. This configuration catches all unmatched path variations gracefully, routing users to a dedicated 404 Error page module instead of leaving an empty view if a link breaks.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Page Reload Anchor Tags</h2>
+      </div>
+      <p>Let us analyze real production-tier routing errors, step-by-step refactoring legacy reloads into clean, type-safe client-side route configurations[cite: 2].</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">reload-routing-bug.jsx</span></div>
+        <pre><span class="t-comment">// Anti-Pattern: Using raw anchor links forces full page reloads and drops state caches</span>
+<span class="t-kw">function</span> NavigationBarWidget() {
+  <span class="t-kw">return</span> (
+    <span class="t-sel">&lt;nav&gt;</span>
+      <span class="t-sel">&lt;a href="/jobs"&gt;</span>Browse Job Listings<span class="t-sel">&lt;/a&gt;</span> <span class="t-comment">// 💥 Forces full server roundtrip reload pass</span>
+    <span class="t-sel">&lt;/nav&gt;</span>
+  );
+}</pre>
+        <div class="error-explanation">
+          <div class="error-label">Production Refactored Configuration</div>
+          <pre><span class="t-comment">// Refactor cleanly using framework Link components to preserve client state memory[cite: 2]</span>
+<span class="t-kw">import</span> { Link } <span class="t-kw">from</span> <span class="t-str">'react-router-dom'</span>;[cite: 2]
+
+<span class="t-kw">function</span> NavigationBarWidget() {
+  <span class="t-kw">return</span> (
+    <span class="t-sel">&lt;nav&gt;</span>
+      <span class="t-kw">&lt;Link</span> <span class="t-prop">to</span>=<span class="t-val">"/jobs"</span><span class="t-kw">&gt;</span>Browse Job Listings<span class="t-kw">&lt;/Link&gt;</span>[cite: 2]
+    <span class="t-sel">&lt;/nav&gt;</span>
+  );
+}</pre>
+          <div class="error-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-key">Root Problem Analysis</div>
+              <div class="breakdown-val">Using raw <code>&lt;a href&gt;</code> anchors inside single page apps forces full document reloads, erasing your active memory Heap cache and slowing down navigation.</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-key">Refactored Result</div>
+              <div class="breakdown-val">Switching to framework <code>Link</code> elements intercepts click signals cleanly, updating the URL bar and rendering views instantly without a page refresh[cite: 2].</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common client-side routing mistakes during technical reviews. Keeping your route paths organized prevents layout breakage as application views expand.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Using Raw Anchor Links Inside Single Page Apps</div>
+          <div class="pitfall-body">Linking views with standard <code>&lt;a href&gt;</code> tags, which triggers full page reloads and wipes out in-memory state data continuously.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Enforce framework <code>Link</code> or <code>NavLink</code> components exclusively to manage view transitions safely client-side[cite: 2].</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Leaving out Colon Prefix Tokens on Dynamic Paths</div>
+          <div class="pitfall-body">Declaring dynamic route paths without the required colon marker (e.g., <code>path="jobs/jobId"</code>), which misidentifies the variable token as a static string.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Always include the colon prefix token (<code>path="jobs/:jobId"</code>) to signify variable path sections to the router engine[cite: 2].</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Leaving out the Outlet Placeholder in Nested Layouts</div>
+          <div class="pitfall-body">Nesting route structures inside a parent component layout while forgetting to incorporate the matching <code>&lt;Outlet /&gt;</code> tag wrapper.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Add the <code>&lt;Outlet /&gt;</code> component inside parent layouts to specify exactly where sub-route components should mount cleanly.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">TriggeringuseNavigate Hooks during Main Render Loops</div>
+          <div class="pitfall-body">Invoking programmatic navigation methods straight within a component's rendering loop, causing rapid loop cycles that crash threads.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Isolate programmatic route calls within dedicated action event listeners or wrap mutations inside controlled lifecycle hooks.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Real World — High-Scale Navigational Hubs</h2>
+      </div>
+      <p>Top-tier web applications run structured client-side routing matrices to transition between views seamlessly, preserve client state data, and minimize server roundtrips.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Airbnb Product Pages</div>
+          <div class="cell-desc">Airbnb manages dynamic property profile lookups using variable path tokens (<code>/rooms/:id</code>). Their client router extracts parameters instantly, running background data fetches smoothly without forcing full page updates.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Twitter Analytics Boards</div>
+          <div class="cell-desc">Twitter web applications organize nested user dashboard interfaces using explicit outlet layouts. This architectural strategy maps sub-menus reliably, maintaining top-level configurations as sub-views swap.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Shopify Storefront Shells</div>
+          <div class="cell-desc">Shopify structures checking gateways and checkout lines through programmatic routing hooks. Using navigation guards manages customer redirection checkpoints securely, validating session rules before routing users forward.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In senior frontend assessments, routing architectures are evaluated by testing your understanding of history management, parameters parsing pipelines, and single page view optimization rules[cite: 2].</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are designing a large dashboard platform containing deep nested paths. Our team uses standard anchor elements, but view transitions cause visible screen flashing and clear out in-memory state variables. How do you fix this layout?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The page flashing and state loss happen because standard anchor tags force full document reloads, erasing your active memory Heap storage on every click. To decouple view changes from server roundtrips, I would implement a client-side routing network using React Router V6[cite: 2]. First, I would wrap the application root layout inside a centralized <code>BrowserRouter</code> component matrix[cite: 2]. Next, I would replace raw anchor tags with framework <code>Link</code> elements[cite: 2]. These components intercept navigation click signals natively, blocking document refreshes and updating the URL address bar via the HTML5 History API instead. To handle sub-menus cleanly, I would declare explicit nested route rules, using <code>&lt;Outlet /&gt;</code> placeholder tokens inside parent layouts to specify exactly where child components should mount, keeping shared structures uniform while swapping sub-views instantly."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain how React Router's path parameter extraction hooks like useParams parse dynamic path variables, and describe how to synchronize updates with data fetching workflows."[cite: 2]</div>
+        <div class="pb-hud-answer"><strong>Parameter Processing Analysis:</strong> "The <code>useParams</code> hook reads the active URL string against your declared route configurations, parsing dynamic sections marked with colons into a key-value object configuration map[cite: 2]. When a path variable shifts, the hook updates your local component references automatically[cite: 2]. Including the extracted token variable inside your <code>useEffect</code> dependency lists ensures data fetching workflows re-run cleanly to load fresh content whenever the route changes[cite: 2]."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">How does client-side routing prevent full document reloads during navigation view shifts?</div>
+            <div class="r-action-hint">Consider HTML5 History API interactions ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">Client-side routing frameworks intercept navigation clicks natively, blocking default full page reloads. The router updates the browser address bar string using HTML5 History APIs, matching route rules to swap component subtrees in place instantly without a page refresh.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">What specific structural role does the Outlet placeholder component perform inside nested layouts?</div>
+            <div class="r-action-hint">Consider child component rendering frames ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">The <code>&lt;Outlet /&gt;</code> component acts as a structural rendering placeholder inside parent layout configurations. It tells the routing engine exactly where nested child sub-route components should mount, keeping shared UI components (like headers or sidebars) uniform across views.</div>
+            <div class="r-action-hint">Tap to flip back ↗ </div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Why does omitting a colon marker character on dynamic segment route rules break parameter lookups?[cite: 2]</div>
+            <div class="r-action-hint">Consider path string matching criteria ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The colon prefix (<code>:</code>) serves as a critical flag for the routing matching engine. Omitting the colon makes the router treat that path section as a literal static string rather than a variable token, causing the <code>useParams</code> hook to miss dynamic parameters entirely[cite: 2].</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">Contrast the use cases of declarative Link components against programmatic useNavigate hooks.</div>
+            <div class="r-action-hint">Contrast standard user links with function-driven transitions ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">Declarative <code>Link</code> elements are used for standard menu layouts, providing type-safe anchors that prevent document reloads natively[cite: 2]. Programmatic <code>useNavigate</code> hooks expose a method to trigger view changes inside functions, ideal for routing users automatically after code events finish.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these routing configuration tasks to master multi-page single page app architectures[cite: 2]. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Client History States via browser History panels (30 Min)</div>
+            <div class="row-desc">Open a modern single page application view window and open browser DevTools. Click navigation elements and monitor the History state stack to observe how URLs transform client-side without document updates.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Centralized Route Matrix with Nested Layout Outlets (30 Min)</div>
+            <div class="row-desc">Create a local application routing file sandbox. Define a centralized route matrix tree using <code>BrowserRouter</code> and nested layout paths, using <code>&lt;Outlet /&gt;</code> tags to specify child component frames cleanly[cite: 2].</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Extract and Sync Dynamic URL Parameters using the useParams Hook (30 Min)</div>
+            <div class="row-desc">Incorporate variable tokens (<code>path="items/:itemId"</code>) into your local route configurations. Use the <code>useParams</code> hook to extract IDs, and include tokens inside hook dependency lists to ensure data workflows sync with route updates[cite: 2].</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Configure a Protective Wildcard Fallback Gateway View (30 Min)</div>
+            <div class="row-desc">Add a fallback wildcard route path rule (<code>path="*"</code>) to the bottom of your centralized routing matrix tree. Build a dedicated 404 Error page component to handle unmatched URLs gracefully without blank screens.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMPREHENSIVE ROADMAP RECAP PANEL ── -->
+    <section class="section-card" id="recap-section">
+      <div class="comprehensive-recap-panel">
+        <h3 class="recap-title-hud">🎯 Client-Side Routing Architecture Performance Recap</h3>
+        <div class="recap-grid-hud">
+          <div class="recap-item-node">
+            <div class="recap-item-title">Route Matrix Containment</div>
+            <div class="recap-item-desc">Structure multi-page paths inside a centralized <code>BrowserRouter</code> context tree, eliminating global server document requests to preserve state memory caches[cite: 2].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Variable Token Parsing</div>
+            <div class="recap-item-desc">Extract path variable tokens safely using the <code>useParams</code> hook, synchronizing parameters with your data fetching loops via dependency lists[cite: 2].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Layout Outlet Placeholders</div>
+            <div class="recap-item-desc">Incorporate explicit <code>&lt;Outlet /&gt;</code> components within parent layout configurations to specify exactly where nested child sub-routes mount.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Navigational Safeguards</div>
+            <div class="recap-item-desc">Deploy protective wildcard path rules at the absolute baseline of your route matrix to catch invalid URLs and reroute users smoothly to 404 views.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These client-side routing laws form the baseline requirement for building high-performance single page applications[cite: 2]. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Centralize route configurations. Map view paths inside unified router trees to handle navigation client-side and protect state memory caches[cite: 2].</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Parse path variable tokens. Use parameter extraction hooks to read dynamic URL variables, keeping data operations synchronized with route changes[cite: 2].</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Isolate shared page layouts. Utilize outlet placeholders inside parent layouts to specify where child sub-views mount without full page reloads.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">BrowserRouter Container</div>
+          <div class="g-node-definition">The primary context provider wrapper that links your application layout tree straight to the browser window address bar history states[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Client-Side Routing</div>
+          <div class="g-node-definition">The development standard of using scripts to handle page transitions within the browser, avoiding expensive full server reloads[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">HTML5 History API</div>
+          <div class="g-node-definition">The native browser interface (<code>history.pushState()</code>) routing scripts use to update the address bar string without forcing reloads.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Dynamic Path Segment</div>
+          <div class="g-node-definition">A variable section in a route path marked with a colon (<code>:</code>) that acts as a placeholder for dynamic URL parameters[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">useParams Hook</div>
+          <div class="g-node-definition">A built-in React Router hook that extracts variable tokens from active URL strings into a accessible key-value object map[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Outlet Component</div>
+          <div class="g-node-definition">A structural layout placeholder element used inside parent route components to specify exactly where child sub-routes should render.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">useNavigate Hook</div>
+          <div class="g-node-definition">A programmatic routing hook that exposes a direct trigger method to route users automatically inside javascript functions.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Wildcard Fallback Rule</div>
+          <div class="g-node-definition">A catch-all route path rule (<code>path="*"</code>) placed at the bottom of the route matrix to capture unmatched URLs cleanly.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Single Page App (SPA)</div>
+          <div class="g-node-definition">A web application development model that loads a single document, updating views dynamically via client scripts to maintain fluid performance.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Declarative Link Node</div>
+          <div class="g-node-definition">A routing tag (<code>&lt;Link&gt;</code>) that compiles into a standard anchor element while intercepting click events to prevent reloads natively[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Navigational Route Guard</div>
+          <div class="g-node-definition">A conditional routing gate that evaluates session authorization tokens before permitting users to proceed down protected views paths.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Route Reconciliation Pass</div>
+          <div class="g-node-definition">The process where the router matching engine scans the active path string against your route tree matrix to identify the matching layout view.</div>
+        </div>
+      </div>
+
+      <!-- FORCE FOOTER MATRIX COMPLIANCE DIRECTIONAL PATHWAYS -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-4.5.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 4.5 - Forms in React: Controlled Inputs & Validation Handlers</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.top-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active-top-link');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active-top-link');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+/* Re-engineered Collapsible Sidebar Matrix Controller: Pushes top layout navigation frames fluidly */
+function toggleSidebarHUD() {
+  const body = document.body;
+  const topNav = document.getElementById('topNavNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  topNav.classList.toggle('open');
+  
+  if (topNav.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
+/* Premium High-Contrast Color Profile Multi-Theme Switch Engine */
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  
+  body.classList.toggle('light-theme');
+  
+  if (body.classList.contains('light-theme')) {
+    themeText.innerText = "Light Lab";
+  } else {
+    themeText.innerText = "Dark Cyber";
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->
+<div id="scratchpad-hud-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 1010; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Back to Top Button -->
+  <button id="back-to-top-btn" onclick="scrollToTopHUD()" aria-label="Scroll to Top" style="width: 50px; height: 50px; border-radius: 50%; background: var(--surface, #13141a); border: 2px solid var(--border, #2a2c38); color: var(--text, #e4e2dc); display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 1008; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 12px; outline: none;">
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+  </button>
+  <!-- Toggle Button -->
+  <button id="scratchpad-toggle-btn" onclick="toggleScratchpadHUD()" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.2s ease;">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+  </button>
+  <!-- Scratchpad Window -->
+  <div id="scratchpad-window" style="display: none; position: absolute; bottom: 65px; right: 0; width: 320px; min-height: 330px; background: #111425; border: 1.5px solid rgba(97, 218, 251, 0.2); border-radius: 12px; padding: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); flex-direction: column; gap: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 4px;">
+      <span style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: #8b5cf6;">Study Helper</span>
+      <button onclick="toggleScratchpadHUD()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 0.8rem;">&#10005;</button>
+    </div>
+    
+    <!-- Tab Bar -->
+    <div style="display: flex; gap: 2px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; margin-bottom: 4px;">
+      <button class="scratch-tab-btn active" data-tab="notes" onclick="switchScratchTab('notes')">Notes</button>
+      <button class="scratch-tab-btn" data-tab="flashcards" onclick="switchScratchTab('flashcards')">Flashcards</button>
+      <button class="scratch-tab-btn" data-tab="quiz" onclick="switchScratchTab('quiz')">Quick Quiz</button>
+    </div>
+
+    <!-- Notes Pane -->
+    <div id="scratch-pane-notes" style="display: flex; flex-direction: column; gap: 8px;">
+      <textarea id="scratchpad-textarea" placeholder="Write down study notes, takeaways, or code snippets here... Auto-saved in browser." style="width: 100%; height: 200px; background: #0b0d19; border: 1px solid rgba(255,255,255,0.06); color: #f8fafc; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; resize: none; outline: none; line-height: 1.5;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+        <span id="scratchpad-word-count" style="font-size: 0.65rem; color: #64748b;">0 words</span>
+        <button id="scratchpad-download-btn" onclick="downloadStudentNotes()" style="background: transparent; border: 1px solid #8b5cf6; color: #8b5cf6; padding: 4px 10px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+          <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px; display: inline-block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Flashcards Pane -->
+    <div id="scratch-pane-flashcards" style="display: none; flex-direction: column; gap: 8px; align-items: center; width: 100%;">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Quiz Pane -->
+    <div id="scratch-pane-quiz" style="display: none; flex-direction: column; gap: 8px; width: 100%;">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+<!-- === INJECTED STUDY NOTES SCRATCHPAD END === -->
+<!-- === INJECTED PLAYGROUND DRAWER START === -->
+<div id="code-playground-drawer" style="display: none; position: fixed; top: 0; right: -600px; width: 600px; height: 100vh; background: var(--bg-surface-dark, #0a0c14); border-left: 2px solid var(--border-neon-vivid, #cbd5e1); z-index: 2000; box-shadow: -10px 0 40px rgba(0,0,0,0.5); transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+    <div>
+      <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-hyper-bright, #f8fafc); display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif;">
+        <span style="color: var(--teal, #2ec4b6);">&#9889;</span> Live Code Playground
+      </h3>
+      <span id="playground-filename" style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-dimmed, #64748b);">index.html</span>
+    </div>
+    <button onclick="closePlayground()" style="background: transparent; border: none; color: var(--text-dimmed, #64748b); cursor: pointer; font-size: 1.2rem; transition: color 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='var(--text-dimmed, #64748b)'">&#10005;</button>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 0; overflow: hidden;">
+    <!-- Editor Pane -->
+    <div style="flex: 1; display: flex; flex-direction: column; min-height: 200px; position: relative;">
+      <div style="padding: 8px 24px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dimmed, #64748b); display: flex; justify-content: space-between; align-items: center;">
+        <span>SOURCE CODE</span>
+        <span style="color: var(--green, #4ade80); font-weight: 700;">EDITABLE</span>
+      </div>
+      <textarea id="playground-code-input" style="flex: 1; width: 100%; border: none; background: var(--syntax-bg-matrix, #03030b); color: #f8fafc; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 20px; outline: none; resize: none; line-height: 1.6;"></textarea>
+    </div>
+    <!-- Preview Pane -->
+    <div style="flex: 1; display: flex; flex-direction: column; border-top: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06));">
+      <div style="padding: 8px 24px; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-neon-vivid, rgba(255,255,255,0.06)); font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-dimmed, #64748b);">
+        <span>LIVE INTERACTIVE PREVIEW</span>
+      </div>
+      <div style="flex: 1; background: #ffffff; position: relative;">
+        <iframe id="playground-preview-frame" style="width: 100%; height: 100%; border: none; background: #ffffff;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- === INJECTED PLAYGROUND DRAWER END === -->
+<!-- === INJECTED AI TUTOR DRAWER START === -->
+<div id="ai-tutor-drawer" style="display: none; position: fixed; top: 0; right: -400px; width: 400px; height: 100vh; background: var(--bg-surface-dark, #0a0c14); border-left: 2px solid var(--border-neon-vivid, #cbd5e1); z-index: 2000; box-shadow: -10px 0 40px rgba(0,0,0,0.5); transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Resize handle -->
+  <div id="ai-tutor-resize-handle"></div>
+  <!-- Header -->
+  <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+    <div>
+      <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #8b5cf6; display: flex; align-items: center; gap: 8px; font-family: 'Outfit', sans-serif;">
+        <span>&#129302;</span> Gemini AI Study Tutor
+      </h3>
+      <span style="font-size: 0.65rem; color: #64748b;">Context: Active Syllabus Module</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button onclick="toggleAIKeyConfig()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1rem; transition: color 0.2s;" title="API Key Setup" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'">&#9881;&#65039;</button>
+      <button onclick="closeAITutorDrawer()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- API Key Setup Dialog (Toggled) -->
+  <div id="ai-key-config" style="display: none; padding: 16px; background: rgba(139, 92, 246, 0.05); border-bottom: 1px solid rgba(139, 92, 246, 0.15); flex-direction: column; gap: 8px;">
+    <label style="font-size: 0.68rem; font-weight: 700; color: #a78bfa; text-transform: uppercase;">Gemini API Key</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="password" id="ai-api-key-input" placeholder="Paste your Gemini API key..." style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px 10px; color: #ffffff; font-size: 0.72rem; outline: none;">
+      <button onclick="saveAIKey()" style="background: #8b5cf6; border: none; border-radius: 4px; color: #ffffff; padding: 6px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Save</button>
+    </div>
+    <span style="font-size: 0.6rem; color: #64748b; line-height: 1.3;">
+      Get a key at <a href="https://aistudio.google.com/" target="_blank" style="color: #8b5cf6; text-decoration: underline;">Google AI Studio</a>. Stored locally in your browser.
+    </span>
+    <label style="font-size: 0.68rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; margin-top: 8px;">Backend API URL</label>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="ai-backend-url-input" placeholder="e.g. http://localhost:5000" style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px 10px; color: #ffffff; font-size: 0.72rem; outline: none;">
+      <button onclick="saveBackendUrl()" style="background: #8b5cf6; border: none; border-radius: 4px; color: #ffffff; padding: 6px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">Save</button>
+    </div>
+  </div>
+
+  <!-- Chat History -->
+  <div id="ai-chat-history" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.05);">
+    <div class="ai-msg-bubble tutor" style="align-self: flex-start; max-width: 85%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 8px 8px 8px 0px; padding: 10px 12px; color: #e4e2dc; font-size: 0.8rem; line-height: 1.5;">
+      Hi there! I am your Gemini-powered AI Tutor. Ask me anything about this essay&mdash;whether you want explanations, code examples, or quick quizzes!
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div style="padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; background: rgba(0,0,0,0.15);">
+    <textarea id="ai-chat-input" placeholder="Ask a question about this roadmap module..." rows="1" style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; resize: none; outline: none; line-height: 1.4; font-family: inherit;" onkeydown="handleAITutorKeyDown(event)"></textarea>
+    <button onclick="sendAITutorMessage()" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #ffffff; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+</div>
+<!-- === INJECTED AI TUTOR DRAWER END === -->
+<!-- === INJECTED AUTH MODAL START === -->
+<div id="auth-modal" onclick="if(event.target===this) toggleAuthModal()">
+  <div class="auth-container">
+    <div class="auth-header">
+      <h3>Roadmap Account</h3>
+      <button class="auth-close" onclick="toggleAuthModal()">&#10005;</button>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Log In</button>
+        <button class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Register</button>
+      </div>
+      
+      <div id="auth-error-msg" class="auth-error"></div>
+      
+      <!-- Login Form -->
+      <form id="auth-form-login" class="auth-form active" onsubmit="submitAuth(event, 'login')">
+        <div class="auth-input-group">
+          <label for="auth-username-login">Username</label>
+          <input type="text" id="auth-username-login" class="auth-input" placeholder="Enter username..." required>
+        </div>
+        <div class="auth-input-group">
+          <label for="auth-password-login">Password</label>
+          <input type="password" id="auth-password-login" class="auth-input" placeholder="Enter password..." required>
+        </div>
+        <button type="submit" class="auth-btn-submit" style="margin-top: 8px;">Log In</button>
+      </form>
+      
+      <!-- Register Form -->
+      <form id="auth-form-register" class="auth-form" onsubmit="submitAuth(event, 'register')">
+        <div class="auth-input-group">
+          <label for="auth-username-register">Desired Username</label>
+          <input type="text" id="auth-username-register" class="auth-input" placeholder="Choose username (min 3 chars)..." required minlength="3">
+        </div>
+        <div class="auth-input-group">
+          <label for="auth-password-register">Password</label>
+          <input type="password" id="auth-password-register" class="auth-input" placeholder="Choose password (min 6 chars)..." required minlength="6">
+        </div>
+        <button type="submit" class="auth-btn-submit" style="margin-top: 8px;">Create Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- === INJECTED AUTH MODAL END === -->
+</body>
+</html>
