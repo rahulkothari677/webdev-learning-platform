@@ -1089,8 +1089,10 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+'@
 
 # === INJECTED PREMIUM JS CODE ===
+$injectedJS = @'
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;

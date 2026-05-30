@@ -493,21 +493,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1591,8 +1576,955 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="phase-2">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-magenta"></div>
+    <div class="glow-orb orb-blue"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
+  <div class="hero-eyebrow">essay 2.2 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  <h1 class="hero-title">
+    Flexbox Layouts:<br>
+    Linear Space <em>Alignment Rules</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering flexible box dimension matrices, main-axis and cross-axis allocation mechanisms, layout wrap parameters, item size scaling physics, and advanced row/column container mapping.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">2.2 — Layout Alignments</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~45 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 2.1 (CSS Fundamentals)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">Flex Basis Physics · Scaling Ratios · Axis Vector Allocations · Wrap Space Calculations</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; analyze space distribution vectors</div>
+</div>
+
+<!-- ═══════════════════════════════ PREMIUM CORE LAYOUT ═══════════════════════════════ -->
+<div class="premium-layout">
+
+  <!-- NEO GLOW SIDEBAR HUD -->
+  <aside class="sidebar-hud">
+    <div class="sidebar-label">Layout Trees</div>
+    <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+    <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
+    <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
+    <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
+    <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
+    <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
+    <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
+    <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
+    <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
+    <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
+    <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
+    <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+  </aside>
+
+  <!-- MAIN MAIN SECTION PANELS -->
+  <main>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many frontend candidates memorize basic Flexbox properties like <code>justify-content: center</code> or <code>align-items: center</code> by rote practice. <strong>This basic approach breaks down when engineering dynamic, high-scale application grids.</strong> When complex web interfaces load contents of unpredictable sizes across varying mobile and desktop viewports, relying on superficial styling tweaks results in element overlapping, text wrapping clipping, and container blowouts that disrupt component alignment.</p>
+      <p>The Flexible Box Model (Flexbox) is an algorithmic spatial layout engine designed for single-axis content distribution. It converts parent container environments into active flex fields that dynamically compute child node dimensions along customizable vector tracks. This deep-dive module systematically breaks down space allocation formulas, flex expansion and contraction scaling physics, and cross-axis alignment parameters. Mastering these structural rules allows you to design robust fluid layouts that behave predictably under any runtime data scenarios.</p>
+      
+      <!-- Live Dynamic Compute Module Feature Included -->
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Runtime Flex Space Allocation Engine Mapping:</div>
+        <div class="compute-value">Remaining Space = Viewport Width - ∑(Base Element Metrics)</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>An elite interface engineer does not view Flexbox as an arbitrary centering tool, but as a mathematical fluid mechanics simulator. Designing stable components means managing the proportional flex growth (<code>flex-grow</code>) and shrink ratios (<code>flex-shrink</code>) explicitly, forcing child boxes to adapt cleanly to viewport constraints without causing layout reflow boundaries to rupture.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
+    <section class="section-card" id="s2">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">Where This Fits</h2>
+      </div>
+      <p>Now that you understand selector weighting scores and cascade precedence lifecycles (2.1), we step directly into structural layout engines. Flexbox is the primary tool for managing component alignment workflows.</p>
+      
+      <div class="phase-map">
+        <div class="phase-node done"><div class="phase-circle">2.1</div><div class="phase-label">CSS Found</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node current"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Layout</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.3</div><div class="phase-label">CSS Grid Matrix</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.4</div><div class="phase-label">Responsive Design</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Engine Loop</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Architectures</div></div>
+      </div>
+      
+      <p>Every single UI layout node group constructed in later sections—from multi-tier navigation tracks to dynamic product asset rows—leverages these linear coordinate distribution constraints. Mastering flex space alignment values ensures your frontend components scale elegantly across user platforms before you layer on multi-axis grid matrices or adaptive media queries.</p>
+
+      <div class="hud-callout hud-callout-tip">
+        <div class="hud-callout-label">Return Here Often</div>
+        <p>Keep these scaling physics formulas handy. The first few times a flex row collapses unexpectedly or a child box squeezes its text content under tight viewport conditions, trace through these axis tracking guides. After troubleshooting these alignment behaviors manually a few times, structuring stable flex containers will become second nature.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Accordion Train Car Metaphor</h3>
+      <p>Imagine engineering an advanced high-speed passenger train where individual cabins are linked together by highly flexible, motorized rubber bellows instead of solid iron drawbars. The train frame container expands or shortens its physical length dynamically based on track curves and station platform clearances.</p>
+      <p>If the passenger load spikes or the platform narrows, **internal automated system regulators compress or expand specific flexible cabins proportionally based on pre-assigned scale profiles.** Cabins with high growth ratings step out to claim extra space, while generic cargo boxes squeeze tight to save room. Flexbox acts as that active layout coordinator, managing spacing values across container components dynamically to fit the parent window limits cleanly.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When element boxes crowd or wrap erratically, recall this core layout rule: <strong>"This component space is a dynamic vector axis map. Where is the browser locating the main-axis target lines, and how are the child boxes dividing up the remaining viewport space?"</strong> This framing unifies alignment bug fixes.</p>
+      </div>
+
+      <h3>The Elastic Belt Analogy</h3>
+      <p>To write highly adaptive style properties, visualize a stretchable elastic belt loaded with utility pouches. When you pull the ends of the belt out wide, the spaces between the pouches expand evenly based on the tension rules you set. If you contract the belt inside tight bounds, the pouches squeeze together up to their base physical limits before folding cleanly onto a new row. The flex context engine manages this item spacing behavior fluidly, tracking component positions relative to chosen axis vectors.</p>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Visual — Flex Axis Alignment Vectors</h2>
+      </div>
+      <p>Tracing how the browser establishes axis directions is essential for managing element spacing constraints. Click through each sequential layout tier to observe how flex property values change main and cross axis parameters.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>📊 &nbsp; Dynamic Flex Axis Orientation Mechanics &nbsp;·&nbsp; Click steps to trace vector changes.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Flex Direction Row — Default Horizontal Axis Track</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>Configuring <code>flex-direction: row</code> aligns the main axis horizontally from left to right across the screen. Properties like <code>justify-content</code> govern spacing across columns, while <code>align-items</code> controls vertical positions along the cross axis track.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Flex Direction Column — Axis Vector Rotation</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>Switching properties to <code>flex-direction: column</code> rotates the main axis line vertically from top to bottom. This axis swap shifts <code>justify-content</code> to manage row heights, while cross axis alignment properties (<code>align-items</code>) handle horizontal item positions.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Flex Wrap Space Activation — Multi-Line Wrapping</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>Enforcing <code>flex-wrap: wrap</code> permits child elements to break onto new rows when component base dimensions exceed viewport boundaries. This configuration introduces the multi-line cross-axis alignment engine managed via <code>align-content</code> properties.</p>
+            </div>
+          </div>
+        </div>
+        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Vector Layout</button>
+      </div>
+
+      <!-- PREMIUM INCLUDED VECTOR INFOGRAPHIC -->
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="12" fill="#070212"/>
+          <g opacity="0.15"><path d="M 50 50 L 750 50 M 50 160 L 750 160 M 50 270 L 750 270" stroke="#b5179e" stroke-width="1"/></g>
+          
+          <!-- Horizontal Main Axis Tracking Vector Line -->
+          <path d="M 80 60 L 700 60" stroke="#4cc9f0" stroke-width="3" stroke-dasharray="6 4"/>
+          <polygon points="710,60 695,52 695,68" fill="#4cc9f0"/>
+          <text x="90" y="45" fill="#4cc9f0" font-family="Fira Code" font-size="13" font-weight="bold">MAIN AXIS Vector (flex-direction: row)</text>
+          
+          <!-- Vertical Cross Axis Tracking Vector Line -->
+          <path d="M 120 90 L 120 270" stroke="#f72585" stroke-width="3"/>
+          <polygon points="120,280 112,265 128,265" fill="#f72585"/>
+          <text x="140" y="260" fill="#f72585" font-family="Fira Code" font-size="13" font-weight="bold">CROSS AXIS Vector</text>
+
+          <!-- Floating Flexible Component Boxes inside Matrix -->
+          <rect x="180" y="100" width="130" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
+          <text x="245" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 1</text>
+          
+          <rect x="340" y="100" width="180" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
+          <text x="430" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 2 (Grow)</text>
+
+          <rect x="550" y="100" width="130" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
+          <text x="615" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 3</text>
+        </svg>
+        <div class="infographic-caption">Vector Infographic 2.2: Single-Axis Direction Vectors. Rotating the container direction shifts the main and cross axis alignment priorities automatically across the layout.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Flex Box Dimension Scaling Mathematical Physics</h3>
+      <p>The browser style engine distributes space using three core properties defined on flex items: <code>flex-basis</code>, <code>flex-grow</code>, and <code>flex-shrink</code>. Together, these rules form a flexible layout scaling equation.</p>
+      
+      <p>Let us trace the exact layout math calculations performed by the browser's engine:</p>
+      <p>Imagine a parent container measuring exactly **$1000\text{px}$** wide configured with <code>display: flex</code>. It holds three child items with these scaling settings:</p>
+      <ul>
+        <li>**Box Node A:** <code>flex-basis: 200px; flex-grow: 1; flex-shrink: 0;</code></li>
+        <li>**Box Node B:** <code>flex-basis: 300px; flex-grow: 2; flex-shrink: 0;</code></li>
+        <li>**Box Node C:** <code>flex-basis: 100px; flex-grow: 0; flex-shrink: 0;</code></li>
+      </ul>
+
+      <p>Let us solve for the final element width dimensions step-by-step:</p>
+      <ol>
+        <li>**Sum the Base Dimensions:** The combined base widths total $200\text{px} + 300\text{px} + 100\text{px} = 600\text{px}$.</li>
+        <li>**Calculate Free Viewport Space:** The remaining unallocated layout space equals $1000\text{px} - 600\text{px} = 400\text{px}$.</li>
+        <li>**Sum Growth Proportions:** The total growth denominator points sum to $1 + 2 + 0 = 3$ units.</li>
+        <li>**Distribute Free Space Fractions:**
+          <ul>
+            <li>Box A claims: $\frac{1}{3} \times 400\text{px} = 133.33\text{px}$. Final Width = $200\text{px} + 133.33\text{px} = 333.33\text{px}$.</li>
+            <li>Box B claims: $\frac{2}{3} \times 400\text{px} = 266.67\text{px}$. Final Width = $300\text{px} + 266.67\text{px} = 566.67\text{px}$.</li>
+            <li>Box C claims: $\frac{0}{3} \times 400\text{px} = 0\text{px}$. Final Width locks exactly at its base value: $100\text{px}$.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="design-compute-hud">
+        <div class="compute-title">📊 Calculated Output Dimensions Matrix:</div>
+        <div class="compute-value">Box A: 333.33px &nbsp;·&nbsp; Box B: 566.67px &nbsp;·&nbsp; Box C: 100px</div>
+      </div>
+
+      <h3>Part B — Main-Axis vs. Cross-Axis Alignment Rules</h3>
+      <p>Flexbox categorizes design instructions based on which vector track they target. Managing space cleanly requires applying properties to the correct alignment axis:</p>
+      
+      <ol>
+        <li><strong>Justify Content Constraints:</strong> Dictates element alignment along the operational **Main Axis** line. Spacing parameters like <code>space-between</code> push items to the container edges, while <code>space-around</code> and <code>space-evenly</code> distribute remaining gap metrics.</li>
+        <li><strong>Align Items Constraints:</strong> Directs single-line tracking along the cross-axis. Common settings include <code>stretch</code> (which expands items to match container heights), <code>center</code>, and <code>baseline</code> (which aligns boxes via internal text baseline positions).</li>
+        <li><strong>Align Content Boundaries:</strong> Activates only when <code>flex-wrap: wrap</code> splits elements across multiple rows. This property manages row gap spacing, ordering stacked rows neatly across the cross-axis space.</li>
+      </ol>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">The Shorthand Performance Secret</div>
+        <p>Combining alignment rules into a single declaration like <code>flex: 1 1 200px;</code> is more than a clean coding shortcut. It acts as an optimization indicator for the browser's layout parser, instructing the style engine to reset omitted parameters to predictable values (like forcing grow defaults) and avoiding layout bugs during viewport updates.</p>
+      </div>
+
+      <h3>Part C — Layout Flow & Element Ordering Adaptations</h3>
+      <p>Flexbox allows you to adapt visual element layouts fluidly without rewriting underlying HTML code structures. Modifying the <code>order</code> integer property lets you rearrange components visually along the main axis. Element boxes sort ascending from small to large values, letting you shift side columns into main views on mobile layouts effortlessly. Additionally, using properties like <code>margin-left: auto;</code> inside flex containers overrides standard alignment paths, pushing elements to the far end of rows to create clean layout separations.</p>
+
+      <h3>Part D — Analytical Flex Properties Comparison</h3>
+      <p>High-performance UI architecture requires selecting matching property combinations deliberately. Let us evaluate the behavior profiles of common flex properties:</p>
+
+      <table class="google-table">
+        <thead>
+          <tr>
+            <th>Property Declaration</th>
+            <th>Default State</th>
+            <th>Primary Axis Target</th>
+            <th>Impact Profile Evaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>flex-grow</code></td>
+            <td class="bad">0</td>
+            <td>Main Axis Space</td>
+            <td>Determines the proportion of remaining layout space an item claims when containers expand.</td>
+          </tr>
+          <tr>
+            <td><code>flex-shrink</code></td>
+            <td class="good">1</td>
+            <td>Main Axis Space</td>
+            <td>Governs an item's contraction ratio when total element sizes exceed viewport boundaries.</td>
+          </tr>
+          <tr>
+            <td><code>flex-basis</code></td>
+            <td class="good">auto</td>
+            <td>Main Axis Space</td>
+            <td>Establishes the initial baseline size of a box before growth or shrink equations apply.</td>
+          </tr>
+          <tr>
+            <td><code>align-self</code></td>
+            <td class="bad">auto</td>
+            <td>Cross Axis Space</td>
+            <td>Allows a specific child box to override container level cross-axis alignment rules.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Responsive Layout Gaps</h2>
+      </div>
+      <p>Let us analyze real production-tier flex alignment mistakes and step-by-step refactor them to ensure smooth layout scaling profiles.</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Shrink Ratio Collapses</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Centering Alignment Hacks</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Multi-Line Wrap Crushes</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Asymmetric Button Offsets</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Layout Logs</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div class="hud-tab-panel active-hud-panel" id="l1">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">avatar-shrinkage.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Avatar image deforms under tight viewport bounds */</span>
+<span class="t-sel">.user-profile-row</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; }
+<span class="t-sel">.user-avatar-node</span> { <span class="t-prop">width</span>: <span class="t-val">60px</span>; <span class="t-prop">height</span>: <span class="t-val">60px</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Lock container shrink mechanics to protect image scales */</span>
+<span class="t-sel">.user-profile-row</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">align-items</span>: <span class="t-val">center</span>; }
+<span class="t-sel">.user-avatar-node</span> { <span class="t-prop">flex</span>: <span class="t-val">0 0 60px</span>; <span class="t-prop">height</span>: <span class="t-val">60px</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">By default, flex items have <code>flex-shrink: 1</code> activated, which allows the browser to squeeze asset boxes out of shape when layouts shrink.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Setting shrink values explicitly to zero protects structural item proportions, keeping your asset layouts stable across viewports.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div class="hud-tab-panel" id="l2">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">center-hacks.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Brittle absolute coordinates used to center text boxes */</span>
+<span class="t-sel">.center-wrapper</span> { <span class="t-prop">position</span>: <span class="t-val">relative</span>; }
+<span class="t-sel">.centered-element</span> { <span class="t-prop">position</span>: <span class="t-val">absolute</span>; <span class="t-prop">top</span>: <span class="t-val">50%</span>; <span class="t-prop">transform</span>: <span class="t-val">translateY(-50%)</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Use single-axis flex formatting for clean, robust centering */</span>
+<span class="t-sel">.center-wrapper</span> {
+  <span class="t-prop">display</span>: <span class="t-val">flex</span>;
+  <span class="t-prop">justify-content</span>: <span class="t-val">center</span>;
+  <span class="t-prop">align-items</span>: <span class="t-val">center</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Absolute positioning overrides standard layout flows, isolating components and increasing the risk of element overlapping when container text scales up.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Leveraging flex alignments centers child components safely within parent layouts without relying on manual coordinate tracking math.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div class="hud-tab-panel" id="l3">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">wrap-crush.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Horizontal feed overflows viewport boundaries on small screens */</span>
+<span class="t-sel">.badge-cloud-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">justify-content</span>: <span class="t-val">flex-start</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Enable fluid multi-line line distribution updates */</span>
+<span class="t-sel">.badge-cloud-container</span> { 
+  <span class="t-prop">display</span>: <span class="t-val">flex</span>; 
+  <span class="t-prop">flex-wrap</span>: <span class="t-val">wrap</span>; 
+  <span class="t-prop">gap</span>: <span class="t-val">12px</span>; 
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Leaving flex layouts set to single-line modes (<code>no-wrap</code>) forces child boxes to clip past screen margins when total content widths exceed viewport limits.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Enabling multi-line wrap features drops overflowing items onto new lines cleanly, keeping layouts responsive across varying screen sizes.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div class="hud-tab-panel" id="l4">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">asymmetric-offset.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Using large manual padding values to isolate action buttons */</span>
+<span class="t-sel">.navbar-rail</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; }
+<span class="t-sel">.logout-trigger</span> { <span class="t-prop">margin-left</span>: <span class="t-val">500px</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Leverage automatic margin spacing options inside flex fields */</span>
+<span class="t-sel">.navbar-rail</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">align-items</span>: <span class="t-val">center</span>; }
+<span class="t-sel">.logout-trigger</span> { <span class="t-prop">margin-left</span>: <span class="t-val">auto</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Hardcoded margin settings cause layouts to break on wider viewports or compact interfaces because the spacing values are completely inflexible.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Using <code>margin-left: auto;</code> instructs the layout engine to swallow up remaining row space, pushing elements cleanly to the container edge.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div class="hud-tab-panel" id="l5">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">flex-telemetry.js</span></div>
+            <pre><span class="token-comment">// Programmatically trace item scale metrics to evaluate layout calculations</span>
+<span class="token-kw">const</span> <span class="token-var">flexNode</span> = document.querySelector(<span class="token-str">'.user-avatar-node'</span>);
+console.log(<span class="token-str">"[Flex Node Bounds Width Target Check]:"</span>, <span class="token-var">flexNode</span>.getBoundingClientRect().width);</pre>
+            <div class="error-explanation">
+              <div class="error-label">Three Rules for Performance Layout Optimization</div>
+              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
+                <strong style="color:var(--neon-blue);">1. Avoid heavy item scaling chains.</strong> Declare matching flex growth ratios intentionally to prevent browser rendering engines from running redundant space allocation rounds.<br><br>
+                <strong style="color:var(--neon-hot-pink);">2. Manage child spacing via gaps.</strong> Rely on explicit <code>gap</code> rules for spacing items instead of adding margins to child containers, ensuring uniform grid structures.<br><br>
+                <strong style="color:var(--neon-electric-violet);">3. Use DevTools flex tooling.</strong> Click the 'flex' icon badges in the Elements panel tree to overlay layout axis tracking lines, making it easy to see how space is being divided.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Review these common flex placement mistakes observed during frontend architecture reviews. Fixing layout conflicts early ensures your site presentations adapt smoothly across views.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Using explicit pixel widths on Flex Items</div>
+          <div class="pitfall-body">Declaring fixed width definitions like <code>width: 300px;</code> on elements inside active flex fields. This practice overrides dynamic flex basis scaling rules.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Use property values like <code>flex-basis: 300px;</code> to establish flexible baseline dimensions that allow container items to expand or contract smoothly.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Confusing justify-content with align-items Rules</div>
+          <div class="pitfall-body">Applying cross-axis alignment properties when attempting to distribute space items across main layout axes, leading to unaligned element containers.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Remember axis priority tracking assignments: <code>justify-content</code> manages spaces along the main axis line; <code>align-items</code> handles cross-axis placements.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Overusing justify-content: space-between on forms</div>
+          <div class="pitfall-body">Using open space distribution properties to position dynamic input components, which causes wide inputs to isolate awkwardly on large viewports.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Group elements explicitly using inner container divs or rely on localized <code>gap</code> properties to control input element spacing metrics cleanly.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Forgetting flex-direction rotation transformations</div>
+          <div class="pitfall-body">Expecting main axis spacing adjustments to stay horizontal after rotating container flows to <code>flex-direction: column</code> settings.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Rotating direction fields switches main and cross-axis lines automatically. Adjust <code>justify-content</code> to control vertical spacing after column switches.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 05</div>
+          <div class="pitfall-title">Declaring align-content configurations on single lines</div>
+          <div class="pitfall-body">Adding multi-line row spacing properties like <code>align-content: center</code> to single-row flex layouts, which produces zero visual layout changes.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Use <code>align-items</code> to center single rows, reserving <code>align-content</code> rules for multi-line wrapped layouts.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 06</div>
+          <div class="pitfall-title">Hacking margins to fix flex content wrapping</div>
+          <div class="pitfall-body">Manually injecting heavy, unaligned percentage padding rules across child elements to force wrap adjustments when boxes crowd tight viewports.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Enforce standard property settings like <code>flex-wrap: wrap</code> combined with controlled <code>flex-basis</code> dimensions to handle wrapping layouts natively.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Real World — High-Scale Alignment Ecosystems</h2>
+      </div>
+      <p>Top-tier web systems leverage single-axis flex scaling rules to manage fluid UI component structures reliably across millions of international client profiles.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Airbnb Search Navigation</div>
+          <div class="cell-desc">Airbnb structures complex navigation filtration panels using precise, single-line flex rows. This design system uses explicit font baseline configurations to keep text alignments perfect across multi-language interfaces.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">YouTube Feed Feeds</div>
+          <div class="cell-desc">YouTube web frameworks manage channel action bars and button rows using flexible box wrappers. This system uses automatic element margins to slide video settings cleanly to column ends based on user account tiers.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Stripe Billing Portals</div>
+          <div class="cell-desc">Stripe designs sensitive transactional account checkout rows through locked zero-shrink flex components. This optimization model blocks card item compression, keeping form inputs sharp and readable on smaller device sizes.</div>
+        </div>
+      </div>
+
+      <h3>The Production Layout Validation Step</h3>
+      <p>Modern engineering platforms run styles through automated regression testing pipelines before production updates launch:</p>
+      <ol>
+        <li><strong>Structural Shrink Boundary Scans:</strong> Build tests simulate ultra-narrow viewports to identify and flag text clip defects or compressed layout containers early.</li>
+        <li><strong>Asymmetric Overflow Verifications:</strong> Automated checks evaluate right-to-left language translations, testing flex axis alignment behaviors across localized layouts.</li>
+        <li><strong>Dead-Code Presentation Purging:</strong> Build routines clean up redundant layout declarations, stripping unused styling properties to minimize payload sizes for faster network delivery.</li>
+      </ol>
+    </section>
+
+    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In mid-to-senior UI engineering assessments, alignment concepts are tested by exploring space allocation physics, axis mapping operations, and layout stabilization.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are designing a chat message row element featuring a user avatar graphic next to a dynamic text bubble block. When long text strings stream into the view, the avatar graphic compresses into an unaligned oval shape. How do you fix this reflow bug?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The avatar deformation occurs because the browser's style engine applies its default flex contraction rules (<code>flex-shrink: 1</code>) to all child boxes when total element dimensions exceed container sizes. To isolate this scaling behavior and protect image proportions, I would apply a locked flex rule configuration to the avatar node wrapper: <code>flex: 0 0 48px;</code>. This sets growth and contraction metrics to zero, keeping the item at its explicit size. Next, I would add <code>flex: 1 1 auto;</code> combined with <code>min-width: 0;</code> to the dynamic message text container. Setting this minimal dimensional boundary overrides browser calculation minimums, enabling text content to wrap cleanly inside its layout box without distorting adjacent assets."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Walk us through how the browser layout parsing engine processes space allocation assignments when computing flex-basis properties relative to standard width properties inside a row container."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "When an element container establishes a flex context, <code>flex-basis</code> overrides any declared width rules along the operational main axis line, acting as the definitive size marker before growth or shrink equations apply. The engine reads the basis token value, calculates the sum of all item dimensions, and subtracts that from the parent viewport container width to figure out the exact remaining free space. If the basis token is left set to <code>auto</code>, the browser engine scans content metrics or falls back to look for explicit width values to use as its baseline sizing reference."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Architecture Rule Evaluation</div>
+        <div class="pb-q-title">"A developer team proposes a responsive strategy that handles all multi-axis grid designs by nesting horizontal flex rows deeply within separate vertical flex columns. Critically evaluate this design approach."</div>
+        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Nesting single-axis flex fields deeply to manage two-dimensional grids introduces unneeded complexity and rendering overhead. Every nested row layer requires the style matching engine to compute independent, sequential layout formulas down the DOM tree. This layered approach complicates code updates and risks triggering layout thrashing during dynamic state updates. Two-dimensional layouts should be engineered using modern CSS Grid matrices instead, keeping rule relationships clear and highly performant."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Layout Axis Assessment</div>
+        <div class="pb-q-title">"Explain how the browser layout engine adjusts its cross-axis alignment workflows when a container switches from flex-direction: row to flex-direction: column configurations."</div>
+        <div class="pb-hud-answer"><strong>Layout Engine Switch Trace:</strong> "Switching configurations to <code>flex-direction: column</code> rotates the operational axis lines by 90 degrees, turning the vertical dimension into the main axis line. This change redirects <code>justify-content</code> to manage vertical element placement heights, while <code>align-items</code> shifts to control horizontal alignment across the newly established cross-axis tracking track."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">How does the browser calculate shrink distributions when flex containers contract below element base sizes?</div>
+            <div class="r-action-hint">Consider shrink multipliers and basic dimensions ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">The layout engine computes contraction metrics by multiplying an item's <code>flex-basis</code> size by its explicit <code>flex-shrink</code> rating score. This total scaling profile helps the browser distribute overflow values proportionally across elements, shrinking boxes safely without breaking layouts.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why does adding min-width: 0; to a flex item sometimes act as a vital safety requirement for text truncation tracking?</div>
+            <div class="r-action-hint">Consider text boundary baseline processing rules ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">By default, flex items have a minimum size rule set to <code>min-content</code>, which blocks containers from shrinking below their longest text element size. Enforcing an explicit <code>min-width: 0;</code> reset overrides this limitation, enabling text boxes to truncate cleanly within viewport boundaries.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">What distinct layout processing change occurs when you activate flex-wrap: wrap properties on containers?</div>
+            <div class="r-action-hint">Trace multi-line cross-axis spacing transformations ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">Activating wrap behavior permits items to break onto multiple lines, creating a multi-tiered layout structure. This multi-line context shifts cross-axis row tracking from single-line rules like <code>align-items</code> to multi-line layout properties like <code>align-content</code>.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">How does using automatic margins inside active flex containers alter element positioning behavior?</div>
+            <div class="r-action-hint">Consider main axis free space overrides ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">An auto margin declaration instructs the layout engine to swallow up all available free space along that direction axis. For instance, applying <code>margin-left: auto;</code> to a flex item overrides baseline container alignments, sliding the node cleanly to the far row edge.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 05</div>
+            <div class="r-question-text">What specific structural layout task is handled by the baseline value option under cross-axis settings?</div>
+            <div class="r-action-hint">Consider text typography line matching ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 05</div>
+            <div class="r-answer-text">Setting alignments to <code>baseline</code> instructs the browser to align container items via the internal text baselines of their text content. This keeps text elements perfectly aligned horizontally across a row, even if item font sizes vary.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 06</div>
+            <div class="r-question-text">Why are compound shorthand properties like flex: 1 1 200px; preferred over separate component style assignments?</div>
+            <div class="r-action-hint">Consider parser optimization steps and fallback overrides ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 06</div>
+            <div class="r-answer-text">Using the integrated shorthand property ensures all scaling parameters are set explicitly in a single declaration pass. This guides browser parser engines efficiently, resetting omitted values to predictable layout targets and preventing unexpected spacing errors.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these development tasks to practice high-performance layout scaling. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Enterprise Axis Allocation via DevTools Panels (30 Min)</div>
+            <div class="row-desc">Open an advanced application view (like your personal profile page or an online store feed) and launch browser DevTools. Use the Elements inspector to locate active flex layouts, clicking on their 'flex' badge buttons to display live axis layout structures and space distribution parameters.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build an Adaptive Growth and Shrink Balance Matrix (30 Min)</div>
+            <div class="row-desc">Create an isolated style sandbox page locally. Construct a flexible horizontal content bar containing three distinct element boxes with conflicting basis sizes. Practice adjusting growth scores and contraction parameters to verify browser size calculations manually across viewports.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Resolve an Inflexible Image Collapse Defect over Mobile Bounds (30 Min)</div>
+            <div class="row-desc">Design a local chat row mockup featuring a user profile avatar next to a dynamic text box container. Force tight screen space constraints to trigger the avatar shrink issue, and refactor your stylesheet using explicit zero-shrink rules to stabilize the image layout.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Benchmark Content Truncation Controls under Squeezed Viewports (30 Min)</div>
+            <div class="row-desc">Incorporate long text descriptions into your component flex boxes, adding ellipses text clipping properties to the inner text elements. Squeeze the viewport to test layout limits, applying explicit min-width overrides to guarantee clean text truncation without container blowouts.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">Don't Skip These Exercises</div>
+        <p>Reviewing layout theory without writing code is like analyzing network protocols without capturing packets. Proportional flex sizing metrics and space distribution rules become natural only through hands-on practice. Shifting element directions and managing axis parameters locally builds the performance mindset required when engineering scale web applications down the line.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">12</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These layout distribution laws form the baseline requirement for engineering high-performance component presentation systems. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Control scaling shrink metrics explicitly. Use zero-shrink settings on graphical assets to block browser contraction calculations from deforming media layouts.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Override baseline flex content minimums. Apply explicit min-width resets to text-heavy flex containers to ensure reliable truncation tracking over mobile viewports.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Leverage compound shorthand structures. Organize layout rules using integrated flex property shortcuts to streamline engine tracking and prevent layout errors.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Main Axis Vector</div>
+          <div class="g-node-definition">The primary horizontal or vertical track that guides the placement and arrangement of child items within an active flex container.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Cross Axis Vector</div>
+          <div class="g-node-definition">The secondary layout axis line running perpendicular to the main axis track, managing single-line or multi-line item positioning.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Flex Basis Parameter</div>
+          <div class="g-node-definition">The core property value that establishes an item's initial base size before expansion or contraction scaling calculations apply.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Proportional Flex Growth</div>
+          <div class="g-node-definition">The growth metric rating (<code>flex-grow</code>) that dictates how elements expand to divide up remaining free container space.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Proportional Flex Shrink</div>
+          <div class="g-node-definition">The contraction parameter (<code>flex-shrink</code>) that controls how elements compress when total dimensions exceed viewport boundaries.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Justify Content Rule</div>
+          <div class="g-node-definition">The layout container directive that manages space distribution and alignment configurations explicitly along the main axis line.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Align Items Rule</div>
+          <div class="g-node-definition">The styling property used to govern single-line item alignment and placement across the cross-axis space.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Align Content Rule</div>
+          <div class="g-node-definition">The multi-line layout property that orchestrates row spacing and alignment across the cross-axis when elements wrap.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Flex Wrap Feature</div>
+          <div class="g-node-definition">The structural layout property that permits overflowing child nodes to break onto new lines cleanly when content width limits are passed.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Typographical Baseline</div>
+          <div class="g-node-definition">The baseline alignment path text sits on, used under cross-axis configurations to align elements cleanly via their text elements.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Flex Item Ordering</div>
+          <div class="g-node-definition">The integer-based sorting parameter (<code>order</code>) used to rearrange flex item layouts visually without editing underlying HTML source text.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Min-Content Constraint</div>
+          <div class="g-node-definition">The browser's default item width baseline that prevents elements from shrinking below their longest unbreakable text string or asset box.</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-2.3.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 2.3 - CSS Grid Matrix: Two-Dimensional Space Frameworks</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2028,90 +2960,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3248,982 +4096,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="phase-2"               >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-magenta"></div>
-    <div class="glow-orb orb-blue"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
-  <div class="hero-eyebrow">essay 2.2 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  <h1 class="hero-title">
-    Flexbox Layouts:<br>
-    Linear Space <em>Alignment Rules</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering flexible box dimension matrices, main-axis and cross-axis allocation mechanisms, layout wrap parameters, item size scaling physics, and advanced row/column container mapping.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">2.2 — Layout Alignments</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~45 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essay 2.1 (CSS Fundamentals)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">Flex Basis Physics · Scaling Ratios · Axis Vector Allocations · Wrap Space Calculations</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; analyze space distribution vectors</div>
-</div>
-
-<!-- ═══════════════════════════════ PREMIUM CORE LAYOUT ═══════════════════════════════ -->
-<div class="premium-layout">
-
-  <!-- NEO GLOW SIDEBAR HUD -->
-  <aside class="sidebar-hud">
-    <div class="sidebar-label">Layout Trees</div>
-    <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-    <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
-    <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
-    <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
-    <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
-    <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
-    <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
-    <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
-    <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
-    <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
-    <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
-    <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-  </aside>
-
-  <!-- MAIN MAIN SECTION PANELS -->
-  <main>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many frontend candidates memorize basic Flexbox properties like <code>justify-content: center</code> or <code>align-items: center</code> by rote practice. <strong>This basic approach breaks down when engineering dynamic, high-scale application grids.</strong> When complex web interfaces load contents of unpredictable sizes across varying mobile and desktop viewports, relying on superficial styling tweaks results in element overlapping, text wrapping clipping, and container blowouts that disrupt component alignment.</p>
-      <p>The Flexible Box Model (Flexbox) is an algorithmic spatial layout engine designed for single-axis content distribution. It converts parent container environments into active flex fields that dynamically compute child node dimensions along customizable vector tracks. This deep-dive module systematically breaks down space allocation formulas, flex expansion and contraction scaling physics, and cross-axis alignment parameters. Mastering these structural rules allows you to design robust fluid layouts that behave predictably under any runtime data scenarios.</p>
-      
-      <!-- Live Dynamic Compute Module Feature Included -->
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ Runtime Flex Space Allocation Engine Mapping:</div>
-        <div class="compute-value">Remaining Space = Viewport Width - ∑(Base Element Metrics)</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>An elite interface engineer does not view Flexbox as an arbitrary centering tool, but as a mathematical fluid mechanics simulator. Designing stable components means managing the proportional flex growth (<code>flex-grow</code>) and shrink ratios (<code>flex-shrink</code>) explicitly, forcing child boxes to adapt cleanly to viewport constraints without causing layout reflow boundaries to rupture.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
-    <section class="section-card" id="s2">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">Where This Fits</h2>
-      </div>
-      <p>Now that you understand selector weighting scores and cascade precedence lifecycles (2.1), we step directly into structural layout engines. Flexbox is the primary tool for managing component alignment workflows.</p>
-      
-      <div class="phase-map">
-        <div class="phase-node done"><div class="phase-circle">2.1</div><div class="phase-label">CSS Found</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node current"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Layout</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.3</div><div class="phase-label">CSS Grid Matrix</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.4</div><div class="phase-label">Responsive Design</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Engine Loop</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Architectures</div></div>
-      </div>
-      
-      <p>Every single UI layout node group constructed in later sections—from multi-tier navigation tracks to dynamic product asset rows—leverages these linear coordinate distribution constraints. Mastering flex space alignment values ensures your frontend components scale elegantly across user platforms before you layer on multi-axis grid matrices or adaptive media queries.</p>
-
-      <div class="hud-callout hud-callout-tip">
-        <div class="hud-callout-label">Return Here Often</div>
-        <p>Keep these scaling physics formulas handy. The first few times a flex row collapses unexpectedly or a child box squeezes its text content under tight viewport conditions, trace through these axis tracking guides. After troubleshooting these alignment behaviors manually a few times, structuring stable flex containers will become second nature.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Accordion Train Car Metaphor</h3>
-      <p>Imagine engineering an advanced high-speed passenger train where individual cabins are linked together by highly flexible, motorized rubber bellows instead of solid iron drawbars. The train frame container expands or shortens its physical length dynamically based on track curves and station platform clearances.</p>
-      <p>If the passenger load spikes or the platform narrows, **internal automated system regulators compress or expand specific flexible cabins proportionally based on pre-assigned scale profiles.** Cabins with high growth ratings step out to claim extra space, while generic cargo boxes squeeze tight to save room. Flexbox acts as that active layout coordinator, managing spacing values across container components dynamically to fit the parent window limits cleanly.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When element boxes crowd or wrap erratically, recall this core layout rule: <strong>"This component space is a dynamic vector axis map. Where is the browser locating the main-axis target lines, and how are the child boxes dividing up the remaining viewport space?"</strong> This framing unifies alignment bug fixes.</p>
-      </div>
-
-      <h3>The Elastic Belt Analogy</h3>
-      <p>To write highly adaptive style properties, visualize a stretchable elastic belt loaded with utility pouches. When you pull the ends of the belt out wide, the spaces between the pouches expand evenly based on the tension rules you set. If you contract the belt inside tight bounds, the pouches squeeze together up to their base physical limits before folding cleanly onto a new row. The flex context engine manages this item spacing behavior fluidly, tracking component positions relative to chosen axis vectors.</p>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Visual — Flex Axis Alignment Vectors</h2>
-      </div>
-      <p>Tracing how the browser establishes axis directions is essential for managing element spacing constraints. Click through each sequential layout tier to observe how flex property values change main and cross axis parameters.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>📊 &nbsp; Dynamic Flex Axis Orientation Mechanics &nbsp;·&nbsp; Click steps to trace vector changes.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Flex Direction Row — Default Horizontal Axis Track</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>Configuring <code>flex-direction: row</code> aligns the main axis horizontally from left to right across the screen. Properties like <code>justify-content</code> govern spacing across columns, while <code>align-items</code> controls vertical positions along the cross axis track.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Flex Direction Column — Axis Vector Rotation</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>Switching properties to <code>flex-direction: column</code> rotates the main axis line vertically from top to bottom. This axis swap shifts <code>justify-content</code> to manage row heights, while cross axis alignment properties (<code>align-items</code>) handle horizontal item positions.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Flex Wrap Space Activation — Multi-Line Wrapping</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>Enforcing <code>flex-wrap: wrap</code> permits child elements to break onto new rows when component base dimensions exceed viewport boundaries. This configuration introduces the multi-line cross-axis alignment engine managed via <code>align-content</code> properties.</p>
-            </div>
-          </div>
-        </div>
-        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Vector Layout</button>
-      </div>
-
-      <!-- PREMIUM INCLUDED VECTOR INFOGRAPHIC -->
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="12" fill="#070212"/>
-          <g opacity="0.15"><path d="M 50 50 L 750 50 M 50 160 L 750 160 M 50 270 L 750 270" stroke="#b5179e" stroke-width="1"/></g>
-          
-          <!-- Horizontal Main Axis Tracking Vector Line -->
-          <path d="M 80 60 L 700 60" stroke="#4cc9f0" stroke-width="3" stroke-dasharray="6 4"/>
-          <polygon points="710,60 695,52 695,68" fill="#4cc9f0"/>
-          <text x="90" y="45" fill="#4cc9f0" font-family="Fira Code" font-size="13" font-weight="bold">MAIN AXIS Vector (flex-direction: row)</text>
-          
-          <!-- Vertical Cross Axis Tracking Vector Line -->
-          <path d="M 120 90 L 120 270" stroke="#f72585" stroke-width="3"/>
-          <polygon points="120,280 112,265 128,265" fill="#f72585"/>
-          <text x="140" y="260" fill="#f72585" font-family="Fira Code" font-size="13" font-weight="bold">CROSS AXIS Vector</text>
-
-          <!-- Floating Flexible Component Boxes inside Matrix -->
-          <rect x="180" y="100" width="130" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
-          <text x="245" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 1</text>
-          
-          <rect x="340" y="100" width="180" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
-          <text x="430" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 2 (Grow)</text>
-
-          <rect x="550" y="100" width="130" height="90" rx="8" fill="#150930" stroke="rgba(186,104,200,0.4)" stroke-width="2"/>
-          <text x="615" y="150" fill="#f6f3fa" font-family="Plus Jakarta Sans" font-size="14" text-anchor="middle">Flex Item 3</text>
-        </svg>
-        <div class="infographic-caption">Vector Infographic 2.2: Single-Axis Direction Vectors. Rotating the container direction shifts the main and cross axis alignment priorities automatically across the layout.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Flex Box Dimension Scaling Mathematical Physics</h3>
-      <p>The browser style engine distributes space using three core properties defined on flex items: <code>flex-basis</code>, <code>flex-grow</code>, and <code>flex-shrink</code>. Together, these rules form a flexible layout scaling equation.</p>
-      
-      <p>Let us trace the exact layout math calculations performed by the browser's engine:</p>
-      <p>Imagine a parent container measuring exactly **$1000\text{px}$** wide configured with <code>display: flex</code>. It holds three child items with these scaling settings:</p>
-      <ul>
-        <li>**Box Node A:** <code>flex-basis: 200px; flex-grow: 1; flex-shrink: 0;</code></li>
-        <li>**Box Node B:** <code>flex-basis: 300px; flex-grow: 2; flex-shrink: 0;</code></li>
-        <li>**Box Node C:** <code>flex-basis: 100px; flex-grow: 0; flex-shrink: 0;</code></li>
-      </ul>
-
-      <p>Let us solve for the final element width dimensions step-by-step:</p>
-      <ol>
-        <li>**Sum the Base Dimensions:** The combined base widths total $200\text{px} + 300\text{px} + 100\text{px} = 600\text{px}$.</li>
-        <li>**Calculate Free Viewport Space:** The remaining unallocated layout space equals $1000\text{px} - 600\text{px} = 400\text{px}$.</li>
-        <li>**Sum Growth Proportions:** The total growth denominator points sum to $1 + 2 + 0 = 3$ units.</li>
-        <li>**Distribute Free Space Fractions:**
-          <ul>
-            <li>Box A claims: $\frac{1}{3} \times 400\text{px} = 133.33\text{px}$. Final Width = $200\text{px} + 133.33\text{px} = 333.33\text{px}$.</li>
-            <li>Box B claims: $\frac{2}{3} \times 400\text{px} = 266.67\text{px}$. Final Width = $300\text{px} + 266.67\text{px} = 566.67\text{px}$.</li>
-            <li>Box C claims: $\frac{0}{3} \times 400\text{px} = 0\text{px}$. Final Width locks exactly at its base value: $100\text{px}$.</li>
-          </ul>
-        </li>
-      </ol>
-
-      <div class="design-compute-hud">
-        <div class="compute-title">📊 Calculated Output Dimensions Matrix:</div>
-        <div class="compute-value">Box A: 333.33px &nbsp;·&nbsp; Box B: 566.67px &nbsp;·&nbsp; Box C: 100px</div>
-      </div>
-
-      <h3>Part B — Main-Axis vs. Cross-Axis Alignment Rules</h3>
-      <p>Flexbox categorizes design instructions based on which vector track they target. Managing space cleanly requires applying properties to the correct alignment axis:</p>
-      
-      <ol>
-        <li><strong>Justify Content Constraints:</strong> Dictates element alignment along the operational **Main Axis** line. Spacing parameters like <code>space-between</code> push items to the container edges, while <code>space-around</code> and <code>space-evenly</code> distribute remaining gap metrics.</li>
-        <li><strong>Align Items Constraints:</strong> Directs single-line tracking along the cross-axis. Common settings include <code>stretch</code> (which expands items to match container heights), <code>center</code>, and <code>baseline</code> (which aligns boxes via internal text baseline positions).</li>
-        <li><strong>Align Content Boundaries:</strong> Activates only when <code>flex-wrap: wrap</code> splits elements across multiple rows. This property manages row gap spacing, ordering stacked rows neatly across the cross-axis space.</li>
-      </ol>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">The Shorthand Performance Secret</div>
-        <p>Combining alignment rules into a single declaration like <code>flex: 1 1 200px;</code> is more than a clean coding shortcut. It acts as an optimization indicator for the browser's layout parser, instructing the style engine to reset omitted parameters to predictable values (like forcing grow defaults) and avoiding layout bugs during viewport updates.</p>
-      </div>
-
-      <h3>Part C — Layout Flow & Element Ordering Adaptations</h3>
-      <p>Flexbox allows you to adapt visual element layouts fluidly without rewriting underlying HTML code structures. Modifying the <code>order</code> integer property lets you rearrange components visually along the main axis. Element boxes sort ascending from small to large values, letting you shift side columns into main views on mobile layouts effortlessly. Additionally, using properties like <code>margin-left: auto;</code> inside flex containers overrides standard alignment paths, pushing elements to the far end of rows to create clean layout separations.</p>
-
-      <h3>Part D — Analytical Flex Properties Comparison</h3>
-      <p>High-performance UI architecture requires selecting matching property combinations deliberately. Let us evaluate the behavior profiles of common flex properties:</p>
-
-      <table class="google-table">
-        <thead>
-          <tr>
-            <th>Property Declaration</th>
-            <th>Default State</th>
-            <th>Primary Axis Target</th>
-            <th>Impact Profile Evaluation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>flex-grow</code></td>
-            <td class="bad">0</td>
-            <td>Main Axis Space</td>
-            <td>Determines the proportion of remaining layout space an item claims when containers expand.</td>
-          </tr>
-          <tr>
-            <td><code>flex-shrink</code></td>
-            <td class="good">1</td>
-            <td>Main Axis Space</td>
-            <td>Governs an item's contraction ratio when total element sizes exceed viewport boundaries.</td>
-          </tr>
-          <tr>
-            <td><code>flex-basis</code></td>
-            <td class="good">auto</td>
-            <td>Main Axis Space</td>
-            <td>Establishes the initial baseline size of a box before growth or shrink equations apply.</td>
-          </tr>
-          <tr>
-            <td><code>align-self</code></td>
-            <td class="bad">auto</td>
-            <td>Cross Axis Space</td>
-            <td>Allows a specific child box to override container level cross-axis alignment rules.</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Responsive Layout Gaps</h2>
-      </div>
-      <p>Let us analyze real production-tier flex alignment mistakes and step-by-step refactor them to ensure smooth layout scaling profiles.</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Shrink Ratio Collapses</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Centering Alignment Hacks</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Multi-Line Wrap Crushes</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Asymmetric Button Offsets</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Layout Logs</button>
-        </div>
-
-        <!-- Tab 1 -->
-        <div class="hud-tab-panel active-hud-panel" id="l1">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">avatar-shrinkage.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Avatar image deforms under tight viewport bounds */</span>
-<span class="t-sel">.user-profile-row</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; }
-<span class="t-sel">.user-avatar-node</span> { <span class="t-prop">width</span>: <span class="t-val">60px</span>; <span class="t-prop">height</span>: <span class="t-val">60px</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Lock container shrink mechanics to protect image scales */</span>
-<span class="t-sel">.user-profile-row</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">align-items</span>: <span class="t-val">center</span>; }
-<span class="t-sel">.user-avatar-node</span> { <span class="t-prop">flex</span>: <span class="t-val">0 0 60px</span>; <span class="t-prop">height</span>: <span class="t-val">60px</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">By default, flex items have <code>flex-shrink: 1</code> activated, which allows the browser to squeeze asset boxes out of shape when layouts shrink.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Setting shrink values explicitly to zero protects structural item proportions, keeping your asset layouts stable across viewports.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2 -->
-        <div class="hud-tab-panel" id="l2">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">center-hacks.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Brittle absolute coordinates used to center text boxes */</span>
-<span class="t-sel">.center-wrapper</span> { <span class="t-prop">position</span>: <span class="t-val">relative</span>; }
-<span class="t-sel">.centered-element</span> { <span class="t-prop">position</span>: <span class="t-val">absolute</span>; <span class="t-prop">top</span>: <span class="t-val">50%</span>; <span class="t-prop">transform</span>: <span class="t-val">translateY(-50%)</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Use single-axis flex formatting for clean, robust centering */</span>
-<span class="t-sel">.center-wrapper</span> {
-  <span class="t-prop">display</span>: <span class="t-val">flex</span>;
-  <span class="t-prop">justify-content</span>: <span class="t-val">center</span>;
-  <span class="t-prop">align-items</span>: <span class="t-val">center</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Absolute positioning overrides standard layout flows, isolating components and increasing the risk of element overlapping when container text scales up.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Leveraging flex alignments centers child components safely within parent layouts without relying on manual coordinate tracking math.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3 -->
-        <div class="hud-tab-panel" id="l3">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">wrap-crush.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Horizontal feed overflows viewport boundaries on small screens */</span>
-<span class="t-sel">.badge-cloud-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">justify-content</span>: <span class="t-val">flex-start</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Enable fluid multi-line line distribution updates */</span>
-<span class="t-sel">.badge-cloud-container</span> { 
-  <span class="t-prop">display</span>: <span class="t-val">flex</span>; 
-  <span class="t-prop">flex-wrap</span>: <span class="t-val">wrap</span>; 
-  <span class="t-prop">gap</span>: <span class="t-val">12px</span>; 
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Leaving flex layouts set to single-line modes (<code>no-wrap</code>) forces child boxes to clip past screen margins when total content widths exceed viewport limits.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Enabling multi-line wrap features drops overflowing items onto new lines cleanly, keeping layouts responsive across varying screen sizes.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4 -->
-        <div class="hud-tab-panel" id="l4">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">asymmetric-offset.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Using large manual padding values to isolate action buttons */</span>
-<span class="t-sel">.navbar-rail</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; }
-<span class="t-sel">.logout-trigger</span> { <span class="t-prop">margin-left</span>: <span class="t-val">500px</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Leverage automatic margin spacing options inside flex fields */</span>
-<span class="t-sel">.navbar-rail</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">align-items</span>: <span class="t-val">center</span>; }
-<span class="t-sel">.logout-trigger</span> { <span class="t-prop">margin-left</span>: <span class="t-val">auto</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Hardcoded margin settings cause layouts to break on wider viewports or compact interfaces because the spacing values are completely inflexible.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Using <code>margin-left: auto;</code> instructs the layout engine to swallow up remaining row space, pushing elements cleanly to the container edge.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 5 -->
-        <div class="hud-tab-panel" id="l5">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">flex-telemetry.js</span></div>
-            <pre><span class="token-comment">// Programmatically trace item scale metrics to evaluate layout calculations</span>
-<span class="token-kw">const</span> <span class="token-var">flexNode</span> = document.querySelector(<span class="token-str">'.user-avatar-node'</span>);
-console.log(<span class="token-str">"[Flex Node Bounds Width Target Check]:"</span>, <span class="token-var">flexNode</span>.getBoundingClientRect().width);</pre>
-            <div class="error-explanation">
-              <div class="error-label">Three Rules for Performance Layout Optimization</div>
-              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
-                <strong style="color:var(--neon-blue);">1. Avoid heavy item scaling chains.</strong> Declare matching flex growth ratios intentionally to prevent browser rendering engines from running redundant space allocation rounds.<br><br>
-                <strong style="color:var(--neon-hot-pink);">2. Manage child spacing via gaps.</strong> Rely on explicit <code>gap</code> rules for spacing items instead of adding margins to child containers, ensuring uniform grid structures.<br><br>
-                <strong style="color:var(--neon-electric-violet);">3. Use DevTools flex tooling.</strong> Click the 'flex' icon badges in the Elements panel tree to overlay layout axis tracking lines, making it easy to see how space is being divided.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Review these common flex placement mistakes observed during frontend architecture reviews. Fixing layout conflicts early ensures your site presentations adapt smoothly across views.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Using explicit pixel widths on Flex Items</div>
-          <div class="pitfall-body">Declaring fixed width definitions like <code>width: 300px;</code> on elements inside active flex fields. This practice overrides dynamic flex basis scaling rules.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Use property values like <code>flex-basis: 300px;</code> to establish flexible baseline dimensions that allow container items to expand or contract smoothly.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Confusing justify-content with align-items Rules</div>
-          <div class="pitfall-body">Applying cross-axis alignment properties when attempting to distribute space items across main layout axes, leading to unaligned element containers.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Remember axis priority tracking assignments: <code>justify-content</code> manages spaces along the main axis line; <code>align-items</code> handles cross-axis placements.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Overusing justify-content: space-between on forms</div>
-          <div class="pitfall-body">Using open space distribution properties to position dynamic input components, which causes wide inputs to isolate awkwardly on large viewports.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Group elements explicitly using inner container divs or rely on localized <code>gap</code> properties to control input element spacing metrics cleanly.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Forgetting flex-direction rotation transformations</div>
-          <div class="pitfall-body">Expecting main axis spacing adjustments to stay horizontal after rotating container flows to <code>flex-direction: column</code> settings.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Rotating direction fields switches main and cross-axis lines automatically. Adjust <code>justify-content</code> to control vertical spacing after column switches.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 05</div>
-          <div class="pitfall-title">Declaring align-content configurations on single lines</div>
-          <div class="pitfall-body">Adding multi-line row spacing properties like <code>align-content: center</code> to single-row flex layouts, which produces zero visual layout changes.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Use <code>align-items</code> to center single rows, reserving <code>align-content</code> rules for multi-line wrapped layouts.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 06</div>
-          <div class="pitfall-title">Hacking margins to fix flex content wrapping</div>
-          <div class="pitfall-body">Manually injecting heavy, unaligned percentage padding rules across child elements to force wrap adjustments when boxes crowd tight viewports.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Enforce standard property settings like <code>flex-wrap: wrap</code> combined with controlled <code>flex-basis</code> dimensions to handle wrapping layouts natively.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Real World — High-Scale Alignment Ecosystems</h2>
-      </div>
-      <p>Top-tier web systems leverage single-axis flex scaling rules to manage fluid UI component structures reliably across millions of international client profiles.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Airbnb Search Navigation</div>
-          <div class="cell-desc">Airbnb structures complex navigation filtration panels using precise, single-line flex rows. This design system uses explicit font baseline configurations to keep text alignments perfect across multi-language interfaces.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">YouTube Feed Feeds</div>
-          <div class="cell-desc">YouTube web frameworks manage channel action bars and button rows using flexible box wrappers. This system uses automatic element margins to slide video settings cleanly to column ends based on user account tiers.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Stripe Billing Portals</div>
-          <div class="cell-desc">Stripe designs sensitive transactional account checkout rows through locked zero-shrink flex components. This optimization model blocks card item compression, keeping form inputs sharp and readable on smaller device sizes.</div>
-        </div>
-      </div>
-
-      <h3>The Production Layout Validation Step</h3>
-      <p>Modern engineering platforms run styles through automated regression testing pipelines before production updates launch:</p>
-      <ol>
-        <li><strong>Structural Shrink Boundary Scans:</strong> Build tests simulate ultra-narrow viewports to identify and flag text clip defects or compressed layout containers early.</li>
-        <li><strong>Asymmetric Overflow Verifications:</strong> Automated checks evaluate right-to-left language translations, testing flex axis alignment behaviors across localized layouts.</li>
-        <li><strong>Dead-Code Presentation Purging:</strong> Build routines clean up redundant layout declarations, stripping unused styling properties to minimize payload sizes for faster network delivery.</li>
-      </ol>
-    </section>
-
-    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In mid-to-senior UI engineering assessments, alignment concepts are tested by exploring space allocation physics, axis mapping operations, and layout stabilization.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are designing a chat message row element featuring a user avatar graphic next to a dynamic text bubble block. When long text strings stream into the view, the avatar graphic compresses into an unaligned oval shape. How do you fix this reflow bug?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The avatar deformation occurs because the browser's style engine applies its default flex contraction rules (<code>flex-shrink: 1</code>) to all child boxes when total element dimensions exceed container sizes. To isolate this scaling behavior and protect image proportions, I would apply a locked flex rule configuration to the avatar node wrapper: <code>flex: 0 0 48px;</code>. This sets growth and contraction metrics to zero, keeping the item at its explicit size. Next, I would add <code>flex: 1 1 auto;</code> combined with <code>min-width: 0;</code> to the dynamic message text container. Setting this minimal dimensional boundary overrides browser calculation minimums, enabling text content to wrap cleanly inside its layout box without distorting adjacent assets."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Walk us through how the browser layout parsing engine processes space allocation assignments when computing flex-basis properties relative to standard width properties inside a row container."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "When an element container establishes a flex context, <code>flex-basis</code> overrides any declared width rules along the operational main axis line, acting as the definitive size marker before growth or shrink equations apply. The engine reads the basis token value, calculates the sum of all item dimensions, and subtracts that from the parent viewport container width to figure out the exact remaining free space. If the basis token is left set to <code>auto</code>, the browser engine scans content metrics or falls back to look for explicit width values to use as its baseline sizing reference."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Architecture Rule Evaluation</div>
-        <div class="pb-q-title">"A developer team proposes a responsive strategy that handles all multi-axis grid designs by nesting horizontal flex rows deeply within separate vertical flex columns. Critically evaluate this design approach."</div>
-        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Nesting single-axis flex fields deeply to manage two-dimensional grids introduces unneeded complexity and rendering overhead. Every nested row layer requires the style matching engine to compute independent, sequential layout formulas down the DOM tree. This layered approach complicates code updates and risks triggering layout thrashing during dynamic state updates. Two-dimensional layouts should be engineered using modern CSS Grid matrices instead, keeping rule relationships clear and highly performant."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Layout Axis Assessment</div>
-        <div class="pb-q-title">"Explain how the browser layout engine adjusts its cross-axis alignment workflows when a container switches from flex-direction: row to flex-direction: column configurations."</div>
-        <div class="pb-hud-answer"><strong>Layout Engine Switch Trace:</strong> "Switching configurations to <code>flex-direction: column</code> rotates the operational axis lines by 90 degrees, turning the vertical dimension into the main axis line. This change redirects <code>justify-content</code> to manage vertical element placement heights, while <code>align-items</code> shifts to control horizontal alignment across the newly established cross-axis tracking track."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">How does the browser calculate shrink distributions when flex containers contract below element base sizes?</div>
-            <div class="r-action-hint">Consider shrink multipliers and basic dimensions ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">The layout engine computes contraction metrics by multiplying an item's <code>flex-basis</code> size by its explicit <code>flex-shrink</code> rating score. This total scaling profile helps the browser distribute overflow values proportionally across elements, shrinking boxes safely without breaking layouts.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why does adding min-width: 0; to a flex item sometimes act as a vital safety requirement for text truncation tracking?</div>
-            <div class="r-action-hint">Consider text boundary baseline processing rules ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">By default, flex items have a minimum size rule set to <code>min-content</code>, which blocks containers from shrinking below their longest text element size. Enforcing an explicit <code>min-width: 0;</code> reset overrides this limitation, enabling text boxes to truncate cleanly within viewport boundaries.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">What distinct layout processing change occurs when you activate flex-wrap: wrap properties on containers?</div>
-            <div class="r-action-hint">Trace multi-line cross-axis spacing transformations ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">Activating wrap behavior permits items to break onto multiple lines, creating a multi-tiered layout structure. This multi-line context shifts cross-axis row tracking from single-line rules like <code>align-items</code> to multi-line layout properties like <code>align-content</code>.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">How does using automatic margins inside active flex containers alter element positioning behavior?</div>
-            <div class="r-action-hint">Consider main axis free space overrides ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">An auto margin declaration instructs the layout engine to swallow up all available free space along that direction axis. For instance, applying <code>margin-left: auto;</code> to a flex item overrides baseline container alignments, sliding the node cleanly to the far row edge.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 05</div>
-            <div class="r-question-text">What specific structural layout task is handled by the baseline value option under cross-axis settings?</div>
-            <div class="r-action-hint">Consider text typography line matching ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 05</div>
-            <div class="r-answer-text">Setting alignments to <code>baseline</code> instructs the browser to align container items via the internal text baselines of their text content. This keeps text elements perfectly aligned horizontally across a row, even if item font sizes vary.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 06</div>
-            <div class="r-question-text">Why are compound shorthand properties like flex: 1 1 200px; preferred over separate component style assignments?</div>
-            <div class="r-action-hint">Consider parser optimization steps and fallback overrides ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 06</div>
-            <div class="r-answer-text">Using the integrated shorthand property ensures all scaling parameters are set explicitly in a single declaration pass. This guides browser parser engines efficiently, resetting omitted values to predictable layout targets and preventing unexpected spacing errors.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these development tasks to practice high-performance layout scaling. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Enterprise Axis Allocation via DevTools Panels (30 Min)</div>
-            <div class="row-desc">Open an advanced application view (like your personal profile page or an online store feed) and launch browser DevTools. Use the Elements inspector to locate active flex layouts, clicking on their 'flex' badge buttons to display live axis layout structures and space distribution parameters.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build an Adaptive Growth and Shrink Balance Matrix (30 Min)</div>
-            <div class="row-desc">Create an isolated style sandbox page locally. Construct a flexible horizontal content bar containing three distinct element boxes with conflicting basis sizes. Practice adjusting growth scores and contraction parameters to verify browser size calculations manually across viewports.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Resolve an Inflexible Image Collapse Defect over Mobile Bounds (30 Min)</div>
-            <div class="row-desc">Design a local chat row mockup featuring a user profile avatar next to a dynamic text box container. Force tight screen space constraints to trigger the avatar shrink issue, and refactor your stylesheet using explicit zero-shrink rules to stabilize the image layout.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Benchmark Content Truncation Controls under Squeezed Viewports (30 Min)</div>
-            <div class="row-desc">Incorporate long text descriptions into your component flex boxes, adding ellipses text clipping properties to the inner text elements. Squeeze the viewport to test layout limits, applying explicit min-width overrides to guarantee clean text truncation without container blowouts.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">Don't Skip These Exercises</div>
-        <p>Reviewing layout theory without writing code is like analyzing network protocols without capturing packets. Proportional flex sizing metrics and space distribution rules become natural only through hands-on practice. Shifting element directions and managing axis parameters locally builds the performance mindset required when engineering scale web applications down the line.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">12</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These layout distribution laws form the baseline requirement for engineering high-performance component presentation systems. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Control scaling shrink metrics explicitly. Use zero-shrink settings on graphical assets to block browser contraction calculations from deforming media layouts.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Override baseline flex content minimums. Apply explicit min-width resets to text-heavy flex containers to ensure reliable truncation tracking over mobile viewports.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Leverage compound shorthand structures. Organize layout rules using integrated flex property shortcuts to streamline engine tracking and prevent layout errors.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Main Axis Vector</div>
-          <div class="g-node-definition">The primary horizontal or vertical track that guides the placement and arrangement of child items within an active flex container.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Cross Axis Vector</div>
-          <div class="g-node-definition">The secondary layout axis line running perpendicular to the main axis track, managing single-line or multi-line item positioning.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Flex Basis Parameter</div>
-          <div class="g-node-definition">The core property value that establishes an item's initial base size before expansion or contraction scaling calculations apply.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Proportional Flex Growth</div>
-          <div class="g-node-definition">The growth metric rating (<code>flex-grow</code>) that dictates how elements expand to divide up remaining free container space.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Proportional Flex Shrink</div>
-          <div class="g-node-definition">The contraction parameter (<code>flex-shrink</code>) that controls how elements compress when total dimensions exceed viewport boundaries.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Justify Content Rule</div>
-          <div class="g-node-definition">The layout container directive that manages space distribution and alignment configurations explicitly along the main axis line.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Align Items Rule</div>
-          <div class="g-node-definition">The styling property used to govern single-line item alignment and placement across the cross-axis space.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Align Content Rule</div>
-          <div class="g-node-definition">The multi-line layout property that orchestrates row spacing and alignment across the cross-axis when elements wrap.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Flex Wrap Feature</div>
-          <div class="g-node-definition">The structural layout property that permits overflowing child nodes to break onto new lines cleanly when content width limits are passed.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Typographical Baseline</div>
-          <div class="g-node-definition">The baseline alignment path text sits on, used under cross-axis configurations to align elements cleanly via their text elements.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Flex Item Ordering</div>
-          <div class="g-node-definition">The integer-based sorting parameter (<code>order</code>) used to rearrange flex item layouts visually without editing underlying HTML source text.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Min-Content Constraint</div>
-          <div class="g-node-definition">The browser's default item width baseline that prevents elements from shrinking below their longest unbreakable text string or asset box.</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-2.3.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 2.3 - CSS Grid Matrix: Two-Dimensional Space Frameworks</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

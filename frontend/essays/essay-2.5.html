@@ -515,21 +515,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1613,8 +1598,949 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-2">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<!-- ── SIDEBAR CONTROLLER TRIGGER HUD ── -->
+
+
+<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD ═══════════════════════════════ -->
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Matrix Navigation</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-pink"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
+  <div class="hero-eyebrow">essay 2.5 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  
+  <h1 class="hero-title">
+    CSS Animations & Transitions:<br>
+    High-Performance <em>Visual Timelines</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering hardware-accelerated animation properties, composite-only paint layers, cubic-bezier transition curves, keyframe timeline engines, and main-thread optimization strategies.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">2.5 — Fluid Timelines</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~48 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Phase 2 (CSS 2.1 - 2.4)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">GPU Layer Acceleration · Cubic-Bezier Math · Composite Invalidation · Keyframe Engines</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; inspect graphics pipeline execution</div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN VIEW PLATFORM ── -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ── EXECUTIVE QUICK SUMMARY MODULE (NEW FEATURE) ── -->
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        Visual performance engineering demands a deep understanding of browser rendering layers. This module explores how to offload web animations straight to device GPU hardware, bypass main-thread pipeline bottlenecks, design custom easing curves, and execute fluid interface transitions at a locked 60fps frame rate.
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many frontend engineering candidates build site animations by targeting arbitrary layout properties like <code>height</code>, <code>top</code>, or <code>margin</code> rules. <strong>This careless approach introduces massive rendering bottlenecks under real client traffic.</strong> Modifying geometric boundaries forcing the browser engine to re-run complex layout calculations (Reflow) and redraw altered pixels (Repaint) on every single frame, resulting in visual lag and draining mobile device battery budgets.</p>
+      <p>High-performance UI design relies on hardware acceleration. By targeting composite-only properties like <code>transform</code> and <code>opacity</code>, developers can isolate changing components into independent graphics layers, moving demanding visual work off the main thread straight to the device GPU graphics hardware. This module covers timing parameters, cubic-bezier custom transitions, and keyframe mechanics. Shifting your animation strategy to composite-only processing paths ensures smooth, glitch-free interface experiences across all deployment platforms.</p>
+      
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Browser Animation Frame Execution Budget Window:</div>
+        <div class="compute-value">Frame Window Target = 1000ms / 60fps &le; 16.67ms per Frame Layer Pass</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The clear marker of a senior systems developer is a rigorous focus on pixel layout budgets. Junior developers guess properties until things bounce visually. Masters design transitions with an understanding of browser engine steps, tracking properties through layer compositing passes to bypass main-thread execution stalls entirely.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Transparent Animation Overlay Model</h3>
+      <p>Imagine animating a sequence for a high-end cartoon movie. You could choose to draw each full frame scene completely from scratch on heavy stock paper, sketching background hills, detailed building walls, and the moving central characters on every page. This approach forces you to redo extensive background work for tiny character movements, slowing down production speeds.</p>
+      <p>Alternatively, you can paint the unchanging background once on a heavy base board, drawing your moving character figures on separate, ultra-lightweight **transparent acetate overlays that slide across the scene independently.** Hardware-accelerated CSS styling works exactly like those transparent overlays. Applying transform rules prompts the layout engine to split changing elements into separate graphics layers, moving items smoothly across the viewport via the device GPU without redrawing static background assets.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When an interaction transition lags or stutters on device displays, use a systematic debugging check: <strong>"This style animation is forcing the browser main thread to recalculate geometric box models. How can I refactor the rule to target composite-only fields so it runs directly on hardware layers?"</strong> This framing unifies performance fixes.</p>
+      </div>
+
+      <h3>The Automated Escalator Paradigm</h3>
+      <p>To write high-efficiency web animations, visualize an automatic mechanical escalator operating inside a busy terminal terminal. Instead of prompting individual users to coordinate step timings and manage pacing manually, the continuous floor belt guides movements smoothly along a fixed path. Keyframe style timelines run on that exact pattern: you declare the structural milestone markers once, and the browser's native engine coordinates smooth pixel placement paths automatically without script intervention.</p>
+    </section>
+
+    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Visual — Rendering Engine Allocation Tracks</h2>
+      </div>
+      <p>Understanding how style changes flow through browser rendering tracks is vital for preserving performance budgets. Click through each sequential lifecycle step to see how style choices affect main thread and GPU processing paths.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>📊 &nbsp; Accelerated Rendering Engine Pipeline Stages &nbsp;·&nbsp; Click steps to map operations.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Style Manipulation Identification Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The browser style parser evaluates incoming rule modifications. If a transition changes layout metrics (like <code>width</code> or <code>top</code>), it forces the engine to halt script execution to recalculate geometry blocks across the layout tree.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Independent Graphics Layer Promotion Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>When properties like <code>transform</code>, <code>opacity</code>, or explicit <code>will-change</code> flags are declared, the engine isolates the target component into its own graphics layer, separating its rendering path from the main document body tree.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Hardware-Accelerated GPU Compositing</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The isolated layer is shipped straight to the device graphics hardware. The GPU blends, scales, and composites the layer surfaces into final pixels in memory, outputting fluid animations smoothly while keeping the main thread free.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Refactored flow action row ensuring safe element clearance across platforms -->
+        <div class="flow-action-row">
+          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Vector Layout</button>
+        </div>
+      </div>
+
+      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="12" fill="#04010a"/>
+          <g opacity="0.15">
+            <path d="M 50 60 L 750 60 M 50 160 L 750 160 M 50 260 L 750 260" stroke="#ff007f" stroke-width="1"/>
+            <path d="M 380 40 L 380 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          
+          <!-- Explicit Layout Layer Delineations -->
+          <text x="70" y="35" fill="#6272a4" font-family="Fira Code" font-size="12" font-weight="bold">Main Thread (Reflow + Repaint Risks)</text>
+          <text x="410" y="35" fill="#00f5d4" font-family="Fira Code" font-size="12" font-weight="bold">GPU Layer Compositing (Fast Path)</text>
+          
+          <!-- Explicit Vector representation of rendering layer branches -->
+          <rect x="70" y="90" width="260" height="120" rx="6" fill="#0b051d" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="200" y="140" fill="#f8f6fc" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Unoptimized Transition</text>
+          <text x="200" y="165" fill="#ff007f" font-family="Fira Code" font-size="11" text-anchor="middle">Changes geometric margins</text>
+
+          <rect x="420" y="90" width="310" height="120" rx="6" fill="#0b051d" stroke="#00f5d4" stroke-width="2"/>
+          <text x="575" y="140" fill="#f8f6fc" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Hardware-Accelerated Path</text>
+          <text x="575" y="165" fill="#39ff14" font-family="Fira Code" font-size="11" text-anchor="middle">transform: translate3d()</text>
+        </svg>
+        <div class="infographic-caption">Vector Diagram 2.5: The Rendering Pipeline Split. Targeting composite-only style parameters moves processing tasks straight to the device graphics hardware, keeping animations fluid.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Transitions vs. Keyframe Timeline Engine Core Parameters</h3>
+      <p>High-performance visual design requires picking the right tool for specific interaction states. Let us look at the explicit structural breakdown of transitions and keyframe timeline setups:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">animation-engine.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">/* Transitions: Ideal for smooth shifts between two distinct states */</span>
+<span class="t-sel">.action-trigger-node</span> {
+  <span class="t-prop">will-change</span>: <span class="t-val">transform, opacity</span>;
+  <span class="t-prop">transition</span>: 
+    <span class="t-val">transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)</span>,
+    <span class="t-val">opacity 0.4s linear</span>;
+}
+
+<span class="t-comment">/* Keyframes: Designed for complex, multi-stage cascading timelines */</span>
+<span class="t-kw">@keyframes</span> <span class="t-sel">pulseGlowMatrix</span> {
+  <span class="t-sel">0%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
+  <span class="t-sel">50%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1.05, 1.05, 1.05)</span>; }
+  <span class="t-sel">100%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
+}
+
+<span class="t-sel">.pulse-component-card</span> {
+  <span class="t-prop">animation</span>: <span class="t-val">pulseGlowMatrix 2s infinite ease-in-out alternate-reverse</span>;
+}</pre>
+      </div>
+
+      <p>CSS transitions are ideal for smooth shifts between two states (like a button hover color update). Keyframe engines let you design multi-stage animations with explicit timeline markers (<code>0%</code> to <code>100%</code>). This lets you build repeating loop animations that run smoothly on their own threads.</p>
+
+      <h3>Part B — Custom Easing Mathematics & Cubic-Bezier Acceleration</h3>
+      <p>Default animation curves like <code>linear</code> or <code>ease</code> can make visual movements feel mechanical or abrupt. Production-grade design systems leverage cubic-bezier math vectors to configure natural acceleration profiles.</p>
+      <p>A cubic-bezier function is defined by four coordinate control points: <code>cubic-bezier(x1, y1, x2, y2)</code>. These coordinates map out an interpolation speed curve over time. For example, setting <code>cubic-bezier(0.16, 1, 0.3, 1)</code> builds a custom "ease-out" curve that accelerates quickly and decelerates smoothly toward completion, making interface responses feel snappy and refined.</p>
+
+      <h3>Part C — Critical CSS Properties Performance Profiles</h3>
+      <p>Enterprise layout engineering requires choosing animation properties with an eye on hardware resource impacts. Let us evaluate the rendering footprint of standard style adjustments:</p>
+
+      <table class="google-table">
+        <thead>
+          <tr>
+            <th>Property Declaration</th>
+            <th>Rendering Stages Triggered</th>
+            <th>GPU Acceleration Status</th>
+            <th>Impact Profile Evaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>width</code> / <code>height</code> / <code>left</code></td>
+            <td class="bad">Layout + Paint + Composite</td>
+            <td>Unsupported</td>
+            <td>Forces a full structural Reflow pass, recalculating layout geometry boundaries down the DOM tree.</td>
+          </tr>
+          <tr>
+            <td><code>box-shadow</code> / <code>color</code></td>
+            <td class="bad">Paint + Composite</td>
+            <td>Unsupported</td>
+            <td>Triggers a local screen Repaint, forcing pixels to redraw without changing element boundaries.</td>
+          </tr>
+          <tr>
+            <td><code>transform: translate3d()</code></td>
+            <td class="good">Composite Only</td>
+            <td>Hardware Accelerated</td>
+            <td>Bypasses layout and paint steps, using GPU compositing layers for fluid animations.</td>
+          </tr>
+          <tr>
+            <td><code>opacity</code></td>
+            <td class="good">Composite Only</td>
+            <td>Hardware Accelerated</td>
+            <td>Adjusts node alpha transparency on its own graphics layer to avoid pixel redrawing work.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Part D — Managing Layer Invalidation Loops</h3>
+      <p>While isolating elements into graphics layers speeds up transitions, overusing these properties can introduce performance errors. Every graphics layer requires browser memory allocation budgets. Creating hundreds of independent layers concurrently causes layer bloat, which bogs down thread compositing and increases memory usage on lower-end mobile devices.</p>
+      <p>To safely optimize animations without wasting system memory, attach the <code>will-change</code> property cleanly to specific elements before animations trigger: <code>will-change: transform;</code>. This hints to the style engine to prepare its graphics resources ahead of time, cleaning up layer spaces automatically once visual sequences conclude.</p>
+    </section>
+
+    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Animation Properties</h2>
+      </div>
+      <p>Let us analyze real production-tier animation mistakes and step-by-step refactor them to ensure smooth layout scaling profiles.</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Main Thread Reflow Delays</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Unoptimized Opacity Updates</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Stuttering Keyframe Loops</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Layer Bloat Overruns</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Render Logs</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div class="hud-tab-panel active-hud-panel" id="l1">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">layout-reflow-bug.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Sliding drawer modifies width geometry, causing reflow lag */</span>
+<span class="t-sel">.sidebar-drawer-panel</span> {
+  <span class="t-prop">width</span>: <span class="t-val">0px</span>;
+  <span class="t-prop">transition</span>: <span class="t-val">width 0.3s ease-out</span>;
+}</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Optimize layout transformations via composite hardware layers */</span>
+<span class="t-sel">.sidebar-drawer-panel</span> {
+  <span class="t-prop">width</span>: <span class="t-val">300px</span>;
+  <span class="t-prop">will-change</span>: <span class="t-val">transform</span>;
+  <span class="t-prop">transform</span>: <span class="t-val">translate3d(-100%, 0, 0)</span>;
+  <span class="t-prop">transition</span>: <span class="t-val">transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Animating geometric properties like <code>width</code> forces the layout engine to recompute element coordinates across the full DOM tree on every frame, causing visual lag.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Moving to <code>transform</code> properties shifts presentation adjustments straight to the GPU layer, avoiding main-thread layout recalculations.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div class="hud-tab-panel" id="l2">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">visibility-repaint.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Alternating absolute display modes breaks page transitions */</span>
+<span class="t-sel">.modal-overlay-node</span> { <span class="t-prop">display</span>: <span class="t-val">none</span>; }
+<span class="t-sel">.modal-overlay-node.active</span> { <span class="t-prop">display</span>: <span class="t-val">block</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Refactor using hardware-accelerated opacity variables */</span>
+<span class="t-sel">.modal-overlay-node</span> {
+  <span class="t-prop">opacity</span>: <span class="t-val">0</span>;
+  <span class="t-prop">pointer-events</span>: <span class="t-val">none</span>;
+  <span class="t-prop">transition</span>: <span class="t-val">opacity 0.3s ease</span>;
+}
+<span class="t-sel">.modal-overlay-node.active</span> {
+  <span class="t-prop">opacity</span>: <span class="t-val">1</span>;
+  <span class="t-prop">pointer-events</span>: <span class="t-val">auto</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Toggling display properties strips the node out of the render tree entirely, forcing heavy layout recalculation steps when visibility states change.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Using <code>opacity</code> with <code>pointer-events</code> fades components smoothly on separate layers, bypassing main thread processing lags completely.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div class="hud-tab-panel" id="l3">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">loop-optimization.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Repeating pulse timelines trigger continuous repaint steps */</span>
+<span class="t-kw">@keyframes</span> <span class="t-sel">badPulse</span> {
+  <span class="t-sel">0%</span> { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 0px red</span>; }
+  <span class="t-sel">100%</span> { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 20px red</span>; }
+}</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Refactor loop timelines to isolate tasks on composited scale layers */</span>
+<span class="t-kw">@keyframes</span> <span class="t-sel">goodPulse</span> {
+  <span class="t-sel">0%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
+  <span class="t-sel">100%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1.04, 1.04, 1.04)</span>; }
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Animating paint-heavy properties like <code>box-shadow</code> loops pixel redraw routines continuously, causing frame drops on mobile devices.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Switching to <code>scale3d</code> transformations targets hardware compositing paths directly, ensuring smooth looping animations.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div class="hud-tab-panel" id="l4">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">layer-bloat-fix.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Preloading hardware layers blindly on generic sub-elements */</span>
+<span class="t-sel">.feed-row-item</span> { <span class="t-prop">will-change</span>: <span class="t-val">transform</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Limit layer generation strictly to active interaction states */</span>
+<span class="t-sel">.feed-row-item</span> { <span class="t-prop">transition</span>: <span class="t-val">transform 0.25s ease</span>; }
+<span class="t-sel">.feed-row-item:hover</span> { <span class="t-prop">will-change</span>: <span class="t-val">transform</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Forcing permanent hardware layer promotion across long element feeds consumes extensive graphics memory, creating scrolling lag.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Attaching layer notifications specifically to active states allocates graphics memory responsibly, preserving device resources.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div class="hud-tab-panel" id="l5">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">render-telemetry.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">// Track page render performance during layout animations</span>
+console.time(<span class="t-str">"Animation Pipeline Task"</span>);
+document.querySelector(<span class="t-str">'.sidebar-drawer-panel'</span>).classList.add(<span class="t-str">'open'</span>);
+console.timeEnd(<span class="t-str">"Animation Pipeline Task"</span>);</pre>
+            <div class="error-explanation">
+              <div class="error-label">Three Rules for Performance Animation Profiling</div>
+              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
+                <strong style="color:var(--neon-quantum-cyan);">1. Leverage 3D coordinate matrices.</strong> Use properties like <code>translate3d()</code> or <code>scale3d()</code> for transitions to instruct browser style engines to allocate hardware graphics layers predictably.<br><br>
+                <strong style="color:var(--neon-plasma-pink);">2. Avoid paint-heavy filters.</strong> Keep demanding effects like <code>blur()</code> or real-time color filters minimal along scrollable layouts to prevent main thread rendering lag.<br><br>
+                <strong style="color:var(--neon-toxic-green);">3. Use DevTools Layer panels.</strong> Open the specialized Layers panel inside browser DevTools to visually audit active layer allocations and identify memory leaks early.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common timeline optimization pitfalls during technical interviews. Keeping layout interactions limited to composite layers protects client rendering speeds.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Animating geometric parameters like margins or heights</div>
+          <div class="pitfall-body">Using transition parameters to slide boxes via <code>margin-left</code> modifications, forcing continuous layout reflow calculations.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Enforce high-performance <code>transform: translate3d()</code> rules to handle directional shifts smoothly within isolated GPU layers.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Over-declaring long will-change properties globally</div>
+          <div class="pitfall-body">Adding permanent <code>will-change</code> flags to all layout elements simultaneously, exhausting available graphics memory allocations quickly.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Apply layer tags responsibly, binding notifications to active interaction states to manage graphics resources efficiently.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Using infinite timelines to animate box-shadow properties</div>
+          <div class="pitfall-body">Creating looping keyframe sequences that modulate complex shadows, which spikes continuous pixel redraw work across the document.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Animate element dimensions smoothly via composited scale modifications instead to protect device processing budgets.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Relying on legacy JavaScript intervals for layout transitions</div>
+          <div class="pitfall-body">Using old script intervals to step coordinates manually, which misses standard browser vertical sync intervals and causes visual stutter.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Leverage native CSS transitions or wrap custom runtime scripts inside <code>requestAnimationFrame</code> loops to lock alignments smoothly.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 05</div>
+          <div class="pitfall-title">Forgetting to clean up completed visibility states</div>
+          <div class="pitfall-body">Fading elements out using opacity updates while keeping interactive nodes active, which causes unaligned components to block background mouse clicks.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Incorporate <code>pointer-events: none;</code> alongside your opacity rules to clear input fields safely from hidden layers.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 06</div>
+          <div class="pitfall-title">Mixing mismatched transition speeds across shorthand targets</div>
+          <div class="pitfall-body">Declaring generic transition rules like <code>all 0.4s;</code>, forcing the engine to calculate properties unnecessarily during basic state changes.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Target specific animation properties explicitly in your transition stylesheets (e.g., <code>transition: transform 0.4s;</code>) to streamline execution paths.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Real World — Enterprise Performance Metrics</h2>
+      </div>
+      <p>Top-tier web engineering teams strictly monitor style layer invalidations to prevent main-thread layout lag and keep interface interactions seamless.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Stripe Checkout Flows</div>
+          <div class="cell-desc">Stripe designs sensitive user validation and checkout forms using optimized composite layer transitions. This strategy keeps visual entry paths completely fluid, preventing input latency during heavy page tasks.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Twitter Timeline Streams</div>
+          <div class="cell-desc">Twitter web engineers optimize infinite content scrolling by restricting slide animation components to separate GPU graphics surfaces, ensuring a locked 60fps interaction experience across mid-tier mobile screens.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Spotify Web Players</div>
+          <div class="cell-desc">Spotify runs continuous track loading timelines and carousel sliders using hardware-accelerated transform mechanics, preventing media playback interruptions or main-thread script lag during background data fetches.</div>
+        </div>
+      </div>
+
+      <h3>The Production Animation Validation Pipeline</h3>
+      <p>Enterprise deployment workflows analyze presentation scripts through automated profiling steps before live deployment passes run:</p>
+      <ol>
+        <li><strong>Main-Thread Blocking Audits:</strong> Build-time tests evaluate transition paths to detect and block rules that trigger costly layout reflow recalculations.</li>
+        <li><strong>Graphics Layer Memory Profiling:</strong> Automated tools trace layer count allocations across view environments to protect memory budgets on mobile devices.</li>
+        <li><strong>Visual Frame Rate Verification:</strong> Continuous integration hooks run interaction passes to measure frame rates, ensuring layouts meet strict performance standards.</li>
+      </ol>
+    </section>
+
+    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In senior technical evaluations, layout transformation choices are evaluated by analyzing your understanding of rendering pipelines, hardware layers, and resource budgets.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are designing a sidebar modal navigation system that pulls link elements into view dynamically. When users trigger the panel, the interface drops animation frames, causing noticeable stutter. How do you resolve this rendering latency?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The interaction lag happens because animating geometric layout properties like <code>width</code> or <code>left</code> values forces the browser engine to rerun multi-axis coordinate checks (Reflow) and redraw altered pixels (Repaint) on every frame. To resolve this layout bottleneck, I would transition the component to a hardware-accelerated structure. I would lock the sidebar panel to a fixed width dimensions budget, using <code>will-change: transform;</code> to notify the layout scanner early. Next, I would position the element out of view using a 3D transformation rule: <code>transform: translate3d(-100%, 0, 0);</code>. When the toggle clicks, applying <code>transform: translate3d(0, 0, 0);</code> shifts the panel via the device GPU, completely avoiding main-thread processing loops to deliver a smooth 60fps layout animation."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain what occurs along the critical rendering path when a transition rule modulates paint-heavy parameters like background-color or box-shadow fields instead of composite properties."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Modifying properties like <code>box-shadow</code> forces the browser engine to skip the initial layout phase but rerun the pixel rasterization stage (Repaint) on every animation frame. The rendering software must recalculate pixel details and colors across that screen region, which crowds primary main thread processing loops and can lead to dropped frames on lower-power mobile devices."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Architecture Evaluation Loop</div>
+        <div class="pb-q-title">"A teammate suggests deploying a universal reset utility style rule like * { will-change: all; } to pre-promote every DOM node into its own hardware layer. critically evaluate this presentation approach."</div>
+        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing a global hardware layer promotion across all elements introduces severe performance risks. Every graphics layer allocated by the browser consumes explicit device memory and texture tracking resources. Overloading this allocation budget leads to graphics memory exhaustion, which slows down thread compositing and can cause application crashes on mobile devices. Layer promotion should be applied selectively to active animation paths."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Layout Timeline Assessment</div>
+        <div class="pb-q-title">"Trace how custom cubic-bezier coordinate parameters streamline browser style matching steps compared to traditional linear transition settings."</div>
+        <div class="pb-hud-answer"><strong>Layout Engine Optimization Trace:</strong> "Declaring custom cubic-bezier vectors maps out precise acceleration changes natively within the style engine. The layout software handles value pacing along a smooth curve in a single pass, avoiding the main-thread script lag often introduced by manual coordinate stepping approaches."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">What distinct browser rendering advantage do you gain by choosing composite-only properties for animations?</div>
+            <div class="r-action-hint">Consider layout validation steps and main thread tasks ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">Composite-only properties (like <code>transform</code> and <code>opacity</code>) bypass layout geometry checks (Reflow) and pixel redrawing steps (Repaint) entirely. The browser splits these elements into separate graphics surfaces, offloading animation work straight to the GPU to protect main-thread processing resources.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why does over-allocating independent graphics layers degrade scrolling performance on mobile platforms?</div>
+            <div class="r-action-hint">Consider graphics memory overhead limits ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Every independent layer promoted by the styling engine consumes dedicated device memory and texture tracking resources. Overloading this allocation budget leads to graphics memory bloat, slowing down layer compositing steps and creating interface lag.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Explain the operational differences between CSS transitions and keyframe timeline engines.</div>
+            <div class="r-action-hint">Contrast basic state switches with complex multi-stage loops ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">CSS transitions are designed to handle smooth shifts between two distinct states (like a button click style update). Keyframe timeline engines let you design complex, multi-stage animations with explicit percentage markers, making them ideal for repeating loop behaviors.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">How does the will-change property help optimize demanding interface transitions?</div>
+            <div class="r-action-hint">Consider advance graphics resource preparations ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">The <code>will-change</code> property tips off the browser's rendering engine about upcoming style modifications ahead of time. This allows the engine to pre-allocate graphics resources and prepare hardware layers on the GPU, avoiding initialization lag when transitions trigger.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 05</div>
+            <div class="r-question-text">What rendering issue occurs when you animate properties like top, left, or margin metrics?</div>
+            <div class="r-action-hint">Consider the stages of the browser rendering pipeline ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 05</div>
+            <div class="r-answer-text">Modifying geometric properties like <code>top</code> or <code>left</code> forces the browser engine to rerun layout coordinate checks (Reflow) and redraw modified pixels (Repaint) on every frame. This intensive main-thread workload can cause noticeable animation stutter.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 06</div>
+            <div class="r-question-text">Why are 3D transform functions like translate3d() preferred over 2D options like translate()?</div>
+            <div class="r-action-hint">Consider hardware layer promotion hooks ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 06</div>
+            <div class="r-answer-text">3D transform properties (like <code>translate3d()</code> or <code>scale3d()</code>) act as explicit hooks that prompt browser style parsers to allocate hardware graphics layers on the GPU. This hardware acceleration bypasses main thread checks to keep transitions completely fluid.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these performance animation tasks to master progressive layout acceleration. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Graphics Layers via the browser DevTools Panel (30 Min)</div>
+            <div class="row-desc">Open a complex application view and launch your browser's developer console (F12). Locate and open the specialized Layers customization panel under options, and interact with dropdown navigation blocks to visually map out active graphics layer allocations.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Hardware-Accelerated Sliding Sidebar Shell (30 Min)</div>
+            <div class="row-desc">Create an isolated style sandbox page locally. Construct an administrative navigation drawer that slides into view using composited <code>transform: translate3d()</code> modifications, verifying that no layout reflow passes occur during transitions.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Map a Snappy Interaction Curve using Cubic-Bezier Vectors (30 Min)</div>
+            <div class="row-desc">Incorporate a custom timing curve (like <code>cubic-bezier(0.16, 1, 0.3, 1)</code>) across your local transition style rules. Verify value acceleration speeds visually during interactions to ensure movements feel fluid yet responsive.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Benchmark Animation Frame Rates via the Performance Timeline (30 Min)</div>
+            <div class="row-desc">Open the Performance profiling tab within your browser's developer workspace. Record a short session capture while running a looping keyframe animation, and evaluate the tracking chart logs to ensure rendering operations remain free of long tasks.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">Don't Skip These Exercises</div>
+        <p>Reviewing animation performance text without writing code is like studying database optimization models without profiling queries. Composite layer operations and custom easing curves become second nature only through hands-on practice. Shifting element style transitions to hardware layers locally builds the performance mindset required when engineering scale full-stack architectures down the line.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These presentation timeline laws form the operational requirement for engineering high-performance interface animations. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Target composite-only style properties. Limit animation rules strictly to transform and opacity updates to protect browser rendering speeds.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Leverage GPU hardware acceleration. Use 3D transform declarations like translate3d() to prompt the style engine to prepare hardware layers on the GPU.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Manage layer resources responsibly. Apply will-change declarations selectively to active interaction states to avoid graphics memory bloat.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Layer Compositing</div>
+          <div class="g-node-definition">The final hardware-accelerated rendering phase where independent graphics layers are blended into unified memory spaces on the GPU for screen display.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Layout Reflow</div>
+          <div class="g-node-definition">An intensive browser computing phase where the engine calculates spatial positions and boundary coordinates across the viewport layout tree.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Screen Repaint</div>
+          <div class="g-node-definition">The rendering stage where the engine rasterizes modified pixel configurations, redrawing background colors or borders without changing element geometry.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">will-change Property</div>
+          <div class="g-node-definition">A styling optimization hint that alerts the browser engine about upcoming element modifications, enabling hardware layer preparation.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Cubic-Bezier Curve</div>
+          <div class="g-node-definition">A mathematical model defined by four coordinate control points used to configure natural, custom velocity changes over time.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">3D Transform Acceleration</div>
+          <div class="g-node-definition">The practice of using 3D expressions (like translate3d()) to force the style parser to handle element transitions directly on the GPU.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Graphics Layer Bloat</div>
+          <div class="g-node-definition">A performance issue that happens when too many elements are promoted to hardware layers simultaneously, exhausting device graphics memory.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Keyframe Engine</div>
+          <div class="g-node-definition">A native CSS timeline manager that orchestrates multi-stage animations using explicit percentage markers.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Transition Shorthand</div>
+          <div class="g-node-definition">An integrated presentation rule used to declare property targets, durations, and easing curves within a single pass.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Main Thread Lockout</div>
+          <div class="g-node-definition">An execution stall where heavy rendering calculations block the primary thread, dropping interaction frame rates below a fluid 60fps.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Pointer Events Toggle</div>
+          <div class="g-node-definition">An interactive design rule used to disable mouse click tracking on hidden elements, preventing unaligned components from blocking interactions.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">CSSOM Tree Synthesis</div>
+          <div class="g-node-definition">The computed cascade data framework generated by the browser style parser, used alongside the DOM tree to construct page layouts.</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-2.6.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 2.6 - Tailwind CSS: Modern Utility-First Style Architecture</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+/* Refactored Layout Separation Navigation Logic: Pushes elements safely instead of overlapping views */
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2050,90 +2976,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3270,976 +4112,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-2">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-<!-- ── SIDEBAR CONTROLLER TRIGGER HUD ── -->
-
-
-<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD ═══════════════════════════════ -->
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Matrix Navigation</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-cyan"></div>
-    <div class="glow-orb orb-pink"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
-  <div class="hero-eyebrow">essay 2.5 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  
-  <h1 class="hero-title">
-    CSS Animations & Transitions:<br>
-    High-Performance <em>Visual Timelines</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering hardware-accelerated animation properties, composite-only paint layers, cubic-bezier transition curves, keyframe timeline engines, and main-thread optimization strategies.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">2.5 — Fluid Timelines</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~48 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Phase 2 (CSS 2.1 - 2.4)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">GPU Layer Acceleration · Cubic-Bezier Math · Composite Invalidation · Keyframe Engines</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; inspect graphics pipeline execution</div>
-</div>
-
-<!-- ═══════════════════════════════ MAIN VIEW PLATFORM ── -->
-<div class="layout-main-frame">
-  <main>
-
-    <!-- ── EXECUTIVE QUICK SUMMARY MODULE (NEW FEATURE) ── -->
-    <div class="executive-summary-panel">
-      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
-      <div class="summary-text-hud">
-        Visual performance engineering demands a deep understanding of browser rendering layers. This module explores how to offload web animations straight to device GPU hardware, bypass main-thread pipeline bottlenecks, design custom easing curves, and execute fluid interface transitions at a locked 60fps frame rate.
-      </div>
-    </div>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many frontend engineering candidates build site animations by targeting arbitrary layout properties like <code>height</code>, <code>top</code>, or <code>margin</code> rules. <strong>This careless approach introduces massive rendering bottlenecks under real client traffic.</strong> Modifying geometric boundaries forcing the browser engine to re-run complex layout calculations (Reflow) and redraw altered pixels (Repaint) on every single frame, resulting in visual lag and draining mobile device battery budgets.</p>
-      <p>High-performance UI design relies on hardware acceleration. By targeting composite-only properties like <code>transform</code> and <code>opacity</code>, developers can isolate changing components into independent graphics layers, moving demanding visual work off the main thread straight to the device GPU graphics hardware. This module covers timing parameters, cubic-bezier custom transitions, and keyframe mechanics. Shifting your animation strategy to composite-only processing paths ensures smooth, glitch-free interface experiences across all deployment platforms.</p>
-      
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ Browser Animation Frame Execution Budget Window:</div>
-        <div class="compute-value">Frame Window Target = 1000ms / 60fps &le; 16.67ms per Frame Layer Pass</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>The clear marker of a senior systems developer is a rigorous focus on pixel layout budgets. Junior developers guess properties until things bounce visually. Masters design transitions with an understanding of browser engine steps, tracking properties through layer compositing passes to bypass main-thread execution stalls entirely.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Transparent Animation Overlay Model</h3>
-      <p>Imagine animating a sequence for a high-end cartoon movie. You could choose to draw each full frame scene completely from scratch on heavy stock paper, sketching background hills, detailed building walls, and the moving central characters on every page. This approach forces you to redo extensive background work for tiny character movements, slowing down production speeds.</p>
-      <p>Alternatively, you can paint the unchanging background once on a heavy base board, drawing your moving character figures on separate, ultra-lightweight **transparent acetate overlays that slide across the scene independently.** Hardware-accelerated CSS styling works exactly like those transparent overlays. Applying transform rules prompts the layout engine to split changing elements into separate graphics layers, moving items smoothly across the viewport via the device GPU without redrawing static background assets.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When an interaction transition lags or stutters on device displays, use a systematic debugging check: <strong>"This style animation is forcing the browser main thread to recalculate geometric box models. How can I refactor the rule to target composite-only fields so it runs directly on hardware layers?"</strong> This framing unifies performance fixes.</p>
-      </div>
-
-      <h3>The Automated Escalator Paradigm</h3>
-      <p>To write high-efficiency web animations, visualize an automatic mechanical escalator operating inside a busy terminal terminal. Instead of prompting individual users to coordinate step timings and manage pacing manually, the continuous floor belt guides movements smoothly along a fixed path. Keyframe style timelines run on that exact pattern: you declare the structural milestone markers once, and the browser's native engine coordinates smooth pixel placement paths automatically without script intervention.</p>
-    </section>
-
-    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Visual — Rendering Engine Allocation Tracks</h2>
-      </div>
-      <p>Understanding how style changes flow through browser rendering tracks is vital for preserving performance budgets. Click through each sequential lifecycle step to see how style choices affect main thread and GPU processing paths.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>📊 &nbsp; Accelerated Rendering Engine Pipeline Stages &nbsp;·&nbsp; Click steps to map operations.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Style Manipulation Identification Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The browser style parser evaluates incoming rule modifications. If a transition changes layout metrics (like <code>width</code> or <code>top</code>), it forces the engine to halt script execution to recalculate geometry blocks across the layout tree.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Independent Graphics Layer Promotion Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>When properties like <code>transform</code>, <code>opacity</code>, or explicit <code>will-change</code> flags are declared, the engine isolates the target component into its own graphics layer, separating its rendering path from the main document body tree.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Hardware-Accelerated GPU Compositing</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The isolated layer is shipped straight to the device graphics hardware. The GPU blends, scales, and composites the layer surfaces into final pixels in memory, outputting fluid animations smoothly while keeping the main thread free.</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Refactored flow action row ensuring safe element clearance across platforms -->
-        <div class="flow-action-row">
-          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Vector Layout</button>
-        </div>
-      </div>
-
-      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="12" fill="#04010a"/>
-          <g opacity="0.15">
-            <path d="M 50 60 L 750 60 M 50 160 L 750 160 M 50 260 L 750 260" stroke="#ff007f" stroke-width="1"/>
-            <path d="M 380 40 L 380 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
-          </g>
-          
-          <!-- Explicit Layout Layer Delineations -->
-          <text x="70" y="35" fill="#6272a4" font-family="Fira Code" font-size="12" font-weight="bold">Main Thread (Reflow + Repaint Risks)</text>
-          <text x="410" y="35" fill="#00f5d4" font-family="Fira Code" font-size="12" font-weight="bold">GPU Layer Compositing (Fast Path)</text>
-          
-          <!-- Explicit Vector representation of rendering layer branches -->
-          <rect x="70" y="90" width="260" height="120" rx="6" fill="#0b051d" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="200" y="140" fill="#f8f6fc" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Unoptimized Transition</text>
-          <text x="200" y="165" fill="#ff007f" font-family="Fira Code" font-size="11" text-anchor="middle">Changes geometric margins</text>
-
-          <rect x="420" y="90" width="310" height="120" rx="6" fill="#0b051d" stroke="#00f5d4" stroke-width="2"/>
-          <text x="575" y="140" fill="#f8f6fc" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Hardware-Accelerated Path</text>
-          <text x="575" y="165" fill="#39ff14" font-family="Fira Code" font-size="11" text-anchor="middle">transform: translate3d()</text>
-        </svg>
-        <div class="infographic-caption">Vector Diagram 2.5: The Rendering Pipeline Split. Targeting composite-only style parameters moves processing tasks straight to the device graphics hardware, keeping animations fluid.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Transitions vs. Keyframe Timeline Engine Core Parameters</h3>
-      <p>High-performance visual design requires picking the right tool for specific interaction states. Let us look at the explicit structural breakdown of transitions and keyframe timeline setups:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">animation-engine.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">/* Transitions: Ideal for smooth shifts between two distinct states */</span>
-<span class="t-sel">.action-trigger-node</span> {
-  <span class="t-prop">will-change</span>: <span class="t-val">transform, opacity</span>;
-  <span class="t-prop">transition</span>: 
-    <span class="t-val">transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)</span>,
-    <span class="t-val">opacity 0.4s linear</span>;
-}
-
-<span class="t-comment">/* Keyframes: Designed for complex, multi-stage cascading timelines */</span>
-<span class="t-kw">@keyframes</span> <span class="t-sel">pulseGlowMatrix</span> {
-  <span class="t-sel">0%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
-  <span class="t-sel">50%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1.05, 1.05, 1.05)</span>; }
-  <span class="t-sel">100%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
-}
-
-<span class="t-sel">.pulse-component-card</span> {
-  <span class="t-prop">animation</span>: <span class="t-val">pulseGlowMatrix 2s infinite ease-in-out alternate-reverse</span>;
-}</pre>
-      </div>
-
-      <p>CSS transitions are ideal for smooth shifts between two states (like a button hover color update). Keyframe engines let you design multi-stage animations with explicit timeline markers (<code>0%</code> to <code>100%</code>). This lets you build repeating loop animations that run smoothly on their own threads.</p>
-
-      <h3>Part B — Custom Easing Mathematics & Cubic-Bezier Acceleration</h3>
-      <p>Default animation curves like <code>linear</code> or <code>ease</code> can make visual movements feel mechanical or abrupt. Production-grade design systems leverage cubic-bezier math vectors to configure natural acceleration profiles.</p>
-      <p>A cubic-bezier function is defined by four coordinate control points: <code>cubic-bezier(x1, y1, x2, y2)</code>. These coordinates map out an interpolation speed curve over time. For example, setting <code>cubic-bezier(0.16, 1, 0.3, 1)</code> builds a custom "ease-out" curve that accelerates quickly and decelerates smoothly toward completion, making interface responses feel snappy and refined.</p>
-
-      <h3>Part C — Critical CSS Properties Performance Profiles</h3>
-      <p>Enterprise layout engineering requires choosing animation properties with an eye on hardware resource impacts. Let us evaluate the rendering footprint of standard style adjustments:</p>
-
-      <table class="google-table">
-        <thead>
-          <tr>
-            <th>Property Declaration</th>
-            <th>Rendering Stages Triggered</th>
-            <th>GPU Acceleration Status</th>
-            <th>Impact Profile Evaluation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>width</code> / <code>height</code> / <code>left</code></td>
-            <td class="bad">Layout + Paint + Composite</td>
-            <td>Unsupported</td>
-            <td>Forces a full structural Reflow pass, recalculating layout geometry boundaries down the DOM tree.</td>
-          </tr>
-          <tr>
-            <td><code>box-shadow</code> / <code>color</code></td>
-            <td class="bad">Paint + Composite</td>
-            <td>Unsupported</td>
-            <td>Triggers a local screen Repaint, forcing pixels to redraw without changing element boundaries.</td>
-          </tr>
-          <tr>
-            <td><code>transform: translate3d()</code></td>
-            <td class="good">Composite Only</td>
-            <td>Hardware Accelerated</td>
-            <td>Bypasses layout and paint steps, using GPU compositing layers for fluid animations.</td>
-          </tr>
-          <tr>
-            <td><code>opacity</code></td>
-            <td class="good">Composite Only</td>
-            <td>Hardware Accelerated</td>
-            <td>Adjusts node alpha transparency on its own graphics layer to avoid pixel redrawing work.</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>Part D — Managing Layer Invalidation Loops</h3>
-      <p>While isolating elements into graphics layers speeds up transitions, overusing these properties can introduce performance errors. Every graphics layer requires browser memory allocation budgets. Creating hundreds of independent layers concurrently causes layer bloat, which bogs down thread compositing and increases memory usage on lower-end mobile devices.</p>
-      <p>To safely optimize animations without wasting system memory, attach the <code>will-change</code> property cleanly to specific elements before animations trigger: <code>will-change: transform;</code>. This hints to the style engine to prepare its graphics resources ahead of time, cleaning up layer spaces automatically once visual sequences conclude.</p>
-    </section>
-
-    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Animation Properties</h2>
-      </div>
-      <p>Let us analyze real production-tier animation mistakes and step-by-step refactor them to ensure smooth layout scaling profiles.</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Main Thread Reflow Delays</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Unoptimized Opacity Updates</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Stuttering Keyframe Loops</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Layer Bloat Overruns</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Render Logs</button>
-        </div>
-
-        <!-- Tab 1 -->
-        <div class="hud-tab-panel active-hud-panel" id="l1">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">layout-reflow-bug.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Sliding drawer modifies width geometry, causing reflow lag */</span>
-<span class="t-sel">.sidebar-drawer-panel</span> {
-  <span class="t-prop">width</span>: <span class="t-val">0px</span>;
-  <span class="t-prop">transition</span>: <span class="t-val">width 0.3s ease-out</span>;
-}</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Optimize layout transformations via composite hardware layers */</span>
-<span class="t-sel">.sidebar-drawer-panel</span> {
-  <span class="t-prop">width</span>: <span class="t-val">300px</span>;
-  <span class="t-prop">will-change</span>: <span class="t-val">transform</span>;
-  <span class="t-prop">transform</span>: <span class="t-val">translate3d(-100%, 0, 0)</span>;
-  <span class="t-prop">transition</span>: <span class="t-val">transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Animating geometric properties like <code>width</code> forces the layout engine to recompute element coordinates across the full DOM tree on every frame, causing visual lag.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Moving to <code>transform</code> properties shifts presentation adjustments straight to the GPU layer, avoiding main-thread layout recalculations.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2 -->
-        <div class="hud-tab-panel" id="l2">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">visibility-repaint.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Alternating absolute display modes breaks page transitions */</span>
-<span class="t-sel">.modal-overlay-node</span> { <span class="t-prop">display</span>: <span class="t-val">none</span>; }
-<span class="t-sel">.modal-overlay-node.active</span> { <span class="t-prop">display</span>: <span class="t-val">block</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Refactor using hardware-accelerated opacity variables */</span>
-<span class="t-sel">.modal-overlay-node</span> {
-  <span class="t-prop">opacity</span>: <span class="t-val">0</span>;
-  <span class="t-prop">pointer-events</span>: <span class="t-val">none</span>;
-  <span class="t-prop">transition</span>: <span class="t-val">opacity 0.3s ease</span>;
-}
-<span class="t-sel">.modal-overlay-node.active</span> {
-  <span class="t-prop">opacity</span>: <span class="t-val">1</span>;
-  <span class="t-prop">pointer-events</span>: <span class="t-val">auto</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Toggling display properties strips the node out of the render tree entirely, forcing heavy layout recalculation steps when visibility states change.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Using <code>opacity</code> with <code>pointer-events</code> fades components smoothly on separate layers, bypassing main thread processing lags completely.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3 -->
-        <div class="hud-tab-panel" id="l3">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">loop-optimization.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Repeating pulse timelines trigger continuous repaint steps */</span>
-<span class="t-kw">@keyframes</span> <span class="t-sel">badPulse</span> {
-  <span class="t-sel">0%</span> { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 0px red</span>; }
-  <span class="t-sel">100%</span> { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 20px red</span>; }
-}</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Refactor loop timelines to isolate tasks on composited scale layers */</span>
-<span class="t-kw">@keyframes</span> <span class="t-sel">goodPulse</span> {
-  <span class="t-sel">0%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1, 1, 1)</span>; }
-  <span class="t-sel">100%</span> { <span class="t-prop">transform</span>: <span class="t-val">scale3d(1.04, 1.04, 1.04)</span>; }
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Animating paint-heavy properties like <code>box-shadow</code> loops pixel redraw routines continuously, causing frame drops on mobile devices.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Switching to <code>scale3d</code> transformations targets hardware compositing paths directly, ensuring smooth looping animations.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4 -->
-        <div class="hud-tab-panel" id="l4">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">layer-bloat-fix.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Preloading hardware layers blindly on generic sub-elements */</span>
-<span class="t-sel">.feed-row-item</span> { <span class="t-prop">will-change</span>: <span class="t-val">transform</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Limit layer generation strictly to active interaction states */</span>
-<span class="t-sel">.feed-row-item</span> { <span class="t-prop">transition</span>: <span class="t-val">transform 0.25s ease</span>; }
-<span class="t-sel">.feed-row-item:hover</span> { <span class="t-prop">will-change</span>: <span class="t-val">transform</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Forcing permanent hardware layer promotion across long element feeds consumes extensive graphics memory, creating scrolling lag.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Attaching layer notifications specifically to active states allocates graphics memory responsibly, preserving device resources.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 5 -->
-        <div class="hud-tab-panel" id="l5">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">render-telemetry.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">// Track page render performance during layout animations</span>
-console.time(<span class="t-str">"Animation Pipeline Task"</span>);
-document.querySelector(<span class="t-str">'.sidebar-drawer-panel'</span>).classList.add(<span class="t-str">'open'</span>);
-console.timeEnd(<span class="t-str">"Animation Pipeline Task"</span>);</pre>
-            <div class="error-explanation">
-              <div class="error-label">Three Rules for Performance Animation Profiling</div>
-              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
-                <strong style="color:var(--neon-quantum-cyan);">1. Leverage 3D coordinate matrices.</strong> Use properties like <code>translate3d()</code> or <code>scale3d()</code> for transitions to instruct browser style engines to allocate hardware graphics layers predictably.<br><br>
-                <strong style="color:var(--neon-plasma-pink);">2. Avoid paint-heavy filters.</strong> Keep demanding effects like <code>blur()</code> or real-time color filters minimal along scrollable layouts to prevent main thread rendering lag.<br><br>
-                <strong style="color:var(--neon-toxic-green);">3. Use DevTools Layer panels.</strong> Open the specialized Layers panel inside browser DevTools to visually audit active layer allocations and identify memory leaks early.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common timeline optimization pitfalls during technical interviews. Keeping layout interactions limited to composite layers protects client rendering speeds.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Animating geometric parameters like margins or heights</div>
-          <div class="pitfall-body">Using transition parameters to slide boxes via <code>margin-left</code> modifications, forcing continuous layout reflow calculations.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Enforce high-performance <code>transform: translate3d()</code> rules to handle directional shifts smoothly within isolated GPU layers.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Over-declaring long will-change properties globally</div>
-          <div class="pitfall-body">Adding permanent <code>will-change</code> flags to all layout elements simultaneously, exhausting available graphics memory allocations quickly.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Apply layer tags responsibly, binding notifications to active interaction states to manage graphics resources efficiently.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Using infinite timelines to animate box-shadow properties</div>
-          <div class="pitfall-body">Creating looping keyframe sequences that modulate complex shadows, which spikes continuous pixel redraw work across the document.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Animate element dimensions smoothly via composited scale modifications instead to protect device processing budgets.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Relying on legacy JavaScript intervals for layout transitions</div>
-          <div class="pitfall-body">Using old script intervals to step coordinates manually, which misses standard browser vertical sync intervals and causes visual stutter.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Leverage native CSS transitions or wrap custom runtime scripts inside <code>requestAnimationFrame</code> loops to lock alignments smoothly.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 05</div>
-          <div class="pitfall-title">Forgetting to clean up completed visibility states</div>
-          <div class="pitfall-body">Fading elements out using opacity updates while keeping interactive nodes active, which causes unaligned components to block background mouse clicks.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Incorporate <code>pointer-events: none;</code> alongside your opacity rules to clear input fields safely from hidden layers.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 06</div>
-          <div class="pitfall-title">Mixing mismatched transition speeds across shorthand targets</div>
-          <div class="pitfall-body">Declaring generic transition rules like <code>all 0.4s;</code>, forcing the engine to calculate properties unnecessarily during basic state changes.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Target specific animation properties explicitly in your transition stylesheets (e.g., <code>transition: transform 0.4s;</code>) to streamline execution paths.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Real World — Enterprise Performance Metrics</h2>
-      </div>
-      <p>Top-tier web engineering teams strictly monitor style layer invalidations to prevent main-thread layout lag and keep interface interactions seamless.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Stripe Checkout Flows</div>
-          <div class="cell-desc">Stripe designs sensitive user validation and checkout forms using optimized composite layer transitions. This strategy keeps visual entry paths completely fluid, preventing input latency during heavy page tasks.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Twitter Timeline Streams</div>
-          <div class="cell-desc">Twitter web engineers optimize infinite content scrolling by restricting slide animation components to separate GPU graphics surfaces, ensuring a locked 60fps interaction experience across mid-tier mobile screens.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Spotify Web Players</div>
-          <div class="cell-desc">Spotify runs continuous track loading timelines and carousel sliders using hardware-accelerated transform mechanics, preventing media playback interruptions or main-thread script lag during background data fetches.</div>
-        </div>
-      </div>
-
-      <h3>The Production Animation Validation Pipeline</h3>
-      <p>Enterprise deployment workflows analyze presentation scripts through automated profiling steps before live deployment passes run:</p>
-      <ol>
-        <li><strong>Main-Thread Blocking Audits:</strong> Build-time tests evaluate transition paths to detect and block rules that trigger costly layout reflow recalculations.</li>
-        <li><strong>Graphics Layer Memory Profiling:</strong> Automated tools trace layer count allocations across view environments to protect memory budgets on mobile devices.</li>
-        <li><strong>Visual Frame Rate Verification:</strong> Continuous integration hooks run interaction passes to measure frame rates, ensuring layouts meet strict performance standards.</li>
-      </ol>
-    </section>
-
-    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In senior technical evaluations, layout transformation choices are evaluated by analyzing your understanding of rendering pipelines, hardware layers, and resource budgets.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are designing a sidebar modal navigation system that pulls link elements into view dynamically. When users trigger the panel, the interface drops animation frames, causing noticeable stutter. How do you resolve this rendering latency?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The interaction lag happens because animating geometric layout properties like <code>width</code> or <code>left</code> values forces the browser engine to rerun multi-axis coordinate checks (Reflow) and redraw altered pixels (Repaint) on every frame. To resolve this layout bottleneck, I would transition the component to a hardware-accelerated structure. I would lock the sidebar panel to a fixed width dimensions budget, using <code>will-change: transform;</code> to notify the layout scanner early. Next, I would position the element out of view using a 3D transformation rule: <code>transform: translate3d(-100%, 0, 0);</code>. When the toggle clicks, applying <code>transform: translate3d(0, 0, 0);</code> shifts the panel via the device GPU, completely avoiding main-thread processing loops to deliver a smooth 60fps layout animation."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain what occurs along the critical rendering path when a transition rule modulates paint-heavy parameters like background-color or box-shadow fields instead of composite properties."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Modifying properties like <code>box-shadow</code> forces the browser engine to skip the initial layout phase but rerun the pixel rasterization stage (Repaint) on every animation frame. The rendering software must recalculate pixel details and colors across that screen region, which crowds primary main thread processing loops and can lead to dropped frames on lower-power mobile devices."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Architecture Evaluation Loop</div>
-        <div class="pb-q-title">"A teammate suggests deploying a universal reset utility style rule like * { will-change: all; } to pre-promote every DOM node into its own hardware layer. critically evaluate this presentation approach."</div>
-        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing a global hardware layer promotion across all elements introduces severe performance risks. Every graphics layer allocated by the browser consumes explicit device memory and texture tracking resources. Overloading this allocation budget leads to graphics memory exhaustion, which slows down thread compositing and can cause application crashes on mobile devices. Layer promotion should be applied selectively to active animation paths."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Layout Timeline Assessment</div>
-        <div class="pb-q-title">"Trace how custom cubic-bezier coordinate parameters streamline browser style matching steps compared to traditional linear transition settings."</div>
-        <div class="pb-hud-answer"><strong>Layout Engine Optimization Trace:</strong> "Declaring custom cubic-bezier vectors maps out precise acceleration changes natively within the style engine. The layout software handles value pacing along a smooth curve in a single pass, avoiding the main-thread script lag often introduced by manual coordinate stepping approaches."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">What distinct browser rendering advantage do you gain by choosing composite-only properties for animations?</div>
-            <div class="r-action-hint">Consider layout validation steps and main thread tasks ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">Composite-only properties (like <code>transform</code> and <code>opacity</code>) bypass layout geometry checks (Reflow) and pixel redrawing steps (Repaint) entirely. The browser splits these elements into separate graphics surfaces, offloading animation work straight to the GPU to protect main-thread processing resources.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why does over-allocating independent graphics layers degrade scrolling performance on mobile platforms?</div>
-            <div class="r-action-hint">Consider graphics memory overhead limits ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Every independent layer promoted by the styling engine consumes dedicated device memory and texture tracking resources. Overloading this allocation budget leads to graphics memory bloat, slowing down layer compositing steps and creating interface lag.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Explain the operational differences between CSS transitions and keyframe timeline engines.</div>
-            <div class="r-action-hint">Contrast basic state switches with complex multi-stage loops ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">CSS transitions are designed to handle smooth shifts between two distinct states (like a button click style update). Keyframe timeline engines let you design complex, multi-stage animations with explicit percentage markers, making them ideal for repeating loop behaviors.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">How does the will-change property help optimize demanding interface transitions?</div>
-            <div class="r-action-hint">Consider advance graphics resource preparations ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">The <code>will-change</code> property tips off the browser's rendering engine about upcoming style modifications ahead of time. This allows the engine to pre-allocate graphics resources and prepare hardware layers on the GPU, avoiding initialization lag when transitions trigger.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 05</div>
-            <div class="r-question-text">What rendering issue occurs when you animate properties like top, left, or margin metrics?</div>
-            <div class="r-action-hint">Consider the stages of the browser rendering pipeline ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 05</div>
-            <div class="r-answer-text">Modifying geometric properties like <code>top</code> or <code>left</code> forces the browser engine to rerun layout coordinate checks (Reflow) and redraw modified pixels (Repaint) on every frame. This intensive main-thread workload can cause noticeable animation stutter.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 06</div>
-            <div class="r-question-text">Why are 3D transform functions like translate3d() preferred over 2D options like translate()?</div>
-            <div class="r-action-hint">Consider hardware layer promotion hooks ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 06</div>
-            <div class="r-answer-text">3D transform properties (like <code>translate3d()</code> or <code>scale3d()</code>) act as explicit hooks that prompt browser style parsers to allocate hardware graphics layers on the GPU. This hardware acceleration bypasses main thread checks to keep transitions completely fluid.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these performance animation tasks to master progressive layout acceleration. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Graphics Layers via the browser DevTools Panel (30 Min)</div>
-            <div class="row-desc">Open a complex application view and launch your browser's developer console (F12). Locate and open the specialized Layers customization panel under options, and interact with dropdown navigation blocks to visually map out active graphics layer allocations.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a Hardware-Accelerated Sliding Sidebar Shell (30 Min)</div>
-            <div class="row-desc">Create an isolated style sandbox page locally. Construct an administrative navigation drawer that slides into view using composited <code>transform: translate3d()</code> modifications, verifying that no layout reflow passes occur during transitions.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Map a Snappy Interaction Curve using Cubic-Bezier Vectors (30 Min)</div>
-            <div class="row-desc">Incorporate a custom timing curve (like <code>cubic-bezier(0.16, 1, 0.3, 1)</code>) across your local transition style rules. Verify value acceleration speeds visually during interactions to ensure movements feel fluid yet responsive.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Benchmark Animation Frame Rates via the Performance Timeline (30 Min)</div>
-            <div class="row-desc">Open the Performance profiling tab within your browser's developer workspace. Record a short session capture while running a looping keyframe animation, and evaluate the tracking chart logs to ensure rendering operations remain free of long tasks.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">Don't Skip These Exercises</div>
-        <p>Reviewing animation performance text without writing code is like studying database optimization models without profiling queries. Composite layer operations and custom easing curves become second nature only through hands-on practice. Shifting element style transitions to hardware layers locally builds the performance mindset required when engineering scale full-stack architectures down the line.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These presentation timeline laws form the operational requirement for engineering high-performance interface animations. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Target composite-only style properties. Limit animation rules strictly to transform and opacity updates to protect browser rendering speeds.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Leverage GPU hardware acceleration. Use 3D transform declarations like translate3d() to prompt the style engine to prepare hardware layers on the GPU.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Manage layer resources responsibly. Apply will-change declarations selectively to active interaction states to avoid graphics memory bloat.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Layer Compositing</div>
-          <div class="g-node-definition">The final hardware-accelerated rendering phase where independent graphics layers are blended into unified memory spaces on the GPU for screen display.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Layout Reflow</div>
-          <div class="g-node-definition">An intensive browser computing phase where the engine calculates spatial positions and boundary coordinates across the viewport layout tree.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Screen Repaint</div>
-          <div class="g-node-definition">The rendering stage where the engine rasterizes modified pixel configurations, redrawing background colors or borders without changing element geometry.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">will-change Property</div>
-          <div class="g-node-definition">A styling optimization hint that alerts the browser engine about upcoming element modifications, enabling hardware layer preparation.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Cubic-Bezier Curve</div>
-          <div class="g-node-definition">A mathematical model defined by four coordinate control points used to configure natural, custom velocity changes over time.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">3D Transform Acceleration</div>
-          <div class="g-node-definition">The practice of using 3D expressions (like translate3d()) to force the style parser to handle element transitions directly on the GPU.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Graphics Layer Bloat</div>
-          <div class="g-node-definition">A performance issue that happens when too many elements are promoted to hardware layers simultaneously, exhausting device graphics memory.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Keyframe Engine</div>
-          <div class="g-node-definition">A native CSS timeline manager that orchestrates multi-stage animations using explicit percentage markers.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Transition Shorthand</div>
-          <div class="g-node-definition">An integrated presentation rule used to declare property targets, durations, and easing curves within a single pass.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Main Thread Lockout</div>
-          <div class="g-node-definition">An execution stall where heavy rendering calculations block the primary thread, dropping interaction frame rates below a fluid 60fps.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Pointer Events Toggle</div>
-          <div class="g-node-definition">An interactive design rule used to disable mouse click tracking on hidden elements, preventing unaligned components from blocking interactions.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">CSSOM Tree Synthesis</div>
-          <div class="g-node-definition">The computed cascade data framework generated by the browser style parser, used alongside the DOM tree to construct page layouts.</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-2.6.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 2.6 - Tailwind CSS: Modern Utility-First Style Architecture</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-/* Refactored Layout Separation Navigation Logic: Pushes elements safely instead of overlapping views */
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

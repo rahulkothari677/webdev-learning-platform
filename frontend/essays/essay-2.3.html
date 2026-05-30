@@ -511,21 +511,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1609,8 +1594,989 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-2">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+ <!-- Initialized with open state layout anchor for premium desktop display -->
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<!-- ── SIDEBAR TOGGLE CONTROL SYSTEM BUTTON (NEW FEATURE) ── -->
+
+
+<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD ═══════════════════════════════ -->
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Matrix Navigation</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-magenta"></div>
+    <div class="glow-orb orb-emerald"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
+  <div class="hero-eyebrow">essay 2.3 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  
+  <!-- DESIGN UPDATE: Decreased layout header title scale slightly per request to enhance structural text reading flow -->
+  <h1 class="hero-title">
+    CSS Grid Matrix:<br>
+    Two-Dimensional <em>Space Frameworks</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering strict multi-axis tracking grids, explicit and implicit row/column allocation mechanics, template area boundaries, tracking track sizing algebra, and high-performance layout alignments.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">2.3 — Matrix Grid System</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~48 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essays 2.1 & 2.2</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">Fractional (fr) Algebra · Auto-Placement Algorithms · Area Templates · Implicit Grid Bounds</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; map two-dimensional matrix coordinates</div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN CONTENT HUD PANELS ═══════════════════════════════ -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>When faced with complex user interface designs, many frontend developers attempt to force alignments by hacking single-axis layouts. They nest multiple rows inside vertical columns recursively. <strong>This structural anti-pattern tanks browser performance.</strong> At hyper-scale, deeply nested sub-component wrappers complicate code updates and force browser engines to execute repetitive, multi-tiered layout layout recalculations.</p>
+      <p>The CSS Grid Layout Engine provides a native, hardware-accelerated two-dimensional framework system. It allows developers to orchestrate layouts across horizontal rows and vertical columns concurrently. This deep architectural module explores structural fractional mathematics, explicit layout partitioning patterns, template areas mapping, and the inner mechanics of the browser placement engine. Mastering these grid mechanics is essential for engineering scalable web dashboards that adapt predictably to volatile runtime data changes.</p>
+      
+      <!-- Live Interactive Data Compute Display Feature -->
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Matrix Fractional Unit Dynamic Allocation Model:</div>
+        <div class="compute-value">1fr = (Container Width - Total Gaps - Static Columns) / ∑(fr Coefficients)</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The distinction between an enterprise UI system architect and a novice developer lies in how they slice layout container spaces. Novices force dimensional calculations down into individual child components. Masters declare a clean two-dimensional matrix grid template on the parent container wrapper first, letting data elements mount into layout coordinate fields natively without triggering structural layout shifts.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
+    <section class="section-card" id="s2">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">Where This Fits</h2>
+      </div>
+      <p>Now that you have configured linear, content-driven layouts using Flexbox (2.2), we step straight up into full two-dimensional layout systems. CSS Grid handles layout architecture from a layout-first perspective.</p>
+      
+      <div class="phase-map">
+        <div class="phase-node done"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Flow</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node current"><div class="phase-circle">2.3</div><div class="phase-label">Grid Matrix</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.4</div><div class="phase-label">Responsive MQ</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.6</div><div class="phase-label">Tailwind CSS</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Execution</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Architectures</div></div>
+      </div>
+      
+      <p>Every dynamic application layout matrix, administrative system dashboard grid, and multi-tier grid column view constructed in following units leverages this structural engine layer. Mastering matrix spacing equations lets you construct clean web layouts, managing responsive breakpoints easily before you introduce heavy application script loops or utility styling frameworks.</p>
+
+      <div class="hud-callout hud-callout-tip">
+        <div class="hud-callout-label">Return Here Often</div>
+        <p>Keep these track positioning math rules close at hand. The first few times your implicit track elements expand unexpectedly or your dashboard layout blocks wrap poorly on smaller client monitors, trace through this grid track guide. After troubleshooting layout alignments manually a few times, writing stable grid matrix systems will become second nature.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Steel Framework Grid Matrix</h3>
+      <p>Imagine constructing a modern automated logistics warehouse. You could try setting up individual cargo container stacks independently, chaining walls together and strapping boxes to one another using tie-down straps as materials are checked in. This unaligned approach risks layout instabilities as inventory sizes shift.</p>
+      <p>Alternatively, you can erect **a rigid structural steel framework grid matrix featuring permanent vertical columns, fixed horizontal tracks, and pre-allocated storage slots first.** Content elements slide into these assigned coordinate cells natively. If an item expands or shifts, the global structural steel framework matrix keeps adjacent walls locked in place. CSS Grid acts as that robust structural framework grid matrix, managing element placement cleanly across multiple design fields simultaneously.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When an application layout element shifts or maps poorly across dynamic views, recall this core principle: <strong>"This interface is a unified structural coordinate network. Where have I mapped out the horizontal and vertical line properties on the parent container, and how are the child boxes targeting those layout paths?"</strong> This perspective unifies grid bug resolutions.</p>
+      </div>
+
+      <h3>The Printed Newspaper Column Grid</h3>
+      <p>To master advanced web layout systems, visualize the physical print template sheet used by newspaper layout operators. Designers don't stitch dynamic column spaces together element-by-element. They declare an ironclad column layout grid across the entire page first. Graphic items, main headers, and text entries align with these predetermined layout lines. If an article section expands, it flows across multiple column lines cleanly without shifting adjacent editorial layouts out of place.</p>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Visual — Two-Dimensional Matrix Lifecycles</h2>
+      </div>
+      <p>Tracing how the browser engine structures explicit and implicit grids is essential for preventing structural alignment errors. Click through each section block to see how layout properties configure grid frameworks.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>📊 &nbsp; Internal Grid Matrix Token Processing Mechanics &nbsp;·&nbsp; Click steps to trace allocations.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Explicit Grid Track Definition Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The layout engine parses properties like <code>grid-template-columns</code> and <code>grid-template-rows</code>. It maps out explicit coordinate layout tracks, allocating specific column widths and row heights across the parent container's view budget.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Child Element Coordinate Mapping Loop</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The engine scans child nodes to evaluate spatial line selectors like <code>grid-column: 1 / span 2</code> or explicit template area configurations. It positions elements precisely across the declared grid intersections, tracking parent cell bounds throughout.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Implicit Grid Auto-Generation Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>If runtime content yields more data elements than the explicit grid template has cells for, the browser activates its implicit grid placement engine. This system auto-generates new layout rows using dimensions configured via <code>grid-auto-rows</code> rules.</p>
+            </div>
+          </div>
+        </div>
+        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
+      </div>
+
+      <!-- PREMIUM INCLUDED VECTOR INFOGRAPHIC -->
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="12" fill="#05010e"/>
+          <g opacity="0.2">
+            <path d="M 50 40 L 750 40 M 50 130 L 750 130 M 50 220 L 750 220 M 50 310 L 750 310" stroke="#10b981" stroke-width="1"/>
+            <path d="M 60 30 L 60 300 M 280 30 L 280 300 M 510 30 L 510 300 M 740 30 L 740 300" stroke="#10b981" stroke-width="1"/>
+          </g>
+          
+          <!-- Explicit Track Line Delineation Callouts -->
+          <text x="70" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 1</text>
+          <text x="290" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 2</text>
+          <text x="520" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 3</text>
+          
+          <!-- Explicit Matrix Blocks mapping coordinates across multiple dimensions concurrently -->
+          <rect x="70" y="50" width="430" height="70" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="285" y="90" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Header Module Cell (grid-column: 1 / span 2)</text>
+
+          <rect x="70" y="140" width="200" height="150" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="170" y="220" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Sidebar Component</text>
+
+          <rect x="290" y="140" width="440" height="150" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="510" y="220" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Main Dashboard Workspace Grid</text>
+        </svg>
+        <div class="infographic-caption">Vector Infographic 2.3: Two-Dimensional Grid Coordinate System. Track paths manage columns and rows simultaneously, allowing child elements to span multiple cells across axes smoothly.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Fractional Allocation Algebra & Track Calculations</h3>
+      <p>The CSS Grid engine introduces the fractional unit (<code>fr</code>) to calculate fluid space distributions. The <code>fr</code> unit represents a proportional slice of the unallocated layout space inside a grid container.</p>
+      
+      <p>Let us trace the exact layout math equations executed by the browser engine:</p>
+      <p>Imagine a grid container measuring exactly **$1200\text{px}$** wide configured with <code>display: grid</code>. The style sheet defines these track criteria:</p>
+      <p><code>grid-template-columns: 300px 1fr 2fr; gap: 30px;</code></p>
+      
+      <p>Let us solve for the final element column widths step-by-step:</p>
+      <ol>
+        <li>**Account for Static Columns & Gaps:** The layout has two gaps totaling $2 \times 30\text{px} = 60\text{px}$. Adding the fixed column width yields $300\text{px} + 60\text{px} = 360\text{px}$ of static space usage.</li>
+        <li>**Calculate Free Viewport Space:** The remaining unallocated layout space equals $1200\text{px} - 360\text{px} = 840\text{px}$.</li>
+        <li>**Sum Fractional Coefficients:** The total fr denominator points sum to $1 + 2 = 3$ fractions.</li>
+        <li>**Distribute Free Space Slices:**
+          <ul>
+            <li>Column 1: Fixed at its static value of **$300\text{px}$**.</li>
+            <li>Column 2: Claims $\frac{1}{3} \times 840\text{px} = \mathbf{280\text{px}}$.</li>
+            <li>Column 3: Claims $\frac{2}{3} \times 840\text{px} = \mathbf{560\text{px}}$.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="design-compute-hud">
+        <div class="compute-title">📊 Calculated Matrix Track Width Outputs:</div>
+        <div class="compute-value">Col 1: 300px &nbsp;·&nbsp; Col 2: 280px &nbsp;·&nbsp; Col 3: 560px</div>
+      </div>
+
+      <h3>Part B — Explicit vs. Implicit Matrix Boundary Rules</h3>
+      <p>Understanding the transition boundaries between explicit layouts and implicit tracks is crucial for system design evaluations:</p>
+      
+      <ul>
+        <li><strong>Explicit Grid Infrastructure:</strong> Tracks declared directly via <code>grid-template-columns</code> and <code>grid-template-rows</code> parameters. The structural coordinates are fixed directly by your styling rules.</li>
+        <li><strong>Implicit Grid Infrastructure:</strong> New tracks auto-generated by the layout engine when dynamic runtime content exceeds your explicit template cells. If left unconfigured, these auto-generated tracks default to a height of <code>auto</code>, which can distort component layouts.</li>
+      </ul>
+      
+      <p>To handle dynamic data smoothly, configure properties like <code>grid-auto-rows: minmax(150px, auto);</code>. This setup guarantees a stable minimum height for auto-generated rows while allowing containers to grow if long text blocks require it.</p>
+
+      <h3>Part C — Named Template Area Layout Scopes</h3>
+      <p>For large-scale layouts, you can name grid regions using the <code>grid-template-areas</code> property, creating an explicit visual text map of your layout design directly inside your stylesheet:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">dashboard-blueprint.css</span></div>
+        <pre><span class="t-sel">.platform-shell-grid</span> {
+  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
+  <span class="t-prop">grid-template-columns</span>: <span class="t-val">280px 1fr</span>;
+  <span class="t-prop">grid-template-rows</span>: <span class="t-val">80px 1fr 60px</span>;
+  <span class="t-prop">grid-template-areas</span>: 
+    <span class="t-str">"head head"</span>
+    <span class="t-str">"side main"</span>
+    <span class="t-str">"foot main"</span>;
+}</pre>
+      </div>
+
+      <p>Child elements are assigned to these named regions using the <code>grid-area</code> property: <code>grid-area: main;</code>. This template approach makes layout code easy to read and update, allowing you to restructure full pages at different breakpoints with just a few changes to your parent stylesheet rules.</p>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">The Auto-Fit Sizing Secret</div>
+        <p>Combining repeat loops with auto-placement functions like <code>grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));</code> builds responsive grid systems that adapt naturally without media query breakpoints. The browser engine computes viewport budgets dynamically, auto-fitting grid items into columns and wrapping them to new lines cleanly as screen sizes shift.</p>
+      </div>
+
+      <h3>Part D — High-Performance Alignment Properties Comparison</h3>
+      <p>CSS Grid provides precise control over item alignment across two dimensions simultaneously. Let us contrast the behavior profiles of your core alignment properties:</p>
+
+      <table class="google-table">
+        <thead>
+          <tr>
+            <th>Property Declaration</th>
+            <th>Primary Alignment Axis</th>
+            <th>Target Context Scope</th>
+            <th>Impact Profile Evaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>justify-items</code></td>
+            <td>Inline Axis (Horizontal)</td>
+            <td>All Cell Items</td>
+            <td>Aligns element contents horizontally relative to their individual grid cell boundaries.</td>
+          </tr>
+          <tr>
+            <td><code>align-items</code></td>
+            <td>Block Axis (Vertical)</td>
+            <td>All Cell Items</td>
+            <td>Manages cell content placement vertically relative to individual row bounds.</td>
+          </tr>
+          <tr>
+            <td><code>justify-content</code></td>
+            <td>Inline Axis (Horizontal)</td>
+            <td>Entire Grid Matrix Tree</td>
+            <td>Distributes unallocated space around the total grid track cluster within the parent container.</td>
+          </tr>
+          <tr>
+            <td><code>align-content</code></td>
+            <td>Block Axis (Vertical)</td>
+            <td>Entire Grid Matrix Tree</td>
+            <td>Aligns the total stacked row cluster vertically relative to parent wrapper boundaries.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Two-Dimensional Panels</h2>
+      </div>
+      <p>Let us analyze real production layout errors and refactor them to ensure smooth, responsive two-dimensional grid configurations.</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Nested Flex Optimization</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Implicit Track Collapses</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Brittle Track Layout Hacks</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Area Template Overrides</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Matrix Logs</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div class="hud-tab-panel active-hud-panel" id="l1">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">nested-flex-nightmare.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Deep nested flex rigs used to build dashboard layouts */</span>
+<span class="t-sel">.column-shell</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">flex-direction</span>: <span class="t-val">column</span>; }
+<span class="t-sel">.inner-row-rig</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">flex-direction</span>: <span class="t-val">row</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Refactor into a clean unified matrix grid template */</span>
+<span class="t-sel">.platform-shell-matrix</span> {
+  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
+  <span class="t-prop">grid-template-columns</span>: <span class="t-val">300px 1fr</span>;
+  <span class="t-prop">grid-template-rows</span>: <span class="t-val">auto 1fr</span>;
+  <span class="t-prop">gap</span>: <span class="t-val">24px</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Nesting single-axis flex layouts repeatedly introduces unneeded node wrappers and forces browser style engines to evaluate multiple separate layout passes.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Moving to CSS Grid flattens your component structure, managing rows and columns simultaneously to optimize page layout rendering speeds.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div class="hud-tab-panel" id="l2">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">implicit-collapse.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Auto-generated dynamic data cards collapse to zero heights */</span>
+<span class="t-sel">.dynamic-data-matrix</span> {
+  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
+  <span class="t-prop">grid-template-rows</span>: <span class="t-val">200px 200px</span>;
+}</pre>
+            </div>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Configure explicit minimum size guides for implicit rows */</span>
+<span class="t-sel">.dynamic-data-matrix</span> {
+  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
+  <span class="t-prop">grid-template-columns</span>: <span class="t-val">repeat(auto-fill, minmax(280px, 1fr))</span>;
+  <span class="t-prop">grid-auto-rows</span>: <span class="t-val">minmax(200px, auto)</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Fixed explicit row templates ignore dynamic runtime dataset expansion, causing overflow cards to collapse into squeezed, unaligned layouts.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Using <code>grid-auto-rows</code> with minmax parameters bounds implicit tracks safely, keeping row sizes flexible yet structured as elements load.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div class="hud-tab-panel" id="l3">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">brittle-tracks.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Hardcoded element percentage columns break on mobile viewports */</span>
+<span class="t-sel">.content-grid</span> { <span class="t-prop">display</span>: <span class="t-val">grid</span>; <span class="t-prop">grid-template-columns</span>: <span class="t-val">33% 33% 33%</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Leverage automatic column tracking loops for responsive designs */</span>
+<span class="t-sel">.content-grid</span> {
+  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
+  <span class="t-prop">grid-template-columns</span>: <span class="t-val">repeat(auto-fit, minmax(300px, 1fr))</span>;
+  <span class="t-prop">gap</span>: <span class="t-val">20px</span>;
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Fixed percentage tracks do not account for layout padding or column gap widths, which pushes boxes out of line and breaks grid wrapping rules.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Switching to fractional units lets the layout engine compute columns dynamically, auto-fitting items safely without unneeded media query interventions.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div class="hud-tab-panel" id="l4">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">area-overrides.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Manual coordinate tracking numbers used to position items */</span>
+<span class="t-sel">.workspace-item</span> { <span class="t-prop">grid-column</span>: <span class="t-val">2 / 4</span>; <span class="t-prop">grid-row</span>: <span class="t-val">1 / 3</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Route components into explicit named template areas */</span>
+<span class="t-sel">.workspace-item</span> { <span class="t-prop">grid-area</span>: <span class="t-val">main-workspace</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Hardcoded index track line numbers complicate stylesheet maintenance, as altering structural columns requires refactoring coordinates across all sub-selectors.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Mapping items directly to named layout fields allows you to update full page architectures by changing just a few lines on the parent grid definition.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div class="hud-tab-panel" id="l5">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">matrix-telemetry.js</span></div>
+            <pre><span class="token-comment">// Programmatically audit active grid column allocations via the developer console</span>
+<span class="token-kw">const</span> <span class="token-var">gridStructure</span> = window.getComputedStyle(document.querySelector(<span class="token-str">'.platform-shell-matrix'</span>));
+console.log(<span class="token-str">"[Computed Grid Track Columns Manifest]:"</span>, <span class="token-var">gridStructure</span>.getPropertyValue(<span class="token-str">'grid-template-columns'</span>));</pre>
+            <div class="error-explanation">
+              <div class="error-label">Three Rules for Two-Dimensional Performance Design</div>
+              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
+                <strong style="color:var(--neon-matrix-emerald);">1. Minimize layout structural adjustments.</strong> Use explicit minmax parameter ranges to set stable cell bounds, ensuring live data updates don't cause sudden column shifting.<br><br>
+                <strong style="color:var(--neon-cyber-pink);">2. Map empty layout cells cleanly.</strong> Use dot characters (<code>.</code>) inside your <code>grid-template-areas</code> layouts to reserve empty grid space safely without breaking template alignment rules.<br><br>
+                <strong style="color:var(--neon-tech-blue);">3. Leverage DevTools Grid Overlays.</strong> Click the 'grid' badge controls in your browser's Elements tree to display explicit track lines and cell indexes visually, making it easy to audit complex layouts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common two-dimensional alignment pitfalls during technical project reviews. Keeping grid templates structured avoids style conflicts as layouts expand.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Nesting Independent Grid Configurations Unchecked</div>
+          <div class="pitfall-body">Declaring separate, decoupled grid frameworks across nested sub-containers, which disconnects inner layout components from the main page tracking lines.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Apply modern <code>grid-template-columns: subgrid;</code> rules to link sub-component spacing straight to parent layout tracks.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Using high, arbitrary track percentage parameters</div>
+          <div class="pitfall-body">Using percentage rules like <code>grid-template-columns: 25% 75%;</code> while incorporating heavy grid column gap pixel properties.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Rely on fractional unit rules (<code>1fr 3fr</code>) to let the layout engine factor gap sizes into space calculations automatically.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Leaving Implicit Rows Unbound and Floating</div>
+          <div class="pitfall-body">Neglecting implicit grid defaults when pulling data feeds, which causes overflow components to collapse down onto tiny raw auto-height slices.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Declare explicit <code>grid-auto-rows</code> thresholds on parent wrappers to guarantee clean baseline heights for all dynamic elements.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Confusing auto-fill with auto-fit layout loop functions</div>
+          <div class="pitfall-body">Using auto-fill commands blindly, which forces grids to reserve empty tracks on wide screens even when there are no items to populate them.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Use <code>auto-fit</code> to instruct the layout engine to collapse empty columns and stretch active elements across the full layout row budget.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 05</div>
+          <div class="pitfall-title">Declaring item margins to center cell inner boxes</div>
+          <div class="pitfall-body">Adding bulky margin padding overrides inside child elements to force content alignment instead of adjusting parent container settings.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Leverage native parent alignment properties like <code>place-items: center;</code> to distribute and center box contents cleanly in one step.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 06</div>
+          <div class="pitfall-title">Mismatching area names inside area arrays</div>
+          <div class="pitfall-body">Declaring asymmetrical cell rows or spelling area names inconsistently inside <code>grid-template-areas</code>, which breaks the entire page template layout.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Verify that every row string contains the exact same number of cell layout columns, keeping template dimensions perfectly uniform.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Real World — High-Scale System Implementations</h2>
+      </div>
+      <p>Top-tier web applications run structured layout matrices to display massive data streams uniformly across global customer platform layouts.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Grafana Analytics Engine</div>
+          <div class="cell-desc">Grafana interfaces manage heavy live telemetry monitoring data streams via multi-axis grid architectures. This setup allows users to drag, resize, and reorder instrumentation blocks smoothly without causing layout shifting.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Verge Content Matrices</div>
+          <div class="cell-desc">The Verge structures highly editorial, asymmetrical magazine layouts using clean CSS grid area templates. This presentation layer updates page structure across mobile viewports by altering just a few lines on the parent container rules.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Salesforce Analytics Hub</div>
+          <div class="cell-desc">Salesforce constructs data-dense reporting panels using strict explicit-to-implicit grid step rules. This design strategy secures clean element alignments, protecting browser rendering speeds as long database data streams load.</div>
+        </div>
+      </div>
+
+      <h3>The Production Grid Alignment Pipeline</h3>
+      <p>Modern frontend deployment workflows validate stylesheets using automated regression suites before launch passes run:</p>
+      <ol>
+        <li><strong>Structural Overlap Audits:</strong> Build tests scan elements to detect and block column collisions or unaligned box profiles early.</li>
+        <li><strong>Subgrid Dependency Validations:</strong> Automated tools check child container structures, verifying nested track alignments against main framework lines.</li>
+        <li><strong>Dead-Code Presentation Purging:</strong> Build passes strip out redundant layout selectors, shrinking file delivery steps for faster network loading.</li>
+      </ol>
+    </section>
+
+    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In mid-to-senior frontend assessments, matrix design mastery is evaluated by testing your understanding of layout performance, dynamic tracking loops, and grid architecture.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are designing a large dashboard view where widgets load data dynamically via independent API endpoints. When elements return varied content volumes, cells stretch unevenly, breaking horizontal grid lines across adjacent rows. How do you design this matrix?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The layout breakdown occurs because a content-driven row configuration lets each row size independently based on its largest local element, breaking horizontal alignment across separate columns. To fix this and enforce strict two-dimensional boundaries, I would transition the workspace shell into an explicit grid template framework. I would define column layouts using modern auto-placement parameters combined with robust minmax guards: <code>grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));</code>. To secure horizontal row alignments across components, I would declare explicit row parameters using <code>grid-auto-rows: minmax(200px, auto);</code>. This forces all components matching a specific track level to share identical baseline heights, preserving clean layout lines across columns even as dynamic data streams populate."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain what happens inside the browser's critical rendering path when a runtime layout alters template values from grid-template-columns: 1fr 1fr to grid-template-columns: 1fr 2fr 1fr dynamically."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Modifying explicit column track configurations alters the structural geometry of your layout tree. This track adjustment prompts the browser engine to invalidate existing cell coordinates, rerun multi-axis space distribution math across all columns, and execute a full structural Reflow pass down the DOM tree. The style matching engine recomputes placement lines for all child nodes, which triggers downstream pixel repaints and layer compositing work across the viewport."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Architecture Rule Evaluation</div>
+        <div class="pb-q-title">"A team lead suggests mapping out all application column views using auto-fill loops instead of auto-fit configurations to ensure uniform column grid templates. Critically evaluate this styling directive."</div>
+        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing <code>auto-fill</code> configurations blindly can introduce unwanted design behavior on wide layouts. The <code>auto-fill</code> parameter prompts the browser engine to generate empty columns across extra viewport space even when there are no items to fill them, leaving content elements squeezed to one side. A better approach uses <code>auto-fit</code> for content grids, which collapses empty column tracks and stretches active cards across the full viewport row budget to provide a balanced presentation."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Layout Matrix Assessment</div>
+        <div class="pb-q-title">"Contrast the alignment behavior of subgrid definitions against independent nested grid templates across nested web applications."</div>
+        <div class="pb-hud-answer"><strong>Matrix Comparison Analysis:</strong> "An independent nested grid framework isolates its child elements entirely, meaning inner row heights and column configurations can't align with the main page structure. Alternatively, declaring <code>grid-template-columns: subgrid;</code> instructs the layout engine to pass the main parent grid tracks directly down into the child subgrid component, allowing nested items to align perfectly with the page architecture."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">How does the browser matching engine compute the fractional (fr) unit across grid columns?</div>
+            <div class="r-action-hint">Recite the space allocation equation ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">The layout engine sums up all fixed items, borders, and column gaps first, subtracting that from the parent container width to find the remaining free space. It then divides that unallocated space among the fr columns based on their declared fractional coefficients.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">What specific structural benefit do you gain by choosing named template areas over manual line indices?</div>
+            <div class="r-action-hint">Consider layout updates and code readability ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Named template areas create an explicit layout map directly inside your parent stylesheet rules. This setup allows you to rearrange full page architectures at different breakpoints by modifying just a few text mapping strings on the container, avoiding complex index tracking math.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Explain the operational differences between auto-fill and auto-fit parameters within loop arrays.</div>
+            <div class="r-action-hint">Contrast empty column preservation against space expansion ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The <code>auto-fill</code> parameter generates empty tracks across remaining viewport space even when there are no items to populate them. The <code>auto-fit</code> token collapses empty tracks completely, stretching active layout cards to consume the full container row budget.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">Why does the subgrid specification represent a vital advancement for component architecture?</div>
+            <div class="r-action-hint">Consider alignment continuity down deep DOM structures ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">The <code>subgrid</code> rule allows nested child components to inherit and use the main parent grid tracks directly. This continuity ensures inner elements align perfectly with the global page layout, even when wrapped in separate sub-containers.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 05</div>
+            <div class="r-question-text">What performance problem occurs when you map two-dimensional app views by nesting multiple flex layers deeply?</div>
+            <div class="r-action-hint">Consider rendering passes and thread locks ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 05</div>
+            <div class="r-answer-text">Deeply nesting single-axis flex layers forces the browser engine to process sequential, hierarchical layout passes down the DOM tree. This layered architecture increases rendering overhead and can trigger layout thrashing during main-thread updates.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 06</div>
+            <div class="r-question-text">How does the minmax() parameter safeguard implicit grid row sizes when handling data arrays?</div>
+            <div class="r-action-hint">Contrast fixed size limits with content expansion ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 06</div>
+            <div class="r-answer-text">The <code>minmax()</code> function bounds tracks with a minimum size limit while allowing them to expand if heavy content requires it. Applying this to <code>grid-auto-rows</code> ensures auto-generated cells remain uniform yet flexible as long content streams load.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these development tasks to practice high-performance grid engineering. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Enterprise Grid Architectures via DevTools Overlays (30 Min)</div>
+            <div class="row-desc">Open an advanced administrative application view and launch your browser's developer console. Locate the layout sub-tab within the Elements panel, and check the grid activation flags to display explicit track lines and track boundaries visually across the view layout.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Two-Dimensional Dashboard Area Template Matrix (30 Min)</div>
+            <div class="row-desc">Create an isolated style sandbox page locally. Construct a full dashboard layout shell using <code>grid-template-areas</code> to arrange side navigation columns, main metric containers, and baseline footer blocks cleanly. Test restructuring the entire layout using compact media query overrides.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Engineer a Responsive Auto-Placement Component Grid (30 Min)</div>
+            <div class="row-desc">Design a local showcase grid layout that uses <code>repeat(auto-fit, minmax(280px, 1fr))</code> rules to place items. Load components of varied lengths into the grid, verifying that columns wrap and distribute container space fluidly without relying on hardcoded media breakpoints.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Benchmark Grid Reflow Pass Efficiency using Performance Timelines (30 Min)</div>
+            <div class="row-desc">Open the Performance profiling tab within your browser console. Capture a log snapshot while dynamically modifying track layout dimensions via script actions, and analyze the rendering timeline charts to ensure style recalculations process without causing long tasks.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">Don't Skip These Exercises</div>
+        <p>Reviewing grid theory without writing code is like studying database clustering models without spinning up nodes. Multi-axis layout equations and implicit track distribution loops become natural only through hands-on practice. Shifting area maps and managing matrix cell boundaries locally builds the performance mindset required when engineering scale full-stack architectures down the line.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">12</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These matrix framework laws form the baseline requirement for engineering high-performance two-dimensional presentation systems. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Orchestrate layouts via parent structures. Map rows and columns on the parent container wrapper first to minimize layout recalculations across sub-components.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Secure implicit track boundaries. Enforce explicit minmax constraints on auto-generated rows to keep layout cell sizes predictable as dynamic content streams load.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Leverage subgrid for layout continuity. Link inner component alignments straight to global grid structures using subgrid rules to prevent alignment drift.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Explicit Grid</div>
+          <div class="g-node-definition">The structural grid layout tracks declared directly within stylesheets using explicit column and row template properties.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Implicit Grid</div>
+          <div class="g-node-definition">The secondary tracks auto-generated by the layout engine when incoming runtime content elements exceed explicit template cell allocations.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Fractional Unit (fr)</div>
+          <div class="g-node-definition">A proportional design multiplier that represents an explicit slice of the unallocated layout space inside a grid container.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Subgrid Specification</div>
+          <div class="g-node-definition">A modern layout rule that allows nested child containers to inherit and use their parent's primary grid columns and rows directly.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Grid Template Areas</div>
+          <div class="g-node-definition">A style declaration that outlines page layout regions using text strings, creating a readable map of your components.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Auto-Placement Engine</div>
+          <div class="g-node-definition">The browser's internal layout routine that auto-arranges unplaced child nodes sequentially across open grid tracks.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Minmax Function</div>
+          <div class="g-node-definition">A styling expression used to set a stable minimum size boundary for layout tracks while permitting them to grow if content demands it.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Auto-Fit Parameter</div>
+          <div class="g-node-definition">A loop argument that collapses empty grid columns and stretches active card items to fill remaining viewport space.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Auto-Fill Parameter</div>
+          <div class="g-node-definition">A placement command that creates empty tracks across extra container space even when there are no elements to fill them.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Grid Track Line</div>
+          <div class="g-node-definition">The numerical boundary index dividers that separate column paths and row fields across a grid container.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Structural Reflow</div>
+          <div class="g-node-definition">An intensive browser layout stage where the engine recomputes spatial positions and boundary coordinates across the viewport.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Grid Track Gap</div>
+          <div class="g-node-definition">The spacing metric that defines gutters between rows and columns without adding extra padding padding to cell components.</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-2.4.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 2.4 - Responsive Design: Mobile-First Viewports & Media Queries</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+/* ── COLLAPSIBLE SIDEBAR INTERACTIVE LOGIC MODULE (NEW FEATURE) ── */
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2046,90 +3012,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3266,1016 +4148,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-2">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- <!-- Initialized with open state layout anchor for premium desktop display -->
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-<!-- ── SIDEBAR TOGGLE CONTROL SYSTEM BUTTON (NEW FEATURE) ── -->
-
-
-<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD ═══════════════════════════════ -->
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Matrix Navigation</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-magenta"></div>
-    <div class="glow-orb orb-emerald"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
-  <div class="hero-eyebrow">essay 2.3 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  
-  <!-- DESIGN UPDATE: Decreased layout header title scale slightly per request to enhance structural text reading flow -->
-  <h1 class="hero-title">
-    CSS Grid Matrix:<br>
-    Two-Dimensional <em>Space Frameworks</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering strict multi-axis tracking grids, explicit and implicit row/column allocation mechanics, template area boundaries, tracking track sizing algebra, and high-performance layout alignments.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">2.3 — Matrix Grid System</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~48 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essays 2.1 & 2.2</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">Fractional (fr) Algebra · Auto-Placement Algorithms · Area Templates · Implicit Grid Bounds</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; map two-dimensional matrix coordinates</div>
-</div>
-
-<!-- ═══════════════════════════════ MAIN CONTENT HUD PANELS ═══════════════════════════════ -->
-<div class="layout-main-frame">
-  <main>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>When faced with complex user interface designs, many frontend developers attempt to force alignments by hacking single-axis layouts. They nest multiple rows inside vertical columns recursively. <strong>This structural anti-pattern tanks browser performance.</strong> At hyper-scale, deeply nested sub-component wrappers complicate code updates and force browser engines to execute repetitive, multi-tiered layout layout recalculations.</p>
-      <p>The CSS Grid Layout Engine provides a native, hardware-accelerated two-dimensional framework system. It allows developers to orchestrate layouts across horizontal rows and vertical columns concurrently. This deep architectural module explores structural fractional mathematics, explicit layout partitioning patterns, template areas mapping, and the inner mechanics of the browser placement engine. Mastering these grid mechanics is essential for engineering scalable web dashboards that adapt predictably to volatile runtime data changes.</p>
-      
-      <!-- Live Interactive Data Compute Display Feature -->
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ Matrix Fractional Unit Dynamic Allocation Model:</div>
-        <div class="compute-value">1fr = (Container Width - Total Gaps - Static Columns) / ∑(fr Coefficients)</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>The distinction between an enterprise UI system architect and a novice developer lies in how they slice layout container spaces. Novices force dimensional calculations down into individual child components. Masters declare a clean two-dimensional matrix grid template on the parent container wrapper first, letting data elements mount into layout coordinate fields natively without triggering structural layout shifts.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
-    <section class="section-card" id="s2">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">Where This Fits</h2>
-      </div>
-      <p>Now that you have configured linear, content-driven layouts using Flexbox (2.2), we step straight up into full two-dimensional layout systems. CSS Grid handles layout architecture from a layout-first perspective.</p>
-      
-      <div class="phase-map">
-        <div class="phase-node done"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Flow</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node current"><div class="phase-circle">2.3</div><div class="phase-label">Grid Matrix</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.4</div><div class="phase-label">Responsive MQ</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.6</div><div class="phase-label">Tailwind CSS</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Execution</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Architectures</div></div>
-      </div>
-      
-      <p>Every dynamic application layout matrix, administrative system dashboard grid, and multi-tier grid column view constructed in following units leverages this structural engine layer. Mastering matrix spacing equations lets you construct clean web layouts, managing responsive breakpoints easily before you introduce heavy application script loops or utility styling frameworks.</p>
-
-      <div class="hud-callout hud-callout-tip">
-        <div class="hud-callout-label">Return Here Often</div>
-        <p>Keep these track positioning math rules close at hand. The first few times your implicit track elements expand unexpectedly or your dashboard layout blocks wrap poorly on smaller client monitors, trace through this grid track guide. After troubleshooting layout alignments manually a few times, writing stable grid matrix systems will become second nature.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Steel Framework Grid Matrix</h3>
-      <p>Imagine constructing a modern automated logistics warehouse. You could try setting up individual cargo container stacks independently, chaining walls together and strapping boxes to one another using tie-down straps as materials are checked in. This unaligned approach risks layout instabilities as inventory sizes shift.</p>
-      <p>Alternatively, you can erect **a rigid structural steel framework grid matrix featuring permanent vertical columns, fixed horizontal tracks, and pre-allocated storage slots first.** Content elements slide into these assigned coordinate cells natively. If an item expands or shifts, the global structural steel framework matrix keeps adjacent walls locked in place. CSS Grid acts as that robust structural framework grid matrix, managing element placement cleanly across multiple design fields simultaneously.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When an application layout element shifts or maps poorly across dynamic views, recall this core principle: <strong>"This interface is a unified structural coordinate network. Where have I mapped out the horizontal and vertical line properties on the parent container, and how are the child boxes targeting those layout paths?"</strong> This perspective unifies grid bug resolutions.</p>
-      </div>
-
-      <h3>The Printed Newspaper Column Grid</h3>
-      <p>To master advanced web layout systems, visualize the physical print template sheet used by newspaper layout operators. Designers don't stitch dynamic column spaces together element-by-element. They declare an ironclad column layout grid across the entire page first. Graphic items, main headers, and text entries align with these predetermined layout lines. If an article section expands, it flows across multiple column lines cleanly without shifting adjacent editorial layouts out of place.</p>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Visual — Two-Dimensional Matrix Lifecycles</h2>
-      </div>
-      <p>Tracing how the browser engine structures explicit and implicit grids is essential for preventing structural alignment errors. Click through each section block to see how layout properties configure grid frameworks.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>📊 &nbsp; Internal Grid Matrix Token Processing Mechanics &nbsp;·&nbsp; Click steps to trace allocations.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Explicit Grid Track Definition Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The layout engine parses properties like <code>grid-template-columns</code> and <code>grid-template-rows</code>. It maps out explicit coordinate layout tracks, allocating specific column widths and row heights across the parent container's view budget.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Child Element Coordinate Mapping Loop</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The engine scans child nodes to evaluate spatial line selectors like <code>grid-column: 1 / span 2</code> or explicit template area configurations. It positions elements precisely across the declared grid intersections, tracking parent cell bounds throughout.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Implicit Grid Auto-Generation Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>If runtime content yields more data elements than the explicit grid template has cells for, the browser activates its implicit grid placement engine. This system auto-generates new layout rows using dimensions configured via <code>grid-auto-rows</code> rules.</p>
-            </div>
-          </div>
-        </div>
-        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
-      </div>
-
-      <!-- PREMIUM INCLUDED VECTOR INFOGRAPHIC -->
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="12" fill="#05010e"/>
-          <g opacity="0.2">
-            <path d="M 50 40 L 750 40 M 50 130 L 750 130 M 50 220 L 750 220 M 50 310 L 750 310" stroke="#10b981" stroke-width="1"/>
-            <path d="M 60 30 L 60 300 M 280 30 L 280 300 M 510 30 L 510 300 M 740 30 L 740 300" stroke="#10b981" stroke-width="1"/>
-          </g>
-          
-          <!-- Explicit Track Line Delineation Callouts -->
-          <text x="70" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 1</text>
-          <text x="290" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 2</text>
-          <text x="520" y="25" fill="#10b981" font-family="Fira Code" font-size="11">Line 3</text>
-          
-          <!-- Explicit Matrix Blocks mapping coordinates across multiple dimensions concurrently -->
-          <rect x="70" y="50" width="430" height="70" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="285" y="90" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Header Module Cell (grid-column: 1 / span 2)</text>
-
-          <rect x="70" y="140" width="200" height="150" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="170" y="220" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Sidebar Component</text>
-
-          <rect x="290" y="140" width="440" height="150" rx="6" fill="#110529" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="510" y="220" fill="#f5f2fa" font-family="Plus Jakarta Sans" font-size="13" text-anchor="middle">Main Dashboard Workspace Grid</text>
-        </svg>
-        <div class="infographic-caption">Vector Infographic 2.3: Two-Dimensional Grid Coordinate System. Track paths manage columns and rows simultaneously, allowing child elements to span multiple cells across axes smoothly.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Fractional Allocation Algebra & Track Calculations</h3>
-      <p>The CSS Grid engine introduces the fractional unit (<code>fr</code>) to calculate fluid space distributions. The <code>fr</code> unit represents a proportional slice of the unallocated layout space inside a grid container.</p>
-      
-      <p>Let us trace the exact layout math equations executed by the browser engine:</p>
-      <p>Imagine a grid container measuring exactly **$1200\text{px}$** wide configured with <code>display: grid</code>. The style sheet defines these track criteria:</p>
-      <p><code>grid-template-columns: 300px 1fr 2fr; gap: 30px;</code></p>
-      
-      <p>Let us solve for the final element column widths step-by-step:</p>
-      <ol>
-        <li>**Account for Static Columns & Gaps:** The layout has two gaps totaling $2 \times 30\text{px} = 60\text{px}$. Adding the fixed column width yields $300\text{px} + 60\text{px} = 360\text{px}$ of static space usage.</li>
-        <li>**Calculate Free Viewport Space:** The remaining unallocated layout space equals $1200\text{px} - 360\text{px} = 840\text{px}$.</li>
-        <li>**Sum Fractional Coefficients:** The total fr denominator points sum to $1 + 2 = 3$ fractions.</li>
-        <li>**Distribute Free Space Slices:**
-          <ul>
-            <li>Column 1: Fixed at its static value of **$300\text{px}$**.</li>
-            <li>Column 2: Claims $\frac{1}{3} \times 840\text{px} = \mathbf{280\text{px}}$.</li>
-            <li>Column 3: Claims $\frac{2}{3} \times 840\text{px} = \mathbf{560\text{px}}$.</li>
-          </ul>
-        </li>
-      </ol>
-
-      <div class="design-compute-hud">
-        <div class="compute-title">📊 Calculated Matrix Track Width Outputs:</div>
-        <div class="compute-value">Col 1: 300px &nbsp;·&nbsp; Col 2: 280px &nbsp;·&nbsp; Col 3: 560px</div>
-      </div>
-
-      <h3>Part B — Explicit vs. Implicit Matrix Boundary Rules</h3>
-      <p>Understanding the transition boundaries between explicit layouts and implicit tracks is crucial for system design evaluations:</p>
-      
-      <ul>
-        <li><strong>Explicit Grid Infrastructure:</strong> Tracks declared directly via <code>grid-template-columns</code> and <code>grid-template-rows</code> parameters. The structural coordinates are fixed directly by your styling rules.</li>
-        <li><strong>Implicit Grid Infrastructure:</strong> New tracks auto-generated by the layout engine when dynamic runtime content exceeds your explicit template cells. If left unconfigured, these auto-generated tracks default to a height of <code>auto</code>, which can distort component layouts.</li>
-      </ul>
-      
-      <p>To handle dynamic data smoothly, configure properties like <code>grid-auto-rows: minmax(150px, auto);</code>. This setup guarantees a stable minimum height for auto-generated rows while allowing containers to grow if long text blocks require it.</p>
-
-      <h3>Part C — Named Template Area Layout Scopes</h3>
-      <p>For large-scale layouts, you can name grid regions using the <code>grid-template-areas</code> property, creating an explicit visual text map of your layout design directly inside your stylesheet:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">dashboard-blueprint.css</span></div>
-        <pre><span class="t-sel">.platform-shell-grid</span> {
-  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
-  <span class="t-prop">grid-template-columns</span>: <span class="t-val">280px 1fr</span>;
-  <span class="t-prop">grid-template-rows</span>: <span class="t-val">80px 1fr 60px</span>;
-  <span class="t-prop">grid-template-areas</span>: 
-    <span class="t-str">"head head"</span>
-    <span class="t-str">"side main"</span>
-    <span class="t-str">"foot main"</span>;
-}</pre>
-      </div>
-
-      <p>Child elements are assigned to these named regions using the <code>grid-area</code> property: <code>grid-area: main;</code>. This template approach makes layout code easy to read and update, allowing you to restructure full pages at different breakpoints with just a few changes to your parent stylesheet rules.</p>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">The Auto-Fit Sizing Secret</div>
-        <p>Combining repeat loops with auto-placement functions like <code>grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));</code> builds responsive grid systems that adapt naturally without media query breakpoints. The browser engine computes viewport budgets dynamically, auto-fitting grid items into columns and wrapping them to new lines cleanly as screen sizes shift.</p>
-      </div>
-
-      <h3>Part D — High-Performance Alignment Properties Comparison</h3>
-      <p>CSS Grid provides precise control over item alignment across two dimensions simultaneously. Let us contrast the behavior profiles of your core alignment properties:</p>
-
-      <table class="google-table">
-        <thead>
-          <tr>
-            <th>Property Declaration</th>
-            <th>Primary Alignment Axis</th>
-            <th>Target Context Scope</th>
-            <th>Impact Profile Evaluation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>justify-items</code></td>
-            <td>Inline Axis (Horizontal)</td>
-            <td>All Cell Items</td>
-            <td>Aligns element contents horizontally relative to their individual grid cell boundaries.</td>
-          </tr>
-          <tr>
-            <td><code>align-items</code></td>
-            <td>Block Axis (Vertical)</td>
-            <td>All Cell Items</td>
-            <td>Manages cell content placement vertically relative to individual row bounds.</td>
-          </tr>
-          <tr>
-            <td><code>justify-content</code></td>
-            <td>Inline Axis (Horizontal)</td>
-            <td>Entire Grid Matrix Tree</td>
-            <td>Distributes unallocated space around the total grid track cluster within the parent container.</td>
-          </tr>
-          <tr>
-            <td><code>align-content</code></td>
-            <td>Block Axis (Vertical)</td>
-            <td>Entire Grid Matrix Tree</td>
-            <td>Aligns the total stacked row cluster vertically relative to parent wrapper boundaries.</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Two-Dimensional Panels</h2>
-      </div>
-      <p>Let us analyze real production layout errors and refactor them to ensure smooth, responsive two-dimensional grid configurations.</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Nested Flex Optimization</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Implicit Track Collapses</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Brittle Track Layout Hacks</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Area Template Overrides</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Matrix Logs</button>
-        </div>
-
-        <!-- Tab 1 -->
-        <div class="hud-tab-panel active-hud-panel" id="l1">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">nested-flex-nightmare.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Deep nested flex rigs used to build dashboard layouts */</span>
-<span class="t-sel">.column-shell</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">flex-direction</span>: <span class="t-val">column</span>; }
-<span class="t-sel">.inner-row-rig</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">flex-direction</span>: <span class="t-val">row</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Refactor into a clean unified matrix grid template */</span>
-<span class="t-sel">.platform-shell-matrix</span> {
-  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
-  <span class="t-prop">grid-template-columns</span>: <span class="t-val">300px 1fr</span>;
-  <span class="t-prop">grid-template-rows</span>: <span class="t-val">auto 1fr</span>;
-  <span class="t-prop">gap</span>: <span class="t-val">24px</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Nesting single-axis flex layouts repeatedly introduces unneeded node wrappers and forces browser style engines to evaluate multiple separate layout passes.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Moving to CSS Grid flattens your component structure, managing rows and columns simultaneously to optimize page layout rendering speeds.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2 -->
-        <div class="hud-tab-panel" id="l2">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">implicit-collapse.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Auto-generated dynamic data cards collapse to zero heights */</span>
-<span class="t-sel">.dynamic-data-matrix</span> {
-  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
-  <span class="t-prop">grid-template-rows</span>: <span class="t-val">200px 200px</span>;
-}</pre>
-            </div>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Configure explicit minimum size guides for implicit rows */</span>
-<span class="t-sel">.dynamic-data-matrix</span> {
-  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
-  <span class="t-prop">grid-template-columns</span>: <span class="t-val">repeat(auto-fill, minmax(280px, 1fr))</span>;
-  <span class="t-prop">grid-auto-rows</span>: <span class="t-val">minmax(200px, auto)</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Fixed explicit row templates ignore dynamic runtime dataset expansion, causing overflow cards to collapse into squeezed, unaligned layouts.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Using <code>grid-auto-rows</code> with minmax parameters bounds implicit tracks safely, keeping row sizes flexible yet structured as elements load.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3 -->
-        <div class="hud-tab-panel" id="l3">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">brittle-tracks.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Hardcoded element percentage columns break on mobile viewports */</span>
-<span class="t-sel">.content-grid</span> { <span class="t-prop">display</span>: <span class="t-val">grid</span>; <span class="t-prop">grid-template-columns</span>: <span class="t-val">33% 33% 33%</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Leverage automatic column tracking loops for responsive designs */</span>
-<span class="t-sel">.content-grid</span> {
-  <span class="t-prop">display</span>: <span class="t-val">grid</span>;
-  <span class="t-prop">grid-template-columns</span>: <span class="t-val">repeat(auto-fit, minmax(300px, 1fr))</span>;
-  <span class="t-prop">gap</span>: <span class="t-val">20px</span>;
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Fixed percentage tracks do not account for layout padding or column gap widths, which pushes boxes out of line and breaks grid wrapping rules.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Switching to fractional units lets the layout engine compute columns dynamically, auto-fitting items safely without unneeded media query interventions.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4 -->
-        <div class="hud-tab-panel" id="l4">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">area-overrides.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Manual coordinate tracking numbers used to position items */</span>
-<span class="t-sel">.workspace-item</span> { <span class="t-prop">grid-column</span>: <span class="t-val">2 / 4</span>; <span class="t-prop">grid-row</span>: <span class="t-val">1 / 3</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Route components into explicit named template areas */</span>
-<span class="t-sel">.workspace-item</span> { <span class="t-prop">grid-area</span>: <span class="t-val">main-workspace</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Hardcoded index track line numbers complicate stylesheet maintenance, as altering structural columns requires refactoring coordinates across all sub-selectors.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Mapping items directly to named layout fields allows you to update full page architectures by changing just a few lines on the parent grid definition.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 5 -->
-        <div class="hud-tab-panel" id="l5">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">matrix-telemetry.js</span></div>
-            <pre><span class="token-comment">// Programmatically audit active grid column allocations via the developer console</span>
-<span class="token-kw">const</span> <span class="token-var">gridStructure</span> = window.getComputedStyle(document.querySelector(<span class="token-str">'.platform-shell-matrix'</span>));
-console.log(<span class="token-str">"[Computed Grid Track Columns Manifest]:"</span>, <span class="token-var">gridStructure</span>.getPropertyValue(<span class="token-str">'grid-template-columns'</span>));</pre>
-            <div class="error-explanation">
-              <div class="error-label">Three Rules for Two-Dimensional Performance Design</div>
-              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
-                <strong style="color:var(--neon-matrix-emerald);">1. Minimize layout structural adjustments.</strong> Use explicit minmax parameter ranges to set stable cell bounds, ensuring live data updates don't cause sudden column shifting.<br><br>
-                <strong style="color:var(--neon-cyber-pink);">2. Map empty layout cells cleanly.</strong> Use dot characters (<code>.</code>) inside your <code>grid-template-areas</code> layouts to reserve empty grid space safely without breaking template alignment rules.<br><br>
-                <strong style="color:var(--neon-tech-blue);">3. Leverage DevTools Grid Overlays.</strong> Click the 'grid' badge controls in your browser's Elements tree to display explicit track lines and cell indexes visually, making it easy to audit complex layouts.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common two-dimensional alignment pitfalls during technical project reviews. Keeping grid templates structured avoids style conflicts as layouts expand.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Nesting Independent Grid Configurations Unchecked</div>
-          <div class="pitfall-body">Declaring separate, decoupled grid frameworks across nested sub-containers, which disconnects inner layout components from the main page tracking lines.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Apply modern <code>grid-template-columns: subgrid;</code> rules to link sub-component spacing straight to parent layout tracks.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Using high, arbitrary track percentage parameters</div>
-          <div class="pitfall-body">Using percentage rules like <code>grid-template-columns: 25% 75%;</code> while incorporating heavy grid column gap pixel properties.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Rely on fractional unit rules (<code>1fr 3fr</code>) to let the layout engine factor gap sizes into space calculations automatically.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Leaving Implicit Rows Unbound and Floating</div>
-          <div class="pitfall-body">Neglecting implicit grid defaults when pulling data feeds, which causes overflow components to collapse down onto tiny raw auto-height slices.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Declare explicit <code>grid-auto-rows</code> thresholds on parent wrappers to guarantee clean baseline heights for all dynamic elements.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Confusing auto-fill with auto-fit layout loop functions</div>
-          <div class="pitfall-body">Using auto-fill commands blindly, which forces grids to reserve empty tracks on wide screens even when there are no items to populate them.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Use <code>auto-fit</code> to instruct the layout engine to collapse empty columns and stretch active elements across the full layout row budget.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 05</div>
-          <div class="pitfall-title">Declaring item margins to center cell inner boxes</div>
-          <div class="pitfall-body">Adding bulky margin padding overrides inside child elements to force content alignment instead of adjusting parent container settings.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Leverage native parent alignment properties like <code>place-items: center;</code> to distribute and center box contents cleanly in one step.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 06</div>
-          <div class="pitfall-title">Mismatching area names inside area arrays</div>
-          <div class="pitfall-body">Declaring asymmetrical cell rows or spelling area names inconsistently inside <code>grid-template-areas</code>, which breaks the entire page template layout.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Verify that every row string contains the exact same number of cell layout columns, keeping template dimensions perfectly uniform.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Real World — High-Scale System Implementations</h2>
-      </div>
-      <p>Top-tier web applications run structured layout matrices to display massive data streams uniformly across global customer platform layouts.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Grafana Analytics Engine</div>
-          <div class="cell-desc">Grafana interfaces manage heavy live telemetry monitoring data streams via multi-axis grid architectures. This setup allows users to drag, resize, and reorder instrumentation blocks smoothly without causing layout shifting.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Verge Content Matrices</div>
-          <div class="cell-desc">The Verge structures highly editorial, asymmetrical magazine layouts using clean CSS grid area templates. This presentation layer updates page structure across mobile viewports by altering just a few lines on the parent container rules.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Salesforce Analytics Hub</div>
-          <div class="cell-desc">Salesforce constructs data-dense reporting panels using strict explicit-to-implicit grid step rules. This design strategy secures clean element alignments, protecting browser rendering speeds as long database data streams load.</div>
-        </div>
-      </div>
-
-      <h3>The Production Grid Alignment Pipeline</h3>
-      <p>Modern frontend deployment workflows validate stylesheets using automated regression suites before launch passes run:</p>
-      <ol>
-        <li><strong>Structural Overlap Audits:</strong> Build tests scan elements to detect and block column collisions or unaligned box profiles early.</li>
-        <li><strong>Subgrid Dependency Validations:</strong> Automated tools check child container structures, verifying nested track alignments against main framework lines.</li>
-        <li><strong>Dead-Code Presentation Purging:</strong> Build passes strip out redundant layout selectors, shrinking file delivery steps for faster network loading.</li>
-      </ol>
-    </section>
-
-    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In mid-to-senior frontend assessments, matrix design mastery is evaluated by testing your understanding of layout performance, dynamic tracking loops, and grid architecture.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are designing a large dashboard view where widgets load data dynamically via independent API endpoints. When elements return varied content volumes, cells stretch unevenly, breaking horizontal grid lines across adjacent rows. How do you design this matrix?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The layout breakdown occurs because a content-driven row configuration lets each row size independently based on its largest local element, breaking horizontal alignment across separate columns. To fix this and enforce strict two-dimensional boundaries, I would transition the workspace shell into an explicit grid template framework. I would define column layouts using modern auto-placement parameters combined with robust minmax guards: <code>grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));</code>. To secure horizontal row alignments across components, I would declare explicit row parameters using <code>grid-auto-rows: minmax(200px, auto);</code>. This forces all components matching a specific track level to share identical baseline heights, preserving clean layout lines across columns even as dynamic data streams populate."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain what happens inside the browser's critical rendering path when a runtime layout alters template values from grid-template-columns: 1fr 1fr to grid-template-columns: 1fr 2fr 1fr dynamically."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Modifying explicit column track configurations alters the structural geometry of your layout tree. This track adjustment prompts the browser engine to invalidate existing cell coordinates, rerun multi-axis space distribution math across all columns, and execute a full structural Reflow pass down the DOM tree. The style matching engine recomputes placement lines for all child nodes, which triggers downstream pixel repaints and layer compositing work across the viewport."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Architecture Rule Evaluation</div>
-        <div class="pb-q-title">"A team lead suggests mapping out all application column views using auto-fill loops instead of auto-fit configurations to ensure uniform column grid templates. Critically evaluate this styling directive."</div>
-        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing <code>auto-fill</code> configurations blindly can introduce unwanted design behavior on wide layouts. The <code>auto-fill</code> parameter prompts the browser engine to generate empty columns across extra viewport space even when there are no items to fill them, leaving content elements squeezed to one side. A better approach uses <code>auto-fit</code> for content grids, which collapses empty column tracks and stretches active cards across the full viewport row budget to provide a balanced presentation."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Layout Matrix Assessment</div>
-        <div class="pb-q-title">"Contrast the alignment behavior of subgrid definitions against independent nested grid templates across nested web applications."</div>
-        <div class="pb-hud-answer"><strong>Matrix Comparison Analysis:</strong> "An independent nested grid framework isolates its child elements entirely, meaning inner row heights and column configurations can't align with the main page structure. Alternatively, declaring <code>grid-template-columns: subgrid;</code> instructs the layout engine to pass the main parent grid tracks directly down into the child subgrid component, allowing nested items to align perfectly with the page architecture."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">How does the browser matching engine compute the fractional (fr) unit across grid columns?</div>
-            <div class="r-action-hint">Recite the space allocation equation ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">The layout engine sums up all fixed items, borders, and column gaps first, subtracting that from the parent container width to find the remaining free space. It then divides that unallocated space among the fr columns based on their declared fractional coefficients.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">What specific structural benefit do you gain by choosing named template areas over manual line indices?</div>
-            <div class="r-action-hint">Consider layout updates and code readability ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Named template areas create an explicit layout map directly inside your parent stylesheet rules. This setup allows you to rearrange full page architectures at different breakpoints by modifying just a few text mapping strings on the container, avoiding complex index tracking math.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Explain the operational differences between auto-fill and auto-fit parameters within loop arrays.</div>
-            <div class="r-action-hint">Contrast empty column preservation against space expansion ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">The <code>auto-fill</code> parameter generates empty tracks across remaining viewport space even when there are no items to populate them. The <code>auto-fit</code> token collapses empty tracks completely, stretching active layout cards to consume the full container row budget.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">Why does the subgrid specification represent a vital advancement for component architecture?</div>
-            <div class="r-action-hint">Consider alignment continuity down deep DOM structures ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">The <code>subgrid</code> rule allows nested child components to inherit and use the main parent grid tracks directly. This continuity ensures inner elements align perfectly with the global page layout, even when wrapped in separate sub-containers.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 05</div>
-            <div class="r-question-text">What performance problem occurs when you map two-dimensional app views by nesting multiple flex layers deeply?</div>
-            <div class="r-action-hint">Consider rendering passes and thread locks ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 05</div>
-            <div class="r-answer-text">Deeply nesting single-axis flex layers forces the browser engine to process sequential, hierarchical layout passes down the DOM tree. This layered architecture increases rendering overhead and can trigger layout thrashing during main-thread updates.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 06</div>
-            <div class="r-question-text">How does the minmax() parameter safeguard implicit grid row sizes when handling data arrays?</div>
-            <div class="r-action-hint">Contrast fixed size limits with content expansion ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 06</div>
-            <div class="r-answer-text">The <code>minmax()</code> function bounds tracks with a minimum size limit while allowing them to expand if heavy content requires it. Applying this to <code>grid-auto-rows</code> ensures auto-generated cells remain uniform yet flexible as long content streams load.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these development tasks to practice high-performance grid engineering. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Enterprise Grid Architectures via DevTools Overlays (30 Min)</div>
-            <div class="row-desc">Open an advanced administrative application view and launch your browser's developer console. Locate the layout sub-tab within the Elements panel, and check the grid activation flags to display explicit track lines and track boundaries visually across the view layout.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a Two-Dimensional Dashboard Area Template Matrix (30 Min)</div>
-            <div class="row-desc">Create an isolated style sandbox page locally. Construct a full dashboard layout shell using <code>grid-template-areas</code> to arrange side navigation columns, main metric containers, and baseline footer blocks cleanly. Test restructuring the entire layout using compact media query overrides.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Engineer a Responsive Auto-Placement Component Grid (30 Min)</div>
-            <div class="row-desc">Design a local showcase grid layout that uses <code>repeat(auto-fit, minmax(280px, 1fr))</code> rules to place items. Load components of varied lengths into the grid, verifying that columns wrap and distribute container space fluidly without relying on hardcoded media breakpoints.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Benchmark Grid Reflow Pass Efficiency using Performance Timelines (30 Min)</div>
-            <div class="row-desc">Open the Performance profiling tab within your browser console. Capture a log snapshot while dynamically modifying track layout dimensions via script actions, and analyze the rendering timeline charts to ensure style recalculations process without causing long tasks.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">Don't Skip These Exercises</div>
-        <p>Reviewing grid theory without writing code is like studying database clustering models without spinning up nodes. Multi-axis layout equations and implicit track distribution loops become natural only through hands-on practice. Shifting area maps and managing matrix cell boundaries locally builds the performance mindset required when engineering scale full-stack architectures down the line.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">12</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These matrix framework laws form the baseline requirement for engineering high-performance two-dimensional presentation systems. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Orchestrate layouts via parent structures. Map rows and columns on the parent container wrapper first to minimize layout recalculations across sub-components.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Secure implicit track boundaries. Enforce explicit minmax constraints on auto-generated rows to keep layout cell sizes predictable as dynamic content streams load.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Leverage subgrid for layout continuity. Link inner component alignments straight to global grid structures using subgrid rules to prevent alignment drift.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Explicit Grid</div>
-          <div class="g-node-definition">The structural grid layout tracks declared directly within stylesheets using explicit column and row template properties.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Implicit Grid</div>
-          <div class="g-node-definition">The secondary tracks auto-generated by the layout engine when incoming runtime content elements exceed explicit template cell allocations.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Fractional Unit (fr)</div>
-          <div class="g-node-definition">A proportional design multiplier that represents an explicit slice of the unallocated layout space inside a grid container.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Subgrid Specification</div>
-          <div class="g-node-definition">A modern layout rule that allows nested child containers to inherit and use their parent's primary grid columns and rows directly.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Grid Template Areas</div>
-          <div class="g-node-definition">A style declaration that outlines page layout regions using text strings, creating a readable map of your components.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Auto-Placement Engine</div>
-          <div class="g-node-definition">The browser's internal layout routine that auto-arranges unplaced child nodes sequentially across open grid tracks.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Minmax Function</div>
-          <div class="g-node-definition">A styling expression used to set a stable minimum size boundary for layout tracks while permitting them to grow if content demands it.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Auto-Fit Parameter</div>
-          <div class="g-node-definition">A loop argument that collapses empty grid columns and stretches active card items to fill remaining viewport space.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Auto-Fill Parameter</div>
-          <div class="g-node-definition">A placement command that creates empty tracks across extra container space even when there are no elements to fill them.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Grid Track Line</div>
-          <div class="g-node-definition">The numerical boundary index dividers that separate column paths and row fields across a grid container.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Structural Reflow</div>
-          <div class="g-node-definition">An intensive browser layout stage where the engine recomputes spatial positions and boundary coordinates across the viewport.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Grid Track Gap</div>
-          <div class="g-node-definition">The spacing metric that defines gutters between rows and columns without adding extra padding padding to cell components.</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-2.4.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 2.4 - Responsive Design: Mobile-First Viewports & Media Queries</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-/* ── COLLAPSIBLE SIDEBAR INTERACTIVE LOGIC MODULE (NEW FEATURE) ── */
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

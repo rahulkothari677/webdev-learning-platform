@@ -368,20 +368,6 @@ body.light-theme .summary-hud-metric { color: rgba(217, 119, 6, 0.08); }
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1465,8 +1451,747 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-9">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+
+
+<!-- ═══════════════════════════════ LEFT DRAWERS RAIL ═══════════════════════════════ -->
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Crypto Security</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Pitfalls</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways &amp; Terms</span></a>
+</aside>
+
+<!-- ═══════════════════════════════ CRYPTOGRAPHIC ENGINE RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 9 — Authentication and Security[cite: 1]</div>
+  <div class="hero-eyebrow">essay 9.2 of 88 &nbsp;·&nbsp; series: faang roadmap[cite: 1]</div>
+  
+  <h1 class="hero-title">
+    Password Hashing with bcrypt:<br>
+    Cryptographic Salts &amp; <em>One-Way Functions</em>[cite: 1]
+  </h1>
+  <p class="hero-subtitle">
+    Deconstructing adaptive hashing math matrices, neutralizing lookup rainbow table vectors with randomized cryptographic salting, tuning cost parameters, and reinforcing storage defense grids.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">9.2 — Cryptographic Storage[cite: 1]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~55 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 9.1 (Identity Architecture &amp; Stateful Cookie Perimeters)[cite: 1]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">One-Way Hashing · Cryptographic Salting · Work Factors · Adaptive Computation[cite: 1]</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN CORE VIEWPORT PANEL ═══════════════════════════════ -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        Enterprise-tier user defense dictates absolute non-reversibility inside persistence layers[cite: 1]. Storing plain-text user passwords or deploying outdated, static mathematical hashing models (like MD5 or SHA-1) allows database leaks to expose global user accounts instantly via reverse lookup tables. This module breaks down adaptive key derivation using bcrypt, detailing randomized cryptographic salting, cost factor iteration rules, and one-way computational walls to shield credentials from brute-force exploits[cite: 1].
+      </div>
+    </div>
+
+    <!-- ── PROGRESS TIMELINE MAP ── -->
+    <div class="interactive-framework-sector">
+      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
+      <div class="framework-flex-track">
+        <div class="frame-node-box done-node-box">Auth Perimeters (9.1)[cite: 1]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box active-node-box">Bcrypt Password Hash (9.2)[cite: 1]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">JWT JSON Tokens (9.3)[cite: 1]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Protected Routes (9.4)[cite: 1]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Production Security (9.5)[cite: 1]</div>
+      </div>
+    </div>
+
+    <!-- ── CREATIVE SYSTEM PROCESS MAP ELEMENT ── -->
+    <div class="creative-viz-deck">
+      <div class="viz-header-title">🛡️ Adaptive One-Way Hashing &amp; Cryptographic Salting Lifecycle</div>
+      <p style="font-size: 0.92rem; color: var(--text-dimmed); margin-bottom: 16px;">Visualizing how raw credentials undergo iterative transformation states to produce non-reversible, salt-prepended string signatures inside database tables:</p>
+      <div class="viz-fluid-lane">
+        <div class="viz-node-capsule">Raw Password <span>Plain Input</span></div>
+        <div class="viz-flow-vector">➔</div>
+        <div class="viz-node-capsule" style="border-color: var(--laser-cyan); color: var(--laser-cyan);">Random Salt <span>Pre-Pending Pass</span></div>
+        <div class="viz-flow-vector">➔</div>
+        <div class="viz-node-capsule" style="border-color: var(--brand-gold); color: var(--brand-gold);">Cost Factor Loops <span>2^Cost Iterations</span></div>
+        <div class="viz-flow-vector">🛡️</div>
+        <div class="viz-node-capsule" style="border-color: var(--matrix-green); color: var(--matrix-green);">Bcrypt Signature <span>Stored in DB</span></div>
+      </div>
+    </div>
+
+    <!-- ── VALUE HOVER TELEMETRY CHIPS ── -->
+    <h4>📊 Cryptographic Execution Benchmarks:</h4>
+    <div class="interactive-chip-grid">
+      <div class="metric-chip-node">
+        ⚙️ Recommended Cost Factor: 10 - 12 (Work Factor)
+        <div class="metric-chip-tooltip">A cost factor of 10 scales computing operations exponentially ($2^{10}$ iterations), demanding roughly 100-200ms of CPU time per password validation to stop hardware brute-force attempts.</div>
+      </div>
+      <div class="metric-chip-node">
+        🔒 Salt Length Standard: 24-byte CSPRNG Generation
+        <div class="metric-chip-tooltip">Bcrypt auto-generates a unique Cryptographically Secure Pseudo-Random Number Generator salt value for every entry, ensuring identical user passwords yield completely unique hash strings.</div>
+      </div>
+      <div class="metric-chip-node">
+        🛡️ Collision Vulnerability: Zero Recorded Failures
+        <div class="metric-chip-tooltip">Based on the Blowfish cipher engine, the bcrypt algorithm maintains absolute structural defense against analytical collision breaks.</div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <div class="kinetic-edge-chassis" id="s1">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">01</span>
+          <h2 class="card-hud-title">The Big Idea</h2>
+        </div>
+        <p>Many novice developers approach backend user management by storing user credentials directly inside data tables as unencrypted, plain-text strings out of convenience[cite: 1]. **This design shortcut is a fatal security liability.** If a malicious actor compromises the network or leaks database records via injection holes, every individual client credential becomes publicly exposed, compromising users' matching accounts across the entire web instantly.</p>
+        <p>Alternatively, encrypting credentials using traditional, fast reversible ciphers or basic static hashing systems (like MD5 or SHA-256) fails to withstand modern hardware dictionary lookups. Fast algorithms allow hackers to evaluate billions of password variants per second using graphics cards, reversing leaked hashes via pre-computed **Rainbow Tables**. High-security system architecture relies on an **Adaptive One-Way Cryptographic Wall** powered by **bcrypt**[cite: 1]. Bcrypt isolates database values by adding randomized noise to inputs and slowing down verification speeds to eliminate automated brute-force attacks[cite: 1].</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
+    <div class="kinetic-edge-chassis" id="s2">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">02</span>
+          <h2 class="card-hud-title">The Intuition</h2>
+        </div>
+        <h3>The Un-smashable Mathematical Chemical Drop-Vault</h3>
+        <p>Imagine managing a secure commercial mint container designed to protect paper currency assets. If you choose to lock valuables using a standard plastic combination padlock, experienced lock-pickers can decode the internal wheel alignment triggers in seconds, grabbing your full inventory with minimal effort.</p>
+        <p>Instead, you build a **Mathematical Chemical Drop-Vault System.** When a client drops a paper authorization slip into the slot, an automated needle mixes the fibers with a randomized chemical dye formula, dissolving the paper document into a solid, unique crystalline rock block signature[cite: 1]. You cannot reverse the chemical melt to recreate the original paper layout; however, if the client returns, you can run their fresh input through the exact same chemical mix pass to see if the resulting crystal chunk matches. Bcrypt functions exactly like that chemical vault, locking entries down a strict one-way path[cite: 1].</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
+    <div class="kinetic-edge-chassis" id="s3">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">03</span>
+          <h2 class="card-hud-title">The Visual — One-Way Hashing and Verification Handshakes</h2>
+        </div>
+        <p>Understanding how adaptive algorithms blend unique salt blocks and pass strings through iterative evaluation loops is essential for defending backend runtimes[cite: 1]. Click through each sequential step below to trace cryptographic validation loops.</p>
+
+        <div class="workboard-matrix">
+          <div class="workboard-steps">
+            <div class="wb-step" onclick="revealNode(this)">
+              <div class="wb-step-header">
+                <span class="wb-step-indicator">1</span>
+                <div class="wb-step-title">CSPRNG Salt Generation &amp; Input Mixing Pass</div>
+              </div>
+              <div class="wb-step-body">
+                <p>The system captures a user password. Before running computations, it generates a randomized noise string (Salt) via secure background processing paths, merging the noise directly with input characters[cite: 1].</p>
+              </div>
+            </div>
+            <div class="wb-connector" style="text-align:center; color:var(--text-dimmed); margin:4px 0;">↓</div>
+            <div class="wb-step" onclick="revealNode(this)">
+              <div class="wb-step-header">
+                <span class="wb-step-indicator">2</span>
+                <div class="wb-step-title">Iterative Cost Factor Loops (Key Stretching)</div>
+              </div>
+              <div class="wb-step-body">
+                <p>The combined string enters the core hashing engine. The algorithm cycles the input through thousands of internal cryptographic modifications determined by your work factor ($2^{\text{cost}}$ rounds), driving up processing costs for hackers[cite: 1].</p>
+              </div>
+            </div>
+            <div class="wb-connector" style="text-align:center; color:var(--text-dimmed); margin:4px 0;">↓</div>
+            <div class="wb-step" onclick="revealNode(this)">
+              <div class="wb-step-header">
+                <span class="wb-step-indicator">3</span>
+                <div class="wb-step-title">Modular Signature Extraction &amp; Database Lock</div>
+              </div>
+              <div class="wb-step-body">
+                <p>The engine outputs a 60-character hash string. The cost factor and salt values are baked right inside the final hash prefix, allowing the system to verify user logins smoothly without saving passwords[cite: 1].</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flow-action-row">
+            <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Security Diagnosis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
+    <div class="kinetic-edge-chassis" id="s4">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">04</span>
+          <h2 class="card-hud-title">The Depth</h2>
+        </div>
+        <h3>Part A — Cryptographic Salting vs. Plain One-Way Hashing</h3>
+        <p>A common engineering error when implementing authentication architectures is using plain hashing functions (like SHA-256) directly on user passwords without added modifiers. Because fast hashing functions always output identical result strings for matching inputs, they remain highly vulnerable to **Pre-computed Dictionary Attacks** or **Rainbow Table Lookups**.</p>
+        <p>Bcrypt eliminates this vulnerability by enforcing **Cryptographic Salting**[cite: 1]. The engine automatically generates a completely unique random string for every registration request, pre-pending it to the input before starting computation passes[cite: 1]. This ensures that even if two users choose identical passwords, they resolve to completely unique hash signatures inside data tables, neutralizing pre-computed lookup tables entirely.</p>
+
+        <h3>Part B — Key Stretching Mechanics and Adaptive Cost Factors</h3>
+        <p>Traditional hashing functions are optimized for processing massive files quickly, which works against password security. If an algorithm takes under a microsecond to verify a hash, hackers can use hardware rigs to test millions of variations per second during database breach reviews.</p>
+        <p>Bcrypt balances this asymmetry through **Key Stretching** and **Adaptive Work Factors**[cite: 1]. Setting an explicit cost parameter (such as 10) causes the engine to cycle data through $2^{10}$ internal loops, forcing a deliberate verification lag (~100ms) on server CPUs[cite: 1]. While unnoticeable to a single user logging in, this intentional delay destroys brute-force velocities for hackers trying millions of combinations.</p>
+
+        <h3>Part C — Parsing the 60-Character Bcrypt Structural Output String</h3>
+        <p>Bcrypt returns a highly structured 60-character output string split into explicit parameter segments. This design pattern ensures servers can evaluate incoming login attempts without storing separate salt fields inside columns[cite: 1]:</p>
+        
+        <div class="premium-code-block">
+          <pre style="font-size: 1rem; text-align: center; font-family: 'Fira Code', monospace; color: var(--brand-gold);">$2b$ $10$ $GDX7bW7E8y2nBcK7MvDq2e$ .K9z8X2uR8yM4w7bV2q1eR5vT8zM6yK2</pre>
+        </div>
+        
+        <ul>
+          <li><strong><code>$2b$</code> (Algorithm Identifier):</strong> Identifies the explicit cipher version and algorithm configuration used to compile the hash signature[cite: 1].</li>
+          <li><strong><code>$10$</code> (Cost Work Factor):</strong> Logs the exponential loop iteration scale ($2^{10}$ processing rounds) applied during key stretching passes[cite: 1].</li>
+          <li><strong><code>$GDX7...$</code> (22-Character Salt):</strong> The un-hashed, random cryptographic salt value extracted straight from CSPRNG generators to guide verification loops[cite: 1].</li>
+          <li><strong><code>.K9z8...</code> (31-Character Hash Body):</strong> The final output signature computed over your combined password characters.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
+    <div class="kinetic-edge-chassis" id="s5">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">05</span>
+          <h2 class="card-hud-title">Code Lab — Engineering Cryptographic Password Intercepts</h2>
+        </div>
+        <p>Analyze how to integrate bcrypt hashing models into Mongoose schema lifecycle pre-save hooks, complete with copy controls[cite: 1]:</p>
+
+        <div class="premium-code-block">
+          <div class="p-code-header">
+            <span class="p-code-filename">src/models/UserAccount.js</span>
+            <button class="copy-btn-action" onclick="copyCodePayload(this, 'codeBlockTarget1')">
+              <span>📋</span> <span class="copy-btn-text">Copy Model Engine</span>
+            </button>
+          </div>
+          <pre id="codeBlockTarget1"><span class="t-kw">const</span> mongoose = require(<span class="t-val">'mongoose'</span>);[cite: 1]
+<span class="t-kw">const</span> bcrypt = require(<span class="t-val">'bcrypt'</span>);[cite: 1]
+
+<span class="t-kw">const</span> userAccountSchema = <span class="t-kw">new</span> mongoose.Schema({
+    accountEmail: { type: String, required: <span class="t-val">true</span>, unique: <span class="t-val">true</span> },
+    hashedPassword: { type: String, required: <span class="t-val">true</span> }
+});
+
+<span class="t-comment">// 1. Intercept user registrations via automatic Mongoose pre-save hooks</span>
+userAccountSchema.pre(<span class="t-str">'save'</span>, <span class="t-kw">async function</span> (next) {
+    <span class="t-comment">// Only hash the passcode string if it has been modified or created fresh</span>
+    <span class="t-kw">if</span> (!this.isModified(<span class="t-str">'hashedPassword'</span>)) <span class="t-kw">return</span> next();
+
+    <span class="t-kw">try</span> {
+        <span class="t-comment">// Generate random salt with cost work factor set to 12[cite: 1]</span>
+        <span class="t-kw">const</span> operationalSalt = <span class="t-kw">await</span> bcrypt.genSalt(12);[cite: 1]
+        
+        <span class="t-comment">// Hash plain input text securely before saving to database collections[cite: 1]</span>
+        this.hashedPassword = <span class="t-kw">await</span> bcrypt.hash(this.hashedPassword, operationalSalt);[cite: 1]
+        next();
+    } <span class="t-kw">catch</span> (cryptoFault) {
+        next(cryptoFault);
+    }
+});
+
+<span class="t-comment">// 2. Secure schema method to verify incoming passwords without revealing database strings</span>
+userAccountSchema.methods.validatePassword = <span class="t-kw">async function</span> (candidatePassword) {
+    <span class="t-kw">return await</span> bcrypt.compare(candidatePassword, this.hashedPassword);[cite: 1]
+};
+
+module.exports = mongoose.model(<span class="t-str">'UserAccount'</span>, userAccountSchema);</pre>
+        </div>
+
+        <div class="error-explanation">
+          <div class="error-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-key">Root Problem Analysis</div>
+              <div class="breakdown-val">Storing plain passwords directly inside user records exposes full datasets to sudden compromise if database fields leak onto public repo channels[cite: 1].</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-key">Refactored Result</div>
+              <div class="breakdown-val">Binding adaptive hashing hooks to schema models ensures plain credentials are hashed automatically before writing records to data blocks[cite: 1].</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 6: COMMON PITFALLS ══════════ -->
+    <div class="kinetic-edge-chassis" id="s6">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">06</span>
+          <h2 class="card-hud-title">Common Pitfalls</h2>
+        </div>
+        <p>Avoid these common security architecture pitfalls during technical reviews. Tuning algorithm thresholds properly preserves server processing budgets as users scale up[cite: 1].</p>
+
+        <div class="pitfall-matrix">
+          <div class="pitfall-node">
+            <div class="pitfall-id">PITFALL 01</div>
+            <div class="pitfall-title">Setting Unrealistic Cost Factors Inside Production Ingestion Modules</div>
+            <div class="pitfall-body">Configuring cost parameters too high (like setting cost factor to 16+), which forces exponential CPU wait times and clogs application threads during user logins.</div>
+            <div class="remedy-badge">✓ The Remedy</div>
+            <div class="pitfall-desc">Enforce optimal work boundaries (setting values between 10 and 12) to secure solid computation latency delays without overloading server hardware[cite: 1].</div>
+          </div>
+
+          <div class="pitfall-node">
+            <div class="pitfall-id">PITFALL 02</div>
+            <div class="pitfall-title">Using Fast Hardware-Oriented Hashing Functions for Passwords</div>
+            <div class="pitfall-body">Using fast algorithms like SHA-256 raw to lock user passwords, allowing hackers to compute millions of variations per second via graphics card clusters.</div>
+            <div class="remedy-badge">✓ The Remedy</div>
+            <div class="pitfall-desc">Deploy dedicated, adaptive, compute-heavy algorithms like bcrypt or Argon2 to ensure hardware brute-force attacks remain entirely unprofitable[cite: 1].</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
+    <div class="kinetic-edge-chassis" id="s7">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">07</span>
+          <h2 class="card-hud-title">Real World — High-Scale Storage Defenses</h2>
+        </div>
+        <p>Top-tier full-stack development organizations implement adaptive one-way hashing models to insulate user records, handle security leaks, and protect credentials[cite: 1].</p>
+
+        <div class="enterprise-radar">
+          <div class="radar-cell">
+            <div class="cell-tag">Auth0 Account Encryption</div>
+            <div class="cell-desc">Auth0 hashes registration passcodes using compute-heavy security algorithms, enforcing strict cost thresholds to block automated lookups across authentication vectors[cite: 1].</div>
+          </div>
+          <div class="radar-cell">
+            <div class="cell-tag">Stripe Security Gates</div>
+            <div class="cell-desc">Stripe routes merchant access credentials through adaptive hashing modules, shielding sensitive financial console routes from data leaks[cite: 1].</div>
+          </div>
+          <div class="radar-cell">
+            <div class="cell-tag">GitHub Profile perimeters</div>
+            <div class="cell-desc">GitHub protects developer profile credentials using strict one-way hashing functions, ensuring leaked database fields cannot be decoded via pre-computed rainbow matrices[cite: 1].</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
+    <div class="kinetic-edge-chassis" id="s8">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">08</span>
+          <h2 class="card-hud-title">Interview Angle</h2>
+        </div>
+        <p>In mid-to-senior backend systems architecture reviews, cryptographic storage concepts, salting behaviors, and adaptive speed controls are evaluated[cite: 1].</p>
+
+        <div class="playbook-card">
+          <div class="pb-hud-label">Technical Challenge Scenario</div>
+          <div class="pb-q-title">"Why are fast hashing algorithms like SHA-256 unsuitable for securing user passwords inside a database, and how does bcrypt address this issue?"</div>
+          <div class="pb-hud-answer"><strong>Strategic Engine Trace Formulation:</strong> "Fast hashing algorithms like SHA-256 are optimized for compiling massive data blocks quickly, which works against password security. If an algorithm takes under a microsecond to run, attackers can use custom graphics card clusters to check billions of password variations per second against leaked database entries. **Bcrypt** counters this vulnerability through **Key Stretching and Adaptive Cost Factors**[cite: 1]. By introducing a configurable work factor parameter, the engine runs inputs through $2^{\text{cost}}$ internal loop iterations, adding a deliberate delay (~100ms) on server CPUs[cite: 1]. This delay is unnoticeable to a logging user but makes automated brute-force attacks too slow and expensive to execute[cite: 1]."</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
+    <div class="kinetic-edge-chassis" id="s9">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">09</span>
+          <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+        </div>
+        <p>Test your analytical limits before deploying cryptographic backend updates. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your formatting accuracy[cite: 1].</p>
+
+        <div class="retrieval-grid">
+          <div class="retrieval-node" onclick="flipHUDNode(this)">
+            <div class="r-front">
+              <div class="r-meta">Question 01</div>
+              <div class="r-question-text">What specific structural purpose does a random cryptographic salt serve when securing user credentials inside database records?</div>
+              <div class="r-action-hint">Consider identical user inputs mapping pipelines ↗</div>
+            </div>
+            <div class="r-back">
+              <div class="r-meta">Answer 01</div>
+              <div class="r-answer-text">A random cryptographic salt adds unique noise data to inputs before hashing[cite: 1]. This ensures that even if multiple users choose identical passwords, they resolve to completely unique hash signatures inside database tables, neutralizing pre-computed lookup tables and rainbow matrices completely[cite: 1].</div>
+              <div class="r-action-hint">Tap to flip back ↗</div>
+            </div>
+          </div>
+
+          <div class="retrieval-node" onclick="flipHUDNode(this)">
+            <div class="r-front">
+              <div class="r-meta">Question 02</div>
+              <div class="r-question-text">Explain how the bcrypt engine parses work factor parameters inside its structured 60-character output string during login attempts.</div>
+              <div class="r-action-hint">Consider exponential loop calculation indicators ↗</div>
+            </div>
+            <div class="r-back">
+              <div class="r-meta">Answer 02</div>
+              <div class="r-answer-text">Bcrypt bakes the work factor and random salt directly into the prefix of its output string[cite: 1]. When a user tries to log in, the verification module reads these parameters from the saved hash prefix, combines the salt with the incoming password, and reruns the exact same number of loop iterations to check for a match[cite: 1].</div>
+              <div class="r-action-hint">Tap to flip back ↗ </div>
+            </div>
+          </div>
+
+          <div class="retrieval-node" onclick="flipHUDNode(this)">
+            <div class="r-front">
+              <div class="r-meta">Question 03</div>
+              <div class="r-question-text">What root system error do you introduce by configuring an excessively high work cost factor like 18 inside your registration logic paths?</div>
+              <div class="r-action-hint">Consider main server thread cpu allocation times ↗</div>
+            </div>
+            <div class="r-back">
+              <div class="r-meta">Answer 03</div>
+              <div class="r-answer-text">Configuring an excessively high cost factor spikes computing loops exponentially ($2^{18}$ rounds), locking up server CPUs for multiple seconds per registration. This ties up application threads and exposes servers to sudden denial-of-service bottlenecks under normal traffic volumes.</div>
+              <div class="r-action-hint">Tap to flip back ↗ </div>
+            </div>
+          </div>
+
+          <div class="retrieval-node" onclick="flipHUDNode(this)">
+            <div class="r-front">
+              <div class="r-meta">Question 04</div>
+              <div class="r-question-text">Detail why using a reversible asymmetric encryption algorithm to store user passwords is a major security flaw.</div>
+              <div class="r-action-hint">Consider master decryption keys leak vectors ↗</div>
+            </div>
+            <div class="r-back">
+              <div class="r-meta">Answer 04</div>
+              <div class="r-answer-text">Asymmetric encryption is reversible, meaning if an attacker leaks or compromises the server's private decryption key, they can decrypt your entire database of passwords back into plain text. Real credential security demands non-reversible, one-way adaptive hashing functions[cite: 1].</div>
+              <div class="r-action-hint">Tap to flip back ↗ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
+    <div class="kinetic-edge-chassis" id="s10">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">10</span>
+          <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+        </div>
+        <p>Complete these data security tasks to master cryptographic key derivation rules and schema isolation gates[cite: 1]. Click each row to record your progress.</p>
+
+        <div class="milestone-hud-list">
+          <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+            <div class="row-checkbox">✓</div>
+            <div class="row-body">
+              <div class="row-title">Task 1 — Implement an Automated Pre-Save Hashing Hook (25 Min)</div>
+              <div class="row-desc">Open a local project model file, install the bcrypt package, and construct an explicit pre-save schema hook to hash raw password inputs automatically during record registration passes[cite: 1].</div>
+            </div>
+          </div>
+
+          <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+            <div class="row-checkbox">✓</div>
+            <div class="row-body">
+              <div class="row-title">Task 2 — Verify Hash Security Bounds via Database Field Inspections (25 Min)</div>
+              <div class="row-desc">Launch your backend platform sandbox, register a test user, and inspect the table rows using database management UIs to confirm passcodes are stored as secure 60-character bcrypt strings[cite: 1].</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ── COMPREHENSIVE ROADMAP RECAP PANEL ── -->
+    <div class="kinetic-edge-chassis">
+      <div class="kinetic-edge-inner">
+        <h3 class="recap-title-hud">🎯 Cryptographic Storage &amp; Password Hashing Recap</h3>
+        <div class="recap-grid-hud">
+          <div class="recap-item-node">
+            <div class="recap-item-title">Adaptive Hashing Blocks</div>
+            <div class="recap-item-desc">Deploy compute-heavy, adaptive algorithms like bcrypt to introduce deliberate latency delays, halting dictionary brute-force attempts under load[cite: 1].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Random Salt Injection</div>
+            <div class="recap-item-desc">Incorporate randomized pseudo-random noise fields automatically to ensure matching user passwords map to unique hash signatures inside data blocks[cite: 1].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Tuned Cost Factors</div>
+            <div class="recap-item-desc">Enforce optimal work factor parameters (setting values between 10 and 12) to secure solid delays without overloading server hardware[cite: 1].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Self-Contained Signatures</div>
+            <div class="recap-item-desc">Parse saved string fields dynamically from a single column value, using baked-in salt data to verify logins without storing plain credentials[cite: 1].</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
+    <div class="kinetic-edge-chassis" id="s11">
+      <div class="kinetic-edge-inner">
+        <div class="card-header-hud">
+          <span class="card-hud-num">11</span>
+          <h2 class="card-hud-title">Takeaways &amp; Terms</h2>
+        </div>
+        <p>These cryptographic storage and non-reversible hashing guidelines form the baseline requirement for engineering secure full-stack software applications[cite: 1]. Review them frequently to guide your development work.</p>
+
+        <div class="summary-hud-grid">
+          <div class="summary-hud-cell"><div class="summary-hud-metric">1</div><div class="summary-hud-text">Enforce absolute non-reversibility. Never save plain user credentials directly inside data tables under any conditions[cite: 1].</div></div>
+          <div class="summary-hud-cell"><div class="summary-hud-metric">2</div><div class="summary-hud-text">Enforce automatic salting rules. Use unique random noise fields for every account entry to neutralize pre-computed lookup grids and rainbow tables[cite: 1].</div></div>
+          <div class="summary-hud-cell"><div class="summary-hud-metric">3</div><div class="summary-hud-text">Tune work cost boundaries. Apply adaptive key stretching to raise computing barriers for hackers while keeping logins snappy for real users[cite: 1].</div></div>
+        </div>
+
+        <div class="divider"></div>
+        <h3>Terms to Know</h3>
+
+        <div class="glossary-matrix-grid">
+          <div class="glossary-cell-node">
+            <div class="g-node-term">One-Way Hashing Function</div>
+            <div class="g-node-definition">A mathematical algorithm that converts input strings into fixed-length signatures that cannot be reversed back into plain text[cite: 1].</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Bcrypt Engine Algorithm</div>
+            <div class="g-node-definition">An adaptive, cipher-based key derivation function built to slow down password checking and resist hardware brute-force attacks[cite: 1].</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Cryptographic Salting</div>
+            <div class="g-node-definition">The security process of adding random noise data to input strings before hashing to create unique outputs[cite: 1].</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Key Stretching Mode</div>
+            <div class="g-node-definition">An optimization practice that runs data through thousands of compute loops iteratively to slow down hash testing speeds[cite: 1].</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Rainbow Table Lookup</div>
+            <div class="g-node-definition">An exploit method where hackers crack database entries by matching leaked hashes against pre-computed tables of common passwords.</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Cost Work Factor</div>
+            <div class="g-node-definition">The configuration parameter defining the total number of loop runs ($2^{\text{cost}}$ rounds) the hashing engine executes[cite: 1].</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">CSPRNG noise Generator</div>
+            <div class="g-node-definition">A highly secure random string generator used by operating systems to output non-predictable values for cryptography tasks.</div>
+          </div>
+          <div class="glossary-cell-node">
+            <div class="g-node-term">Mongoose Pre-Save Hook</div>
+            <div class="g-node-definition">An active data lifecycle function that intercepts and processes record attributes automatically before committing writes to disk[cite: 1].</div>
+          </div>
+        </div>
+
+        <!-- PROGRESS PHASE CHANNELS DISPATCH FOOTER SYSTEM LINK -->
+        <div class="matrix-footer">
+          <a class="matrix-next-btn" href="essay-9.3.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 9.3 - JWT in Practice: Creating, Verifying, Refresh Tokens, &amp; Secure Storage</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.kinetic-edge-chassis');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+  s.classList.add('visible');
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function copyCodePayload(btn, targetSourceId) {
+  const targetTextCode = document.getElementById(targetSourceId).innerText;
+  navigator.clipboard.writeText(targetTextCode).then(() => {
+    const btnText = btn.querySelector('.copy-btn-text');
+    const originalValue = btnText.innerText;
+    btnText.innerText = "Copied Securely!";
+    btn.style.background = "var(--text-hyper-bright)";
+    btn.style.borderColor = "var(--text-hyper-bright)";
+    btn.style.color = "var(--bg-core)";
+    
+    setTimeout(() => {
+      btnText.innerText = originalValue;
+      btn.style.background = "transparent";
+      btn.style.borderColor = "var(--border-static)";
+      btn.style.color = "var(--text-hyper-bright)";
+    }, 2000);
+  }).catch((err) => {
+    console.error("Failed to copy configuration strings:", err);
+  });
+}
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  
+  body.classList.toggle('light-theme');
+  
+  if (body.classList.contains('light-theme')) {
+    themeText.innerText = "Light Lab";
+  } else {
+    themeText.innerText = "Dark Cyber";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -1902,90 +2627,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3122,767 +3763,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-9">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-
-
-<!-- ═══════════════════════════════ LEFT DRAWERS RAIL ═══════════════════════════════ -->
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Crypto Security</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Pitfalls</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways &amp; Terms</span></a>
-</aside>
-
-<!-- ═══════════════════════════════ CRYPTOGRAPHIC ENGINE RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 9 — Authentication and Security[cite: 1]</div>
-  <div class="hero-eyebrow">essay 9.2 of 88 &nbsp;·&nbsp; series: faang roadmap[cite: 1]</div>
-  
-  <h1 class="hero-title">
-    Password Hashing with bcrypt:<br>
-    Cryptographic Salts &amp; <em>One-Way Functions</em>[cite: 1]
-  </h1>
-  <p class="hero-subtitle">
-    Deconstructing adaptive hashing math matrices, neutralizing lookup rainbow table vectors with randomized cryptographic salting, tuning cost parameters, and reinforcing storage defense grids.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">9.2 — Cryptographic Storage[cite: 1]</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~55 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essay 9.1 (Identity Architecture &amp; Stateful Cookie Perimeters)[cite: 1]</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">One-Way Hashing · Cryptographic Salting · Work Factors · Adaptive Computation[cite: 1]</span>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════ MAIN CORE VIEWPORT PANEL ═══════════════════════════════ -->
-<div class="layout-main-frame">
-  <main>
-
-    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
-    <div class="executive-summary-panel">
-      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
-      <div class="summary-text-hud">
-        Enterprise-tier user defense dictates absolute non-reversibility inside persistence layers[cite: 1]. Storing plain-text user passwords or deploying outdated, static mathematical hashing models (like MD5 or SHA-1) allows database leaks to expose global user accounts instantly via reverse lookup tables. This module breaks down adaptive key derivation using bcrypt, detailing randomized cryptographic salting, cost factor iteration rules, and one-way computational walls to shield credentials from brute-force exploits[cite: 1].
-      </div>
-    </div>
-
-    <!-- ── PROGRESS TIMELINE MAP ── -->
-    <div class="interactive-framework-sector">
-      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
-      <div class="framework-flex-track">
-        <div class="frame-node-box done-node-box">Auth Perimeters (9.1)[cite: 1]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box active-node-box">Bcrypt Password Hash (9.2)[cite: 1]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">JWT JSON Tokens (9.3)[cite: 1]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Protected Routes (9.4)[cite: 1]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Production Security (9.5)[cite: 1]</div>
-      </div>
-    </div>
-
-    <!-- ── CREATIVE SYSTEM PROCESS MAP ELEMENT ── -->
-    <div class="creative-viz-deck">
-      <div class="viz-header-title">🛡️ Adaptive One-Way Hashing &amp; Cryptographic Salting Lifecycle</div>
-      <p style="font-size: 0.92rem; color: var(--text-dimmed); margin-bottom: 16px;">Visualizing how raw credentials undergo iterative transformation states to produce non-reversible, salt-prepended string signatures inside database tables:</p>
-      <div class="viz-fluid-lane">
-        <div class="viz-node-capsule">Raw Password <span>Plain Input</span></div>
-        <div class="viz-flow-vector">➔</div>
-        <div class="viz-node-capsule" style="border-color: var(--laser-cyan); color: var(--laser-cyan);">Random Salt <span>Pre-Pending Pass</span></div>
-        <div class="viz-flow-vector">➔</div>
-        <div class="viz-node-capsule" style="border-color: var(--brand-gold); color: var(--brand-gold);">Cost Factor Loops <span>2^Cost Iterations</span></div>
-        <div class="viz-flow-vector">🛡️</div>
-        <div class="viz-node-capsule" style="border-color: var(--matrix-green); color: var(--matrix-green);">Bcrypt Signature <span>Stored in DB</span></div>
-      </div>
-    </div>
-
-    <!-- ── VALUE HOVER TELEMETRY CHIPS ── -->
-    <h4>📊 Cryptographic Execution Benchmarks:</h4>
-    <div class="interactive-chip-grid">
-      <div class="metric-chip-node">
-        ⚙️ Recommended Cost Factor: 10 - 12 (Work Factor)
-        <div class="metric-chip-tooltip">A cost factor of 10 scales computing operations exponentially ($2^{10}$ iterations), demanding roughly 100-200ms of CPU time per password validation to stop hardware brute-force attempts.</div>
-      </div>
-      <div class="metric-chip-node">
-        🔒 Salt Length Standard: 24-byte CSPRNG Generation
-        <div class="metric-chip-tooltip">Bcrypt auto-generates a unique Cryptographically Secure Pseudo-Random Number Generator salt value for every entry, ensuring identical user passwords yield completely unique hash strings.</div>
-      </div>
-      <div class="metric-chip-node">
-        🛡️ Collision Vulnerability: Zero Recorded Failures
-        <div class="metric-chip-tooltip">Based on the Blowfish cipher engine, the bcrypt algorithm maintains absolute structural defense against analytical collision breaks.</div>
-      </div>
-    </div>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <div class="kinetic-edge-chassis" id="s1">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">01</span>
-          <h2 class="card-hud-title">The Big Idea</h2>
-        </div>
-        <p>Many novice developers approach backend user management by storing user credentials directly inside data tables as unencrypted, plain-text strings out of convenience[cite: 1]. **This design shortcut is a fatal security liability.** If a malicious actor compromises the network or leaks database records via injection holes, every individual client credential becomes publicly exposed, compromising users' matching accounts across the entire web instantly.</p>
-        <p>Alternatively, encrypting credentials using traditional, fast reversible ciphers or basic static hashing systems (like MD5 or SHA-256) fails to withstand modern hardware dictionary lookups. Fast algorithms allow hackers to evaluate billions of password variants per second using graphics cards, reversing leaked hashes via pre-computed **Rainbow Tables**. High-security system architecture relies on an **Adaptive One-Way Cryptographic Wall** powered by **bcrypt**[cite: 1]. Bcrypt isolates database values by adding randomized noise to inputs and slowing down verification speeds to eliminate automated brute-force attacks[cite: 1].</p>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
-    <div class="kinetic-edge-chassis" id="s2">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">02</span>
-          <h2 class="card-hud-title">The Intuition</h2>
-        </div>
-        <h3>The Un-smashable Mathematical Chemical Drop-Vault</h3>
-        <p>Imagine managing a secure commercial mint container designed to protect paper currency assets. If you choose to lock valuables using a standard plastic combination padlock, experienced lock-pickers can decode the internal wheel alignment triggers in seconds, grabbing your full inventory with minimal effort.</p>
-        <p>Instead, you build a **Mathematical Chemical Drop-Vault System.** When a client drops a paper authorization slip into the slot, an automated needle mixes the fibers with a randomized chemical dye formula, dissolving the paper document into a solid, unique crystalline rock block signature[cite: 1]. You cannot reverse the chemical melt to recreate the original paper layout; however, if the client returns, you can run their fresh input through the exact same chemical mix pass to see if the resulting crystal chunk matches. Bcrypt functions exactly like that chemical vault, locking entries down a strict one-way path[cite: 1].</p>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
-    <div class="kinetic-edge-chassis" id="s3">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">03</span>
-          <h2 class="card-hud-title">The Visual — One-Way Hashing and Verification Handshakes</h2>
-        </div>
-        <p>Understanding how adaptive algorithms blend unique salt blocks and pass strings through iterative evaluation loops is essential for defending backend runtimes[cite: 1]. Click through each sequential step below to trace cryptographic validation loops.</p>
-
-        <div class="workboard-matrix">
-          <div class="workboard-steps">
-            <div class="wb-step" onclick="revealNode(this)">
-              <div class="wb-step-header">
-                <span class="wb-step-indicator">1</span>
-                <div class="wb-step-title">CSPRNG Salt Generation &amp; Input Mixing Pass</div>
-              </div>
-              <div class="wb-step-body">
-                <p>The system captures a user password. Before running computations, it generates a randomized noise string (Salt) via secure background processing paths, merging the noise directly with input characters[cite: 1].</p>
-              </div>
-            </div>
-            <div class="wb-connector" style="text-align:center; color:var(--text-dimmed); margin:4px 0;">↓</div>
-            <div class="wb-step" onclick="revealNode(this)">
-              <div class="wb-step-header">
-                <span class="wb-step-indicator">2</span>
-                <div class="wb-step-title">Iterative Cost Factor Loops (Key Stretching)</div>
-              </div>
-              <div class="wb-step-body">
-                <p>The combined string enters the core hashing engine. The algorithm cycles the input through thousands of internal cryptographic modifications determined by your work factor ($2^{\text{cost}}$ rounds), driving up processing costs for hackers[cite: 1].</p>
-              </div>
-            </div>
-            <div class="wb-connector" style="text-align:center; color:var(--text-dimmed); margin:4px 0;">↓</div>
-            <div class="wb-step" onclick="revealNode(this)">
-              <div class="wb-step-header">
-                <span class="wb-step-indicator">3</span>
-                <div class="wb-step-title">Modular Signature Extraction &amp; Database Lock</div>
-              </div>
-              <div class="wb-step-body">
-                <p>The engine outputs a 60-character hash string. The cost factor and salt values are baked right inside the final hash prefix, allowing the system to verify user logins smoothly without saving passwords[cite: 1].</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="flow-action-row">
-            <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Security Diagnosis</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
-    <div class="kinetic-edge-chassis" id="s4">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">04</span>
-          <h2 class="card-hud-title">The Depth</h2>
-        </div>
-        <h3>Part A — Cryptographic Salting vs. Plain One-Way Hashing</h3>
-        <p>A common engineering error when implementing authentication architectures is using plain hashing functions (like SHA-256) directly on user passwords without added modifiers. Because fast hashing functions always output identical result strings for matching inputs, they remain highly vulnerable to **Pre-computed Dictionary Attacks** or **Rainbow Table Lookups**.</p>
-        <p>Bcrypt eliminates this vulnerability by enforcing **Cryptographic Salting**[cite: 1]. The engine automatically generates a completely unique random string for every registration request, pre-pending it to the input before starting computation passes[cite: 1]. This ensures that even if two users choose identical passwords, they resolve to completely unique hash signatures inside data tables, neutralizing pre-computed lookup tables entirely.</p>
-
-        <h3>Part B — Key Stretching Mechanics and Adaptive Cost Factors</h3>
-        <p>Traditional hashing functions are optimized for processing massive files quickly, which works against password security. If an algorithm takes under a microsecond to verify a hash, hackers can use hardware rigs to test millions of variations per second during database breach reviews.</p>
-        <p>Bcrypt balances this asymmetry through **Key Stretching** and **Adaptive Work Factors**[cite: 1]. Setting an explicit cost parameter (such as 10) causes the engine to cycle data through $2^{10}$ internal loops, forcing a deliberate verification lag (~100ms) on server CPUs[cite: 1]. While unnoticeable to a single user logging in, this intentional delay destroys brute-force velocities for hackers trying millions of combinations.</p>
-
-        <h3>Part C — Parsing the 60-Character Bcrypt Structural Output String</h3>
-        <p>Bcrypt returns a highly structured 60-character output string split into explicit parameter segments. This design pattern ensures servers can evaluate incoming login attempts without storing separate salt fields inside columns[cite: 1]:</p>
-        
-        <div class="premium-code-block">
-          <pre style="font-size: 1rem; text-align: center; font-family: 'Fira Code', monospace; color: var(--brand-gold);">$2b$ $10$ $GDX7bW7E8y2nBcK7MvDq2e$ .K9z8X2uR8yM4w7bV2q1eR5vT8zM6yK2</pre>
-        </div>
-        
-        <ul>
-          <li><strong><code>$2b$</code> (Algorithm Identifier):</strong> Identifies the explicit cipher version and algorithm configuration used to compile the hash signature[cite: 1].</li>
-          <li><strong><code>$10$</code> (Cost Work Factor):</strong> Logs the exponential loop iteration scale ($2^{10}$ processing rounds) applied during key stretching passes[cite: 1].</li>
-          <li><strong><code>$GDX7...$</code> (22-Character Salt):</strong> The un-hashed, random cryptographic salt value extracted straight from CSPRNG generators to guide verification loops[cite: 1].</li>
-          <li><strong><code>.K9z8...</code> (31-Character Hash Body):</strong> The final output signature computed over your combined password characters.</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
-    <div class="kinetic-edge-chassis" id="s5">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">05</span>
-          <h2 class="card-hud-title">Code Lab — Engineering Cryptographic Password Intercepts</h2>
-        </div>
-        <p>Analyze how to integrate bcrypt hashing models into Mongoose schema lifecycle pre-save hooks, complete with copy controls[cite: 1]:</p>
-
-        <div class="premium-code-block">
-          <div class="p-code-header">
-            <span class="p-code-filename">src/models/UserAccount.js</span>
-            <button class="copy-btn-action" onclick="copyCodePayload(this, 'codeBlockTarget1')">
-              <span>📋</span> <span class="copy-btn-text">Copy Model Engine</span>
-            </button>
-          </div>
-          <pre id="codeBlockTarget1"><span class="t-kw">const</span> mongoose = require(<span class="t-val">'mongoose'</span>);[cite: 1]
-<span class="t-kw">const</span> bcrypt = require(<span class="t-val">'bcrypt'</span>);[cite: 1]
-
-<span class="t-kw">const</span> userAccountSchema = <span class="t-kw">new</span> mongoose.Schema({
-    accountEmail: { type: String, required: <span class="t-val">true</span>, unique: <span class="t-val">true</span> },
-    hashedPassword: { type: String, required: <span class="t-val">true</span> }
-});
-
-<span class="t-comment">// 1. Intercept user registrations via automatic Mongoose pre-save hooks</span>
-userAccountSchema.pre(<span class="t-str">'save'</span>, <span class="t-kw">async function</span> (next) {
-    <span class="t-comment">// Only hash the passcode string if it has been modified or created fresh</span>
-    <span class="t-kw">if</span> (!this.isModified(<span class="t-str">'hashedPassword'</span>)) <span class="t-kw">return</span> next();
-
-    <span class="t-kw">try</span> {
-        <span class="t-comment">// Generate random salt with cost work factor set to 12[cite: 1]</span>
-        <span class="t-kw">const</span> operationalSalt = <span class="t-kw">await</span> bcrypt.genSalt(12);[cite: 1]
-        
-        <span class="t-comment">// Hash plain input text securely before saving to database collections[cite: 1]</span>
-        this.hashedPassword = <span class="t-kw">await</span> bcrypt.hash(this.hashedPassword, operationalSalt);[cite: 1]
-        next();
-    } <span class="t-kw">catch</span> (cryptoFault) {
-        next(cryptoFault);
-    }
-});
-
-<span class="t-comment">// 2. Secure schema method to verify incoming passwords without revealing database strings</span>
-userAccountSchema.methods.validatePassword = <span class="t-kw">async function</span> (candidatePassword) {
-    <span class="t-kw">return await</span> bcrypt.compare(candidatePassword, this.hashedPassword);[cite: 1]
-};
-
-module.exports = mongoose.model(<span class="t-str">'UserAccount'</span>, userAccountSchema);</pre>
-        </div>
-
-        <div class="error-explanation">
-          <div class="error-breakdown">
-            <div class="breakdown-item">
-              <div class="breakdown-key">Root Problem Analysis</div>
-              <div class="breakdown-val">Storing plain passwords directly inside user records exposes full datasets to sudden compromise if database fields leak onto public repo channels[cite: 1].</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-key">Refactored Result</div>
-              <div class="breakdown-val">Binding adaptive hashing hooks to schema models ensures plain credentials are hashed automatically before writing records to data blocks[cite: 1].</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 6: COMMON PITFALLS ══════════ -->
-    <div class="kinetic-edge-chassis" id="s6">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">06</span>
-          <h2 class="card-hud-title">Common Pitfalls</h2>
-        </div>
-        <p>Avoid these common security architecture pitfalls during technical reviews. Tuning algorithm thresholds properly preserves server processing budgets as users scale up[cite: 1].</p>
-
-        <div class="pitfall-matrix">
-          <div class="pitfall-node">
-            <div class="pitfall-id">PITFALL 01</div>
-            <div class="pitfall-title">Setting Unrealistic Cost Factors Inside Production Ingestion Modules</div>
-            <div class="pitfall-body">Configuring cost parameters too high (like setting cost factor to 16+), which forces exponential CPU wait times and clogs application threads during user logins.</div>
-            <div class="remedy-badge">✓ The Remedy</div>
-            <div class="pitfall-desc">Enforce optimal work boundaries (setting values between 10 and 12) to secure solid computation latency delays without overloading server hardware[cite: 1].</div>
-          </div>
-
-          <div class="pitfall-node">
-            <div class="pitfall-id">PITFALL 02</div>
-            <div class="pitfall-title">Using Fast Hardware-Oriented Hashing Functions for Passwords</div>
-            <div class="pitfall-body">Using fast algorithms like SHA-256 raw to lock user passwords, allowing hackers to compute millions of variations per second via graphics card clusters.</div>
-            <div class="remedy-badge">✓ The Remedy</div>
-            <div class="pitfall-desc">Deploy dedicated, adaptive, compute-heavy algorithms like bcrypt or Argon2 to ensure hardware brute-force attacks remain entirely unprofitable[cite: 1].</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
-    <div class="kinetic-edge-chassis" id="s7">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">07</span>
-          <h2 class="card-hud-title">Real World — High-Scale Storage Defenses</h2>
-        </div>
-        <p>Top-tier full-stack development organizations implement adaptive one-way hashing models to insulate user records, handle security leaks, and protect credentials[cite: 1].</p>
-
-        <div class="enterprise-radar">
-          <div class="radar-cell">
-            <div class="cell-tag">Auth0 Account Encryption</div>
-            <div class="cell-desc">Auth0 hashes registration passcodes using compute-heavy security algorithms, enforcing strict cost thresholds to block automated lookups across authentication vectors[cite: 1].</div>
-          </div>
-          <div class="radar-cell">
-            <div class="cell-tag">Stripe Security Gates</div>
-            <div class="cell-desc">Stripe routes merchant access credentials through adaptive hashing modules, shielding sensitive financial console routes from data leaks[cite: 1].</div>
-          </div>
-          <div class="radar-cell">
-            <div class="cell-tag">GitHub Profile perimeters</div>
-            <div class="cell-desc">GitHub protects developer profile credentials using strict one-way hashing functions, ensuring leaked database fields cannot be decoded via pre-computed rainbow matrices[cite: 1].</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
-    <div class="kinetic-edge-chassis" id="s8">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">08</span>
-          <h2 class="card-hud-title">Interview Angle</h2>
-        </div>
-        <p>In mid-to-senior backend systems architecture reviews, cryptographic storage concepts, salting behaviors, and adaptive speed controls are evaluated[cite: 1].</p>
-
-        <div class="playbook-card">
-          <div class="pb-hud-label">Technical Challenge Scenario</div>
-          <div class="pb-q-title">"Why are fast hashing algorithms like SHA-256 unsuitable for securing user passwords inside a database, and how does bcrypt address this issue?"</div>
-          <div class="pb-hud-answer"><strong>Strategic Engine Trace Formulation:</strong> "Fast hashing algorithms like SHA-256 are optimized for compiling massive data blocks quickly, which works against password security. If an algorithm takes under a microsecond to run, attackers can use custom graphics card clusters to check billions of password variations per second against leaked database entries. **Bcrypt** counters this vulnerability through **Key Stretching and Adaptive Cost Factors**[cite: 1]. By introducing a configurable work factor parameter, the engine runs inputs through $2^{\text{cost}}$ internal loop iterations, adding a deliberate delay (~100ms) on server CPUs[cite: 1]. This delay is unnoticeable to a logging user but makes automated brute-force attacks too slow and expensive to execute[cite: 1]."</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
-    <div class="kinetic-edge-chassis" id="s9">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">09</span>
-          <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-        </div>
-        <p>Test your analytical limits before deploying cryptographic backend updates. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your formatting accuracy[cite: 1].</p>
-
-        <div class="retrieval-grid">
-          <div class="retrieval-node" onclick="flipHUDNode(this)">
-            <div class="r-front">
-              <div class="r-meta">Question 01</div>
-              <div class="r-question-text">What specific structural purpose does a random cryptographic salt serve when securing user credentials inside database records?</div>
-              <div class="r-action-hint">Consider identical user inputs mapping pipelines ↗</div>
-            </div>
-            <div class="r-back">
-              <div class="r-meta">Answer 01</div>
-              <div class="r-answer-text">A random cryptographic salt adds unique noise data to inputs before hashing[cite: 1]. This ensures that even if multiple users choose identical passwords, they resolve to completely unique hash signatures inside database tables, neutralizing pre-computed lookup tables and rainbow matrices completely[cite: 1].</div>
-              <div class="r-action-hint">Tap to flip back ↗</div>
-            </div>
-          </div>
-
-          <div class="retrieval-node" onclick="flipHUDNode(this)">
-            <div class="r-front">
-              <div class="r-meta">Question 02</div>
-              <div class="r-question-text">Explain how the bcrypt engine parses work factor parameters inside its structured 60-character output string during login attempts.</div>
-              <div class="r-action-hint">Consider exponential loop calculation indicators ↗</div>
-            </div>
-            <div class="r-back">
-              <div class="r-meta">Answer 02</div>
-              <div class="r-answer-text">Bcrypt bakes the work factor and random salt directly into the prefix of its output string[cite: 1]. When a user tries to log in, the verification module reads these parameters from the saved hash prefix, combines the salt with the incoming password, and reruns the exact same number of loop iterations to check for a match[cite: 1].</div>
-              <div class="r-action-hint">Tap to flip back ↗ </div>
-            </div>
-          </div>
-
-          <div class="retrieval-node" onclick="flipHUDNode(this)">
-            <div class="r-front">
-              <div class="r-meta">Question 03</div>
-              <div class="r-question-text">What root system error do you introduce by configuring an excessively high work cost factor like 18 inside your registration logic paths?</div>
-              <div class="r-action-hint">Consider main server thread cpu allocation times ↗</div>
-            </div>
-            <div class="r-back">
-              <div class="r-meta">Answer 03</div>
-              <div class="r-answer-text">Configuring an excessively high cost factor spikes computing loops exponentially ($2^{18}$ rounds), locking up server CPUs for multiple seconds per registration. This ties up application threads and exposes servers to sudden denial-of-service bottlenecks under normal traffic volumes.</div>
-              <div class="r-action-hint">Tap to flip back ↗ </div>
-            </div>
-          </div>
-
-          <div class="retrieval-node" onclick="flipHUDNode(this)">
-            <div class="r-front">
-              <div class="r-meta">Question 04</div>
-              <div class="r-question-text">Detail why using a reversible asymmetric encryption algorithm to store user passwords is a major security flaw.</div>
-              <div class="r-action-hint">Consider master decryption keys leak vectors ↗</div>
-            </div>
-            <div class="r-back">
-              <div class="r-meta">Answer 04</div>
-              <div class="r-answer-text">Asymmetric encryption is reversible, meaning if an attacker leaks or compromises the server's private decryption key, they can decrypt your entire database of passwords back into plain text. Real credential security demands non-reversible, one-way adaptive hashing functions[cite: 1].</div>
-              <div class="r-action-hint">Tap to flip back ↗ </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
-    <div class="kinetic-edge-chassis" id="s10">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">10</span>
-          <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-        </div>
-        <p>Complete these data security tasks to master cryptographic key derivation rules and schema isolation gates[cite: 1]. Click each row to record your progress.</p>
-
-        <div class="milestone-hud-list">
-          <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-            <div class="row-checkbox">✓</div>
-            <div class="row-body">
-              <div class="row-title">Task 1 — Implement an Automated Pre-Save Hashing Hook (25 Min)</div>
-              <div class="row-desc">Open a local project model file, install the bcrypt package, and construct an explicit pre-save schema hook to hash raw password inputs automatically during record registration passes[cite: 1].</div>
-            </div>
-          </div>
-
-          <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-            <div class="row-checkbox">✓</div>
-            <div class="row-body">
-              <div class="row-title">Task 2 — Verify Hash Security Bounds via Database Field Inspections (25 Min)</div>
-              <div class="row-desc">Launch your backend platform sandbox, register a test user, and inspect the table rows using database management UIs to confirm passcodes are stored as secure 60-character bcrypt strings[cite: 1].</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ── COMPREHENSIVE ROADMAP RECAP PANEL ── -->
-    <div class="kinetic-edge-chassis">
-      <div class="kinetic-edge-inner">
-        <h3 class="recap-title-hud">🎯 Cryptographic Storage &amp; Password Hashing Recap</h3>
-        <div class="recap-grid-hud">
-          <div class="recap-item-node">
-            <div class="recap-item-title">Adaptive Hashing Blocks</div>
-            <div class="recap-item-desc">Deploy compute-heavy, adaptive algorithms like bcrypt to introduce deliberate latency delays, halting dictionary brute-force attempts under load[cite: 1].</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Random Salt Injection</div>
-            <div class="recap-item-desc">Incorporate randomized pseudo-random noise fields automatically to ensure matching user passwords map to unique hash signatures inside data blocks[cite: 1].</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Tuned Cost Factors</div>
-            <div class="recap-item-desc">Enforce optimal work factor parameters (setting values between 10 and 12) to secure solid delays without overloading server hardware[cite: 1].</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Self-Contained Signatures</div>
-            <div class="recap-item-desc">Parse saved string fields dynamically from a single column value, using baked-in salt data to verify logins without storing plain credentials[cite: 1].</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
-    <div class="kinetic-edge-chassis" id="s11">
-      <div class="kinetic-edge-inner">
-        <div class="card-header-hud">
-          <span class="card-hud-num">11</span>
-          <h2 class="card-hud-title">Takeaways &amp; Terms</h2>
-        </div>
-        <p>These cryptographic storage and non-reversible hashing guidelines form the baseline requirement for engineering secure full-stack software applications[cite: 1]. Review them frequently to guide your development work.</p>
-
-        <div class="summary-hud-grid">
-          <div class="summary-hud-cell"><div class="summary-hud-metric">1</div><div class="summary-hud-text">Enforce absolute non-reversibility. Never save plain user credentials directly inside data tables under any conditions[cite: 1].</div></div>
-          <div class="summary-hud-cell"><div class="summary-hud-metric">2</div><div class="summary-hud-text">Enforce automatic salting rules. Use unique random noise fields for every account entry to neutralize pre-computed lookup grids and rainbow tables[cite: 1].</div></div>
-          <div class="summary-hud-cell"><div class="summary-hud-metric">3</div><div class="summary-hud-text">Tune work cost boundaries. Apply adaptive key stretching to raise computing barriers for hackers while keeping logins snappy for real users[cite: 1].</div></div>
-        </div>
-
-        <div class="divider"></div>
-        <h3>Terms to Know</h3>
-
-        <div class="glossary-matrix-grid">
-          <div class="glossary-cell-node">
-            <div class="g-node-term">One-Way Hashing Function</div>
-            <div class="g-node-definition">A mathematical algorithm that converts input strings into fixed-length signatures that cannot be reversed back into plain text[cite: 1].</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Bcrypt Engine Algorithm</div>
-            <div class="g-node-definition">An adaptive, cipher-based key derivation function built to slow down password checking and resist hardware brute-force attacks[cite: 1].</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Cryptographic Salting</div>
-            <div class="g-node-definition">The security process of adding random noise data to input strings before hashing to create unique outputs[cite: 1].</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Key Stretching Mode</div>
-            <div class="g-node-definition">An optimization practice that runs data through thousands of compute loops iteratively to slow down hash testing speeds[cite: 1].</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Rainbow Table Lookup</div>
-            <div class="g-node-definition">An exploit method where hackers crack database entries by matching leaked hashes against pre-computed tables of common passwords.</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Cost Work Factor</div>
-            <div class="g-node-definition">The configuration parameter defining the total number of loop runs ($2^{\text{cost}}$ rounds) the hashing engine executes[cite: 1].</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">CSPRNG noise Generator</div>
-            <div class="g-node-definition">A highly secure random string generator used by operating systems to output non-predictable values for cryptography tasks.</div>
-          </div>
-          <div class="glossary-cell-node">
-            <div class="g-node-term">Mongoose Pre-Save Hook</div>
-            <div class="g-node-definition">An active data lifecycle function that intercepts and processes record attributes automatically before committing writes to disk[cite: 1].</div>
-          </div>
-        </div>
-
-        <!-- PROGRESS PHASE CHANNELS DISPATCH FOOTER SYSTEM LINK -->
-        <div class="matrix-footer">
-          <a class="matrix-next-btn" href="essay-9.3.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 9.3 - JWT in Practice: Creating, Verifying, Refresh Tokens, &amp; Secure Storage</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.kinetic-edge-chassis');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-  s.classList.add('visible');
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function copyCodePayload(btn, targetSourceId) {
-  const targetTextCode = document.getElementById(targetSourceId).innerText;
-  navigator.clipboard.writeText(targetTextCode).then(() => {
-    const btnText = btn.querySelector('.copy-btn-text');
-    const originalValue = btnText.innerText;
-    btnText.innerText = "Copied Securely!";
-    btn.style.background = "var(--text-hyper-bright)";
-    btn.style.borderColor = "var(--text-hyper-bright)";
-    btn.style.color = "var(--bg-core)";
-    
-    setTimeout(() => {
-      btnText.innerText = originalValue;
-      btn.style.background = "transparent";
-      btn.style.borderColor = "var(--border-static)";
-      btn.style.color = "var(--text-hyper-bright)";
-    }, 2000);
-  }).catch((err) => {
-    console.error("Failed to copy configuration strings:", err);
-  });
-}
-
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-function toggleThemeHUD() {
-  const body = document.body;
-  const themeText = document.getElementById('theme-text');
-  
-  body.classList.toggle('light-theme');
-  
-  if (body.classList.contains('light-theme')) {
-    themeText.innerText = "Light Lab";
-  } else {
-    themeText.innerText = "Dark Cyber";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

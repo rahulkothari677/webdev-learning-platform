@@ -649,21 +649,6 @@ p code, li code {
   .mistakes-grid, .test-cards, .three-things, .company-cards, .error-breakdown, .terms-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1747,8 +1732,765 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="phase-1">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-bar"></div>
+
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="phase-tag">Phase 1 — Core Frontend Engineering</div>
+  <div class="hero-eyebrow">essay 1.1 of 63 &nbsp;·&nbsp; series: faang roadmap</div>
+  <h1 class="hero-title">
+    HTML: The <em>Skeleton</em><br>
+    of Every Webpage
+  </h1>
+  <p class="hero-subtitle">
+    Deep-diving into semantic markup, Document Object Model representation, structural layout rendering, and critical accessibility engineering from an enterprise perspective.
+  </p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Phase</span>
+      <span class="meta-value">1 — Document Architecture</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Read Time</span>
+      <span class="meta-value">~45 minutes</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Prerequisites</span>
+      <span class="meta-value">Phase 0 Foundations</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Concepts</span>
+      <span class="meta-value">Semantic HTML · DOM Parsing · Accessibility (ARIA) · SEO Optimization</span>
+    </div>
+  </div>
+  <div class="hero-scroll">↓ &nbsp; scroll to begin</div>
+</div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-label">Contents</div>
+    <a class="nav-item active" href="#s1"><span class="nav-num">01</span><span class="nav-text">The Big Idea</span></a>
+    <a class="nav-item" href="#s2"><span class="nav-num">02</span><span class="nav-text">Where This Fits</span></a>
+    <a class="nav-item" href="#s3"><span class="nav-num">03</span><span class="nav-text">The Intuition</span></a>
+    <a class="nav-item" href="#s4"><span class="nav-num">04</span><span class="nav-text">The Visual</span></a>
+    <a class="nav-item" href="#s5"><span class="nav-num">05</span><span class="nav-text">The Depth</span></a>
+    <a class="nav-item" href="#s6"><span class="nav-num">06</span><span class="nav-text">Code Lab</span></a>
+    <a class="nav-item" href="#s7"><span class="nav-num">07</span><span class="nav-text">Common Mistakes</span></a>
+    <a class="nav-item" href="#s8"><span class="nav-num">08</span><span class="nav-text">Real World</span></a>
+    <a class="nav-item" href="#s9"><span class="nav-num">09</span><span class="nav-text">Interview Angle</span></a>
+    <a class="nav-item" href="#s10"><span class="nav-num">10</span><span class="nav-text">Explain It Test</span></a>
+    <a class="nav-item" href="#s11"><span class="nav-num">11</span><span class="nav-text">Do This Today</span></a>
+    <a class="nav-item" href="#s12"><span class="nav-num">12</span><span class="nav-text">3 Things + Terms</span></a>
+  </aside>
+
+  <main>
+
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">The Big Idea</h2>
+      </div>
+      <p>Beginners often dismiss HTML as a simple markup syntax to look past quickly on their way to JavaScript. <strong>This is a massive strategic error when preparing for top-tier tech companies.</strong> At FAANG scale, poorly structured HTML creates application bottlenecks, breaks SEO profiles processing millions of pages per day, and leaves systems exposed to compliance lawsuits due to broken accessibility standards.</p>
+      <p>HyperText Markup Language (HTML) is not a programming language; it is an authoritative declaration of document architecture. It informs the browser's rendering engine precisely how to partition raw application state into a functional node configuration. Writing production-grade HTML means modeling data explicitly so that external automated scripts, web crawlers, and parsing runtimes can read the user interface with maximum clarity.</p>
+      <div class="callout callout-idea">
+        <div class="callout-label">The Engineering Insight</div>
+        <p>A senior UI engineer looks at a web interface not as a visual painting, but as a formal data tree. If your HTML lacks clean semantic structure, you are building an entire frontend stack on a shifting foundation. Clean HTML minimizes DOM management overhead and ensures predictable application rendering across thousands of independent user devices.</p>
+      </div>
+    </section>
+
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Where This Fits</h2>
+      </div>
+      <p>Now that your development machine is prepared and your structural terminal workflows are active, we shift directly into producing UI nodes. HTML is the definitive starting point of all practical frontend architecture.</p>
+      
+      <div class="phase-map">
+        <div class="phase-node done"><div class="phase-circle">0.2</div><div class="phase-label">Terminal</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node done"><div class="phase-circle">0.3</div><div class="phase-label">Mindset</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node current"><div class="phase-circle">1.1</div><div class="phase-label">HTML Struct</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">1.2</div><div class="phase-label">CSS Layout</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">1.3</div><div class="phase-label">JS Engine</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">System Design</div></div>
+      </div>
+      <p>Every dynamic interface component built in subsequent units—whether structured in vanilla JavaScript modules or compiled through enterprise-tier library environments like React or component configurations within distributed web views—ultimately resolves into basic HTML nodes inside a running browser instance. Mastery of these primitive structures is critical before layering on style definitions or runtime performance optimizations.</p>
+    </section>
+
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">The Intuition</h2>
+      </div>
+      <h3>The Architectural Blueprint</h3>
+      <p>Consider the process of constructing an enterprise skyscraper. Before the interior designers add paint or the mechanical engineers configure the automated environmental systems, the structural engineering team anchors a heavy physical skeleton of raw steel and load-bearing concrete pillars.</p>
+      <p>If those pillars are placed haphazardly, or if the core foundation walls are generic instead of intentionally tailored for specific utility loads, the entire tower becomes structurally volatile. **HTML operates as that baseline steel skeleton.** A generic, unstructured mass of identical container tags (like an all-<code>&lt;div&gt;</code> layout) forces rendering engines to make heavy guesses about document purpose, resulting in unoptimized application parsing.</p>
+      <div class="callout callout-idea">
+        <div class="callout-label">The Tree-Model Paradigm</div>
+        <p>Train your perspective to view code structures as hierarchical family trees. Every element acts as an explicit parent, a sibling, or a deeply nested child node. Visualizing HTML this way prepares you to write highly maintainable data paths when handling large-scale web applications.</p>
+      </div>
+      <h3>The Web Crawler as a Blind Reader</h3>
+      <p>To evaluate if your HTML structural logic is robust, imagine a user trying to interpret your web page without any physical screen. This is exactly how automated web engines (like GoogleBot) and assistive screen readers parse your markup. They cannot perceive styling, placement coordinates, or decorative colors. They read the raw file structure from top to bottom. Semantic tags tell them exactly where the primary navigation sits, what content constitutes the main message, and how individual sections correlate to one another.</p>
+    </section>
+
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">The Visual — DOM Tree Compilation</h2>
+      </div>
+      <p>Understanding the standard execution lifecycle of document markup transformation is vital for tracking down critical browser paint paths. Click each sequential step to view how raw text documents resolve into operational object graphs inside the rendering runtime.</p>
+
+      <div class="flowchart-container">
+        <div class="flowchart-intro">
+          <p>🖥️ &nbsp; Document Parse Lifecycle &nbsp;·&nbsp; Click each phase to trace structural assembly.</p>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step" onclick="revealStep(this)">
+            <div class="flow-step-header">
+              <div class="flow-step-num">1</div>
+              <div class="flow-step-title">Conversion & Tokenization</div>
+              <div class="flow-step-expand">+</div>
+            </div>
+            <div class="flow-step-body">
+              <p>The browser reads raw bytes off the network or disk disk and maps them to characters based on the file encoding (typically UTF-8). It then parses strings into structured tokens (e.g., StartTag: html, StartTag: body, EndTag: body) based on the W3C HTML5 standard specifications.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" onclick="revealStep(this)">
+            <div class="flow-step-header">
+              <div class="flow-step-num">2</div>
+              <div class="flow-step-title">Lexical Object Node Generation</div>
+              <div class="flow-step-expand">+</div>
+            </div>
+            <div class="flow-step-body">
+              <p>The internal token streams are immediately cast into native object declarations called Nodes. These programmatic entities possess specialized properties, inline data descriptors, and distinct global method interfaces matching their specified element types.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" onclick="revealStep(this)">
+            <div class="flow-step-header">
+              <div class="flow-step-num">3</div>
+              <div class="flow-step-title">DOM Tree Structural Linking</div>
+              <div class="flow-step-expand">+</div>
+            </div>
+            <div class="flow-step-body">
+              <p>Because HTML nesting explicitly denotes element relationships, individual object nodes are linked inside a tree data structure known as the Document Object Model (DOM). This structural mapping establishes precise parent-child bounds that govern rendering logic and script interaction.</p>
+            </div>
+          </div>
+        </div>
+        <button class="flow-start-btn" onclick="resetSteps()">↺ Reset Lifecycle Tree</button>
+      </div>
+    </section>
+
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">The Depth</h2>
+      </div>
+      <h3>Part A — Document Anatomy & Parsing Mechanics</h3>
+      <p>An enterprise-grade document declaration requires strict adherence to initialization parameters. Let us examine the explicit structural breakdown of a baseline HTML5 document configuration:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-filename">index.html</span><div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div></div>
+<pre><span class="token-comment">&lt;!DOCTYPE html&gt;</span>
+<span class="token-tag">&lt;html</span> <span class="token-attr">lang</span>=<span class="token-str">"en"</span><span class="token-tag">&gt;</span>
+<span class="token-tag">&lt;head&gt;</span>
+  <span class="token-tag">&lt;meta</span> <span class="token-attr">charset</span>=<span class="token-str">"UTF-8"</span><span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;meta</span> <span class="token-attr">name</span>=<span class="token-str">"viewport"</span> <span class="token-attr">content</span>=<span class="token-str">"width=device-width, initial-scale=1.0"</span><span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;title&gt;</span>Enterprise Scalability Systems<span class="token-tag">&lt;/title&gt;</span>
+<span class="token-tag">&lt;/head&gt;</span>
+<span class="token-tag">&lt;body&gt;</span>
+  <span class="token-tag">&lt;main&gt;</span>
+    <span class="token-tag">&lt;h1&gt;</span>System Optimization Dashboard<span class="token-tag">&lt;/h1&gt;</span>
+  <span class="token-tag">&lt;/main&gt;</span>
+<span class="token-tag">&lt;/body&gt;</span>
+<span class="token-tag">&lt;/html&gt;</span></pre>
+      </div>
+
+      <p>The absolute first declaration, <code>&lt;!DOCTYPE html&gt;</code>, is a critical instruction to the browser. Its presence ensures the engine parses the code using modern **"Standards Mode"** rendering execution rules. Omitting this declaration forces browsers into **"Quirks Mode,"** an emulation state designed to prevent old 1990s layout patterns from breaking, which can cause erratic behavior in modern CSS layouts.</p>
+      <p>The <code>&lt;head&gt;</code> element acts as a non-rendered metadata container. Properties like charset encoding ensure precise multi-language script processing, while the viewport attribute coordinates proper visual boundaries across mobile device screen matrices.</p>
+
+      <h3>Part B — Semantic Elements vs. Layout Shims</h3>
+      <p>A primary marker of a junior developer is a complete reliance on generic elements like <code>&lt;div&gt;</code> and <code>&lt;span&gt;</code> for layout structure. While these are valid fallback containers, they provide zero semantic meaning to parsing runtimes. Enterprise layouts use clean markup partitioning to describe document architecture directly:</p>
+
+      <ul>
+        <li><code>&lt;header&gt;</code> — Structural container isolating global site initialization settings, introductory branding elements, or site-wide navigation systems.</li>
+        <li><code>&lt;nav&gt;</code> — Identifies a dedicated structural block containing links for major platform directory routing.</li>
+        <li><code>&lt;main&gt;</code> — Isolates the primary unique content of the page. It can only appear *once* per document execution path.</li>
+        <li><code>&lt;section&gt;</code> — Represents a generic hierarchical grouping of correlated thematic content, typically requiring an accompanying heading element.</li>
+        <li><code>&lt;article&gt;</code> — Denotes a completely self-contained composition (such as a forum entry, a product list, or an independent news feed card) that can be logically reused or syndicated across decoupled architectures.</li>
+        <li><code>&lt;aside&gt;</code> — encloses document parts that weakly correlate to the main body, such as contextual ad-banners or analytical metrics widgets.</li>
+        <li><code>&lt;footer&gt;</code> — Contextual baseline tracking global copyright updates, secondary legal conditions, or cross-platform data anchors.</li>
+      </ul>
+
+      <h3>Part C — Critical Semantic Contrasts in Enterprise Architecture</h3>
+      <p>FAANG interviews frequently evaluate your mastery of micro-semantics—the subtle technical differences between seemingly identical structures. Let us evaluate the most critical operational distinctions:</p>
+
+      <table class="google-table">
+        <thead>
+          <tr>
+            <th>Element Pair</th>
+            <th class="bad">Incorrect / Unoptimized Selection</th>
+            <th class="good">Semantic / Enterprise Selection</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Action vs. Routing</strong></td>
+            <td class="bad"><code>&lt;a href="#" onclick="run()"&gt;</code> for state mutations</td>
+            <td class="good"><code>&lt;button type="button"&gt;</code> for programmatic logic execution</td>
+          </tr>
+          <tr>
+            <td><strong>Image Description</strong></td>
+            <td class="bad"><code>&lt;img src="graph.png"&gt;&lt;p&gt;Data details&lt;/p&gt;</code></td>
+            <td class="good"><code>&lt;figure&gt;</code> enclosing <code>&lt;img&gt;</code> combined with <code>&lt;figcaption&gt;</code></td>
+          </tr>
+          <tr>
+            <td><strong>Text Emphasis</strong></td>
+            <td class="bad"><code>&lt;b&gt;</code> or <code>&lt;i&gt;</code> (Purely visual text formatting styling)</td>
+            <td class="good"><code>&lt;strong&gt;</code> or <code>&lt;em&gt;</code> (Conveys true screen-reader context importance)</td>
+          </tr>
+          <tr>
+            <td><strong>List Definition</strong></td>
+            <td class="bad">Sequential paragraph blocks or flat <code>&lt;div&gt;</code> chains</td>
+            <td class="good">Strict <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code> parents containing direct explicit <code>&lt;li&gt;</code> children</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Part D — High-Performance Attribute Management</h3>
+      <p>Attributes configure crucial baseline mechanics for search optimization engines and localized application access networks. Two core operations demand perfect implementation:</p>
+      
+      <h4>1. Asset Load Strategies</h4>
+      <p>Unoptimized image assets cause layout shifting and tank client retention numbers. Modern HTML5 architectures enforce native lazy loading rules directly via the markup configuration layer:</p>
+      <p><code>&lt;img src="hero-banner.webp" alt="Global analytics visualization line chart" loading="lazy" width="1200" height="600"&gt;</code></p>
+      <p>Providing explicit dimension integers directly onto markup elements allows browsers to allocate appropriate placeholder dimensions *before* pixel streaming finishes. This eliminates disruptive cumulative layout shifts (CLS), protecting core runtime performance budgets.</p>
+
+      <h4>2. Anchor Security Anchoring</h4>
+      <p>When engineering high-throughput platform gateways containing out-of-network routing targets, look at this exact safety baseline:</p>
+      <p><code>&lt;a href="https://external-service.com" target="_blank" rel="noopener noreferrer"&gt;Read External Documentation&lt;/a&gt;</code></p>
+      <p>Omitting the <code>rel="noopener noreferrer"</code> attribute exposes your platform to a severe performance and security vulnerability known as **Tabnabbing**. Without this configuration, the destination tab gains a direct reference back to your origin space via the <code>window.opener</code> object interface. This allows unverified external host runtimes to manipulate your active client interface behind the scenes or run unneeded execution routines on the user's primary thread.</p>
+    </section>
+
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">Code Lab — Refactoring Structural Architecture</h2>
+      </div>
+      <p>Below is a direct deep-dive parsing simulation where we take unoptimized code patterns and refactor them up to enterprise technical specifications.</p>
+
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab(this, 'lab1')">Legacy Layout Shims</button>
+          <button class="tab-btn" onclick="switchTab(this, 'lab2')">Broken Interactivity Models</button>
+          <button class="tab-btn" onclick="switchTab(this, 'lab3')">Form Accessibility Optimization</button>
+        </div>
+
+        <div class="tab-panel active" id="lab1">
+          <div class="error-card">
+            <div class="error-banner">
+              <span class="error-type">Anti-Pattern: The Div-Soup Layout Nightmare</span>
+            </div>
+            <div class="error-code-section">
+              <div class="error-label">Unoptimized Structure</div>
+<pre><span class="token-tag">&lt;div</span> <span class="token-attr">id</span>=<span class="token-str">"header"</span><span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"logo"</span><span class="token-tag">&gt;</span>Enterprise Platform<span class="token-tag">&lt;/div&gt;</span>
+<span class="token-tag">&lt;/div&gt;</span>
+<span class="token-tag">&lt;div</span> <span class="token-attr">id</span>=<span class="token-str">"main-content"</span><span class="token-tag">&gt;</span>
+  <span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"title"</span><span class="token-tag">&gt;</span>Deployment Matrix<span class="token-tag">&lt;/div&gt;</span>
+<span class="token-tag">&lt;/div&gt;</span></pre>
+            </div>
+            <div class="error-explanation">
+              <div class="error-label">Production Enterprise Solution</div>
+<pre><span class="token-tag">&lt;header&gt;</span>
+  <span class="token-tag">&lt;h1&gt;</span>Enterprise Platform<span class="token-tag">&lt;/h1&gt;</span>
+<span class="token-tag">&lt;/header&gt;</span>
+<span class="token-tag">&lt;main&gt;</span>
+  <span class="token-tag">&lt;article&gt;</span>
+    <span class="token-tag">&lt;h2&gt;</span>Deployment Matrix<span class="token-tag">&lt;/h2&gt;</span>
+  <span class="token-tag">&lt;/article&gt;</span>
+<span class="token-tag">&lt;/main&gt;</span></pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Using class names to describe document structure leaves automated engines completely blind. Browsers see this as an anonymous block container with no clear entry points.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Converting to explicit structural landmarks gives automated engines explicit access anchors, dramatically improving layout parsing efficiency.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="lab2">
+          <div class="error-card">
+            <div class="error-banner">
+              <span class="error-type">Anti-Pattern: Pseudo-Interactive Intercept Elements</span>
+            </div>
+            <div class="error-code-section">
+              <div class="error-label">Unoptimized Structure</div>
+<pre><span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"custom-button"</span> <span class="token-attr">onclick</span>=<span class="token-str">"triggerDeployment()"</span><span class="token-tag">&gt;</span>
+  Execute Production Release
+<span class="token-tag">&lt;/div&gt;</span></pre>
+            </div>
+            <div class="error-explanation">
+              <div class="error-label">Production Enterprise Solution</div>
+<pre><span class="token-tag">&lt;button</span> <span class="token-attr">type</span>=<span class="token-str">"button"</span> <span class="token-attr">onclick</span>=<span class="token-str">"triggerDeployment()"</span><span class="token-tag">&gt;</span>
+  Execute Production Release
+<span class="token-tag">&lt;/button&gt;</span></pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Generic components cannot receive focus out of the box via hardware keyboard interfaces (Tab navigation). This completely breaks interaction for users relying on assistive hardware.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Using standard <code>&lt;button&gt;</code> components guarantees native focus tracking, default form integration pathways, and immediate support for standard click actions.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="lab3">
+          <div class="error-card">
+            <div class="error-banner">
+              <span class="error-type">Anti-Pattern: Orphan Inputs & Accessible Isolation</span>
+            </div>
+            <div class="error-code-section">
+              <div class="error-label">Unoptimized Structure</div>
+<pre><span class="token-tag">&lt;p&gt;</span>Enter Account Identifier String:<span class="token-tag">&lt;/p&gt;</span>
+<span class="token-tag">&lt;input</span> <span class="token-attr">type</span>=<span class="token-str">"text"</span> <span class="token-attr">name</span>=<span class="token-str">"userId"</span><span class="token-tag">&gt;</span></pre>
+            </div>
+            <div class="error-explanation">
+              <div class="error-label">Production Enterprise Solution</div>
+<pre><span class="token-tag">&lt;label</span> <span class="token-attr">for</span>=<span class="token-str">"account-input"</span><span class="token-tag">&gt;</span>Enter Account Identifier String:<span class="token-tag">&lt;/label&gt;</span>
+<span class="token-tag">&lt;input</span> <span class="token-attr">id</span>=<span class="token-str">"account-input"</span> <span class="token-attr">type</span>=<span class="token-str">"text"</span> <span class="token-attr">name</span>=<span class="token-str">"userId"</span> <span class="token-attr">required</span> <span class="token-attr">aria-required</span>=<span class="token-str">"true"</span><span class="token-tag">&gt;</span></pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">The standalone input element has no direct program link connecting it to its text description label. Screen readers cannot infer which data field they are currently reading aloud.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Explicitly pairing the <code>for</code> and <code>id</code> attribute tokens establishes an unbreakable programmatic connection, maximizing accessibility system indexing.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">Common Mistakes</h2>
+      </div>
+      <p>Review these real-world anti-patterns often seen in candidate interview submissions. Spotting these pitfalls early ensures your technical reviews meet standard enterprise requirements.</p>
+
+      <div class="mistakes-grid">
+        <div class="mistake-card">
+          <div class="mistake-num">MISTAKE 01</div>
+          <div class="mistake-title">Incorrect Heading Nesting Hierarchy</div>
+          <div class="mistake-body">Using heading elements out of order (e.g., jump-routing from an <code>&lt;h1&gt;</code> directly down to an <code>&lt;h4&gt;</code>) because you want a smaller visual font size. This breaks document layout index charts.</div>
+          <div class="fix-label">✓ The Fix</div>
+          <div class="mistake-body">Enforce strict linear step hierarchies (<code>h1 -&gt; h2 -&gt; h3</code>). If an element needs to look visually smaller, change its presentation layer using specialized CSS font rules instead of modifying structural semantic components.</div>
+        </div>
+
+        <div class="mistake-card">
+          <div class="mistake-num">MISTAKE 02</div>
+          <div class="mistake-title">Empty Image Fallback Alt Specifications</div>
+          <div class="mistake-body">Omitting the critical <code>alt</code> attribute string entirely, or populating it with generic filenames like <code>alt="image.jpg"</code>. This degrades accessibility standard profiles.</div>
+          <div class="fix-label">✓ The Fix</div>
+          <div class="mistake-body">Provide precise contextual descriptions for imagery. For decorative UI assets that do not convey data, configure the property cleanly as <code>alt=""</code> to signal to screen readers to skip parsing the node entirely.</div>
+        </div>
+
+        <div class="mistake-card">
+          <div class="mistake-num">MISTAKE 03</div>
+          <div class="mistake-title">Improper Tag Closure Formatting Structures</div>
+          <div class="mistake-body">Mismatching elements or overlaying structural boundaries inside multi-tier tag tracks (such as creating cross-nested chains: <code>&lt;div&gt;&lt;p&gt;&lt;/div&gt;&lt;/p&gt;</code>).</div>
+          <div class="fix-label">✓ The Fix</div>
+          <div class="mistake-body">Enforce strict complementary nested closures. Rely on high-performance code parsing tools like Prettier inside your IDE layout to capture overlapping elements early.</div>
+        </div>
+
+        <div class="mistake-card">
+          <div class="mistake-num">MISTAKE 04</div>
+          <div class="mistake-title">Over-Configuring Native Interactivity States</div>
+          <div class="mistake-body">Manually injecting complex keyboard focus indicators onto arbitrary layout divisions via attributes like <code>tabindex="0"</code> instead of using standard interactive elements.</div>
+          <div class="fix-label">✓ The Fix</div>
+          <div class="mistake-body">Always prioritize native interactive elements (like <code>&lt;button&gt;</code>, <code>&lt;input&gt;</code>, or <code>&lt;select&gt;</code>). Only hand-craft custom interactive elements using ARIA attributes when standard elements cannot support your design constraints.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <h2 class="section-title">Real World — High-Scale System Impacts</h2>
+      </div>
+      <p>Why do FAANG organizations obsess over micro-optimized HTML? At hyper-scale, minor optimizations compound into noticeable changes in overall operational efficiency and business metrics.</p>
+
+      <div class="company-cards">
+        <div class="company-card">
+          <div class="company-name">Amazon Performance</div>
+          <div class="company-desc">Amazon found that every 100ms of extra latency cost them 1% in sales revenue. Unoptimized HTML size patterns and deep layout nesting delay structural DOM parsing, which directly increases initial load times and impact conversions.</div>
+        </div>
+        <div class="company-card">
+          <div class="company-name">GoogleBot Processing</div>
+          <div class="company-desc">Google processes billions of web pages daily. Websites that use clean semantic structures allow crawlers to discover data sections much faster, reducing overall indexing compute costs and directly boosting content discovery rates.</div>
+        </div>
+        <div class="company-card">
+          <div class="company-name">Netflix Device Target Scale</div>
+          <div class="company-desc">Netflix runs its app shell across diverse environments, including low-powered smart TVs and legacy streaming sticks. Using simple, specification-compliant DOM trees ensures predictable performance across different processing engines.</div>
+        </div>
+      </div>
+
+      <h3>The SEO Crawling Pipeline</h3>
+      <p>When high-scale search infrastructure analyzes an application view, it runs a multi-stage validation pipeline:</p>
+      <ol>
+        <li><strong>Structural Hierarchy Parsing:</strong> The system crawls headers and page titles to map out a clear topic structure. Misordered headings or flat structures can lead to miscategorized content indexing.</li>
+        <li><strong>Discovery Link Mapping:</strong> The engine scrapes links to find related content paths. If route triggers are hidden inside custom interactive elements rather than standard anchor tags, the crawler won't discover those links.</li>
+        <li><strong>Rich Snippet Processing:</strong> The pipeline looks for specialized section and semantic definitions to extract targeted interface fragments for display within rich search feature panels.</li>
+      </ol>
+    </section>
+
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-number">09</span>
+        <h2 class="section-title">Interview Angle</h2>
+      </div>
+      <p>In mid-to-senior technical evaluations, structural semantic knowledge is rarely tested with raw trivia questions. Instead, it is evaluated by analyzing how you approach scale, user interaction constraints, and cross-platform compatibility.</p>
+
+      <div class="interview-q">
+        <div class="iq-label">Technical Challenge Scenario</div>
+        <div class="iq-question">"We are designing an infinite-scroll feed system similar to the Facebook or LinkedIn core app shell. As the user scrolls, thousands of content cards load into the viewport. How do you design the baseline markup architecture to mitigate performance degradation?"</div>
+        <div class="iq-answer"><strong>Strategic Architecture Formulation:</strong> "At extreme scale, deep DOM trees create memory leak risks and slow down browser reflow operations. First, I would enforce flat component hierarchies, avoiding unneeded nested wrappers. To minimize layout recalculation costs, every post card container must use strict, predefined size values via CSS, and images must use explicit aspect-ratio attributes to prevent visual layout shifts when loading. For heavy text content, using semantic <code>&lt;article&gt;</code> containers ensures clean document boundaries. Finally, I would coordinate with engineering teams to implement a virtualized list architecture. This technique mounts markup structures into the active DOM tree only when they cross the interactive view boundary, detaching them when they leave to keep overall memory usage low."</div>
+      </div>
+
+      <div class="interview-q">
+        <div class="iq-label">System Design Evaluation</div>
+        <div class="iq-question">"Explain what happens to the browser runtime pipeline when a developer inserts an 11MB block of unoptimized raw markup directly into an open client view via an element's innerHTML property."</div>
+        <div class="iq-answer"><strong>Engine Impact Analysis:</strong> "Injecting massive, untrusted markup blocks using the <code>innerHTML</code> property forces the browser's primary rendering thread to halt current script executions and re-tokenize the entire incoming payload. This blocks user interaction and triggers a long task. It also opens up security vulnerabilities by exposing the application to cross-site scripting (XSS) injection threats if the incoming content contains unsanitized text strings. A better approach is to use programmatic document fragment components or modern component architectures to batch update changed data blocks step-by-step."</div>
+      </div>
+    </section>
+
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <h2 class="section-title">Explain It Test — Core Knowledge Check</h2>
+      </div>
+      <p>Test your understanding before continuing. Explain your answers out loud as if you were speaking directly to a senior interviewer, then flip the card to verify your technical accuracy.</p>
+
+      <div class="test-cards">
+        <div class="test-card" onclick="flipCard(this)">
+          <div class="test-card-front">
+            <div class="test-card-num">Question 01</div>
+            <div class="test-q">What is Tabnabbing, and how do you protect your applications against it when using external anchor links?</div>
+            <div class="test-hint">Think about the window.opener reference model ↗</div>
+          </div>
+          <div class="test-card-back">
+            <div class="test-card-num">Answer 01</div>
+            <div class="test-a">Tabnabbing is a security exploit where an opened external destination tab uses the <code>window.opener</code> reference object to redirect the original origin tab to a malicious spoofed URL. You prevent this by adding <code>rel="noopener noreferrer"</code> to your anchor tags, which strips out the cross-tab context reference.</div>
+            <div class="test-hint">Tap again to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="test-card" onclick="flipCard(this)">
+          <div class="test-card-front">
+            <div class="test-card-num">Question 02</div>
+            <div class="test-q">Explain the direct runtime difference between the browser processing configurations for Quirks Mode and Standards Mode.</div>
+            <div class="test-hint">What role does the declaration token play? ↗</div>
+          </div>
+          <div class="test-card-back">
+            <div class="test-card-num">Answer 02</div>
+            <div class="test-a">Standards Mode forces the browser engine to follow modern W3C HTML and CSS specifications. Quirks Mode emulates rendering bugs from old legacy layout frameworks. This mode triggers automatically if you omit the modern <code>&lt;!DOCTYPE html&gt;</code> token from the start of your document.</div>
+            <div class="test-hint">Tap again to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="test-card" onclick="flipCard(this)">
+          <div class="test-card-front">
+            <div class="test-card-num">Question 03</div>
+            <div class="test-q">Why is using generic divs with manual click attributes for user interface actions a critical failure during enterprise accessibility reviews?</div>
+            <div class="test-hint">Consider user accessibility and standard keyboard focus flows ↗</div>
+          </div>
+          <div class="test-card-back">
+            <div class="test-card-num">Answer 03</div>
+            <div class="test-a">Generic elements do not participate in the browser's standard keyboard focus loops out of the box, meaning users navigating via assistive hardware can't interact with them. They also lack the native screen reader role announcements that structured interactive elements like buttons provide naturally.</div>
+            <div class="test-hint">Tap again to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="test-card" onclick="flipCard(this)">
+          <div class="test-card-front">
+            <div class="test-card-num">Question 04</div>
+            <div class="test-q">How do explicit width and height attributes on imagery tags reduce Cumulative Layout Shift (CLS) scores?</div>
+            <div class="test-hint">What information does the layout engine need during early token parsing? ↗</div>
+          </div>
+          <div class="test-card-back">
+            <div class="test-card-num">Answer 04</div>
+            <div class="test-a">Providing explicit size attributes allows the browser's layout engine to compute the image's aspect ratio and reserve the required space *before* the actual image file downloads. This prevents the surrounding content from shifting abruptly when the asset finishes rendering.</div>
+            <div class="test-hint">Tap again to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <h2 class="section-title">Do This Today — Practical Verification Milestones</h2>
+      </div>
+      <p>Complete these development tasks to solidify your understanding of high-performance document architecture. Click each milestone to track your progress.</p>
+
+      <div class="today-tasks">
+        <div class="today-task" onclick="toggleTask(this)">
+          <div class="task-check">✓</div>
+          <div class="task-content">
+            <div class="task-title">Task 1 — Profile a Core Corporate View Configuration (30 Min)</div>
+            <div class="task-desc">Open a major platform homepage (like Amazon or Google Search) and inspect it using your browser's Developer Tools (F12). Locate their primary <code>&lt;nav&gt;</code> landmarks, identify how they structure descriptive text for their imagery assets, and verify how they manage safe cross-origin links using rel attributes.</div>
+          </div>
+        </div>
+
+        <div class="today-task" onclick="toggleTask(this)">
+          <div class="task-check">✓</div>
+          <div class="task-content">
+            <div class="task-title">Task 2 — Build an Accessible Interface System Shell (30 Min)</div>
+            <div class="task-desc">Create a modern, clean HTML document using your local IDE setup. Build a mock enterprise interface module that contains a structured navigation header, an article body section featuring data tables, and an input form that includes explicit labels and accessibility markers. Run this code through the official W3C Markup Validation service to ensure zero linting warnings.</div>
+          </div>
+        </div>
+
+        <div class="today-task" onclick="toggleTask(this)">
+          <div class="task-check">✓</div>
+          <div class="task-content">
+            <div class="task-title">Task 3 — Run an Accessibility Profile Audit Using Lighthouse (30 Min)</div>
+            <div class="task-desc">Open your custom dashboard file inside a local browser window. Open DevTools, switch over to the Lighthouse performance audit panel, select the accessibility profiling configuration, and run a full layout compilation. Fix any identified element alignment errors until your document scores a perfect 100 on the verification index scale.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="s12">
+      <div class="section-header">
+        <span class="section-number">12</span>
+        <h2 class="section-title">3 Things + Terms</h2>
+      </div>
+      <p>These core principles form the baseline requirement for engineering production-tier document interfaces. Memorize them before moving to the next level.</p>
+
+      <div class="three-things">
+        <div class="thing-card">
+          <div class="thing-num">1</div>
+          <div class="thing-text">Always enforce semantic markup layouts. Div containers are visual structural mechanisms; use semantic elements to model your data explicitly for parsing runtimes.</div>
+        </div>
+        <div class="thing-card">
+          <div class="thing-num">2</div>
+          <div class="thing-text">Ensure all forms and buttons are fully accessible by default. Never build custom interactive components when native elements can support your design patterns.</div>
+        </div>
+        <div class="thing-card">
+          <div class="thing-num">3</div>
+          <div class="thing-text">Configure safe link rules on external anchors. Use rel protection tokens on multi-origin routings to guard client instances against background tab manipulation exploits.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="terms-grid">
+        <div class="term-item">
+          <div class="term-name">Document Object Model (DOM)</div>
+          <div class="term-def">The active tree data graph parsed by the browser layout runtime engine, mapping raw document markup strings into addressable node object targets.</div>
+        </div>
+        <div class="term-item">
+          <div class="term-name">Semantic HTML</div>
+          <div class="term-def">The practice of choosing markup elements that describe the actual meaning and purpose of content, rather than using generic container tags for visual placement.</div>
+        </div>
+        <div class="term-item">
+          <div class="term-name">Standards Mode</div>
+          <div class="term-def">The browser layout engine rendering state triggered by a valid doctype token, ensuring modern specifications guide text positioning and style calculations.</div>
+        </div>
+        <div class="term-item">
+          <div class="term-name">Tabnabbing</div>
+          <div class="term-def">A reverse phishing attack vector where a destination target tab manipulates the original background parent browser page using the opener context interface.</div>
+        </div>
+        <div class="term-item">
+          <div class="term-name">Cumulative Layout Shift (CLS)</div>
+          <div class="term-def">A user experience metric that tracks unexpected visual movement of page elements during the initial asset loading lifecycle phase.</div>
+        </div>
+        <div class="term-item">
+          <div class="term-name">Accessibility (a11y)</div>
+          <div class="term-def">Design practices focused on ensuring application modules remain usable for individuals accessing platform content via assistive technologies or screen readers.</div>
+        </div>
+      </div>
+
+      <div class="essay-footer">
+        <a class="next-btn" href="essay-1.2.html">
+            <div>
+              <div class="next-label">Advance to Next Syllabus Module</div>
+              <div class="next-title">Essay 1.2 - CSS: Layout Paradigms & Paint Budgets</div>
+            </div>
+            <div class="next-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.04 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) {
+          item.classList.add('active');
+        }
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -65% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealStep(el) { el.classList.toggle('revealed'); }
+function resetSteps() { document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('revealed')); }
+
+function switchTab(btn, panelId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+function flipCard(el) { el.classList.toggle('flipped'); }
+if (window.personal_context) { delete window.personal_context; }
+function toggleTask(el) { el.classList.toggle('done'); }
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2184,90 +2926,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3404,792 +4062,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="phase-1"               >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-bar"></div>
-
-<div class="hero">
-  <div class="hero-grid"></div>
-  <div class="phase-tag">Phase 1 — Core Frontend Engineering</div>
-  <div class="hero-eyebrow">essay 1.1 of 63 &nbsp;·&nbsp; series: faang roadmap</div>
-  <h1 class="hero-title">
-    HTML: The <em>Skeleton</em><br>
-    of Every Webpage
-  </h1>
-  <p class="hero-subtitle">
-    Deep-diving into semantic markup, Document Object Model representation, structural layout rendering, and critical accessibility engineering from an enterprise perspective.
-  </p>
-  <div class="hero-meta">
-    <div class="meta-item">
-      <span class="meta-label">Phase</span>
-      <span class="meta-value">1 — Document Architecture</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Read Time</span>
-      <span class="meta-value">~45 minutes</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Prerequisites</span>
-      <span class="meta-value">Phase 0 Foundations</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Concepts</span>
-      <span class="meta-value">Semantic HTML · DOM Parsing · Accessibility (ARIA) · SEO Optimization</span>
-    </div>
-  </div>
-  <div class="hero-scroll">↓ &nbsp; scroll to begin</div>
-</div>
-
-<div class="layout">
-
-  <aside class="sidebar">
-    <div class="sidebar-label">Contents</div>
-    <a class="nav-item active" href="#s1"><span class="nav-num">01</span><span class="nav-text">The Big Idea</span></a>
-    <a class="nav-item" href="#s2"><span class="nav-num">02</span><span class="nav-text">Where This Fits</span></a>
-    <a class="nav-item" href="#s3"><span class="nav-num">03</span><span class="nav-text">The Intuition</span></a>
-    <a class="nav-item" href="#s4"><span class="nav-num">04</span><span class="nav-text">The Visual</span></a>
-    <a class="nav-item" href="#s5"><span class="nav-num">05</span><span class="nav-text">The Depth</span></a>
-    <a class="nav-item" href="#s6"><span class="nav-num">06</span><span class="nav-text">Code Lab</span></a>
-    <a class="nav-item" href="#s7"><span class="nav-num">07</span><span class="nav-text">Common Mistakes</span></a>
-    <a class="nav-item" href="#s8"><span class="nav-num">08</span><span class="nav-text">Real World</span></a>
-    <a class="nav-item" href="#s9"><span class="nav-num">09</span><span class="nav-text">Interview Angle</span></a>
-    <a class="nav-item" href="#s10"><span class="nav-num">10</span><span class="nav-text">Explain It Test</span></a>
-    <a class="nav-item" href="#s11"><span class="nav-num">11</span><span class="nav-text">Do This Today</span></a>
-    <a class="nav-item" href="#s12"><span class="nav-num">12</span><span class="nav-text">3 Things + Terms</span></a>
-  </aside>
-
-  <main>
-
-    <section class="section" id="s1">
-      <div class="section-header">
-        <span class="section-number">01</span>
-        <h2 class="section-title">The Big Idea</h2>
-      </div>
-      <p>Beginners often dismiss HTML as a simple markup syntax to look past quickly on their way to JavaScript. <strong>This is a massive strategic error when preparing for top-tier tech companies.</strong> At FAANG scale, poorly structured HTML creates application bottlenecks, breaks SEO profiles processing millions of pages per day, and leaves systems exposed to compliance lawsuits due to broken accessibility standards.</p>
-      <p>HyperText Markup Language (HTML) is not a programming language; it is an authoritative declaration of document architecture. It informs the browser's rendering engine precisely how to partition raw application state into a functional node configuration. Writing production-grade HTML means modeling data explicitly so that external automated scripts, web crawlers, and parsing runtimes can read the user interface with maximum clarity.</p>
-      <div class="callout callout-idea">
-        <div class="callout-label">The Engineering Insight</div>
-        <p>A senior UI engineer looks at a web interface not as a visual painting, but as a formal data tree. If your HTML lacks clean semantic structure, you are building an entire frontend stack on a shifting foundation. Clean HTML minimizes DOM management overhead and ensures predictable application rendering across thousands of independent user devices.</p>
-      </div>
-    </section>
-
-    <section class="section" id="s2">
-      <div class="section-header">
-        <span class="section-number">02</span>
-        <h2 class="section-title">Where This Fits</h2>
-      </div>
-      <p>Now that your development machine is prepared and your structural terminal workflows are active, we shift directly into producing UI nodes. HTML is the definitive starting point of all practical frontend architecture.</p>
-      
-      <div class="phase-map">
-        <div class="phase-node done"><div class="phase-circle">0.2</div><div class="phase-label">Terminal</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node done"><div class="phase-circle">0.3</div><div class="phase-label">Mindset</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node current"><div class="phase-circle">1.1</div><div class="phase-label">HTML Struct</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">1.2</div><div class="phase-label">CSS Layout</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">1.3</div><div class="phase-label">JS Engine</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">System Design</div></div>
-      </div>
-      <p>Every dynamic interface component built in subsequent units—whether structured in vanilla JavaScript modules or compiled through enterprise-tier library environments like React or component configurations within distributed web views—ultimately resolves into basic HTML nodes inside a running browser instance. Mastery of these primitive structures is critical before layering on style definitions or runtime performance optimizations.</p>
-    </section>
-
-    <section class="section" id="s3">
-      <div class="section-header">
-        <span class="section-number">03</span>
-        <h2 class="section-title">The Intuition</h2>
-      </div>
-      <h3>The Architectural Blueprint</h3>
-      <p>Consider the process of constructing an enterprise skyscraper. Before the interior designers add paint or the mechanical engineers configure the automated environmental systems, the structural engineering team anchors a heavy physical skeleton of raw steel and load-bearing concrete pillars.</p>
-      <p>If those pillars are placed haphazardly, or if the core foundation walls are generic instead of intentionally tailored for specific utility loads, the entire tower becomes structurally volatile. **HTML operates as that baseline steel skeleton.** A generic, unstructured mass of identical container tags (like an all-<code>&lt;div&gt;</code> layout) forces rendering engines to make heavy guesses about document purpose, resulting in unoptimized application parsing.</p>
-      <div class="callout callout-idea">
-        <div class="callout-label">The Tree-Model Paradigm</div>
-        <p>Train your perspective to view code structures as hierarchical family trees. Every element acts as an explicit parent, a sibling, or a deeply nested child node. Visualizing HTML this way prepares you to write highly maintainable data paths when handling large-scale web applications.</p>
-      </div>
-      <h3>The Web Crawler as a Blind Reader</h3>
-      <p>To evaluate if your HTML structural logic is robust, imagine a user trying to interpret your web page without any physical screen. This is exactly how automated web engines (like GoogleBot) and assistive screen readers parse your markup. They cannot perceive styling, placement coordinates, or decorative colors. They read the raw file structure from top to bottom. Semantic tags tell them exactly where the primary navigation sits, what content constitutes the main message, and how individual sections correlate to one another.</p>
-    </section>
-
-    <section class="section" id="s4">
-      <div class="section-header">
-        <span class="section-number">04</span>
-        <h2 class="section-title">The Visual — DOM Tree Compilation</h2>
-      </div>
-      <p>Understanding the standard execution lifecycle of document markup transformation is vital for tracking down critical browser paint paths. Click each sequential step to view how raw text documents resolve into operational object graphs inside the rendering runtime.</p>
-
-      <div class="flowchart-container">
-        <div class="flowchart-intro">
-          <p>🖥️ &nbsp; Document Parse Lifecycle &nbsp;·&nbsp; Click each phase to trace structural assembly.</p>
-        </div>
-        <div class="flow-steps">
-          <div class="flow-step" onclick="revealStep(this)">
-            <div class="flow-step-header">
-              <div class="flow-step-num">1</div>
-              <div class="flow-step-title">Conversion & Tokenization</div>
-              <div class="flow-step-expand">+</div>
-            </div>
-            <div class="flow-step-body">
-              <p>The browser reads raw bytes off the network or disk disk and maps them to characters based on the file encoding (typically UTF-8). It then parses strings into structured tokens (e.g., StartTag: html, StartTag: body, EndTag: body) based on the W3C HTML5 standard specifications.</p>
-            </div>
-          </div>
-          <div class="flow-arrow">↓</div>
-          <div class="flow-step" onclick="revealStep(this)">
-            <div class="flow-step-header">
-              <div class="flow-step-num">2</div>
-              <div class="flow-step-title">Lexical Object Node Generation</div>
-              <div class="flow-step-expand">+</div>
-            </div>
-            <div class="flow-step-body">
-              <p>The internal token streams are immediately cast into native object declarations called Nodes. These programmatic entities possess specialized properties, inline data descriptors, and distinct global method interfaces matching their specified element types.</p>
-            </div>
-          </div>
-          <div class="flow-arrow">↓</div>
-          <div class="flow-step" onclick="revealStep(this)">
-            <div class="flow-step-header">
-              <div class="flow-step-num">3</div>
-              <div class="flow-step-title">DOM Tree Structural Linking</div>
-              <div class="flow-step-expand">+</div>
-            </div>
-            <div class="flow-step-body">
-              <p>Because HTML nesting explicitly denotes element relationships, individual object nodes are linked inside a tree data structure known as the Document Object Model (DOM). This structural mapping establishes precise parent-child bounds that govern rendering logic and script interaction.</p>
-            </div>
-          </div>
-        </div>
-        <button class="flow-start-btn" onclick="resetSteps()">↺ Reset Lifecycle Tree</button>
-      </div>
-    </section>
-
-    <section class="section" id="s5">
-      <div class="section-header">
-        <span class="section-number">05</span>
-        <h2 class="section-title">The Depth</h2>
-      </div>
-      <h3>Part A — Document Anatomy & Parsing Mechanics</h3>
-      <p>An enterprise-grade document declaration requires strict adherence to initialization parameters. Let us examine the explicit structural breakdown of a baseline HTML5 document configuration:</p>
-
-      <div class="code-block">
-        <div class="code-header"><span class="code-filename">index.html</span><div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div></div>
-<pre><span class="token-comment">&lt;!DOCTYPE html&gt;</span>
-<span class="token-tag">&lt;html</span> <span class="token-attr">lang</span>=<span class="token-str">"en"</span><span class="token-tag">&gt;</span>
-<span class="token-tag">&lt;head&gt;</span>
-  <span class="token-tag">&lt;meta</span> <span class="token-attr">charset</span>=<span class="token-str">"UTF-8"</span><span class="token-tag">&gt;</span>
-  <span class="token-tag">&lt;meta</span> <span class="token-attr">name</span>=<span class="token-str">"viewport"</span> <span class="token-attr">content</span>=<span class="token-str">"width=device-width, initial-scale=1.0"</span><span class="token-tag">&gt;</span>
-  <span class="token-tag">&lt;title&gt;</span>Enterprise Scalability Systems<span class="token-tag">&lt;/title&gt;</span>
-<span class="token-tag">&lt;/head&gt;</span>
-<span class="token-tag">&lt;body&gt;</span>
-  <span class="token-tag">&lt;main&gt;</span>
-    <span class="token-tag">&lt;h1&gt;</span>System Optimization Dashboard<span class="token-tag">&lt;/h1&gt;</span>
-  <span class="token-tag">&lt;/main&gt;</span>
-<span class="token-tag">&lt;/body&gt;</span>
-<span class="token-tag">&lt;/html&gt;</span></pre>
-      </div>
-
-      <p>The absolute first declaration, <code>&lt;!DOCTYPE html&gt;</code>, is a critical instruction to the browser. Its presence ensures the engine parses the code using modern **"Standards Mode"** rendering execution rules. Omitting this declaration forces browsers into **"Quirks Mode,"** an emulation state designed to prevent old 1990s layout patterns from breaking, which can cause erratic behavior in modern CSS layouts.</p>
-      <p>The <code>&lt;head&gt;</code> element acts as a non-rendered metadata container. Properties like charset encoding ensure precise multi-language script processing, while the viewport attribute coordinates proper visual boundaries across mobile device screen matrices.</p>
-
-      <h3>Part B — Semantic Elements vs. Layout Shims</h3>
-      <p>A primary marker of a junior developer is a complete reliance on generic elements like <code>&lt;div&gt;</code> and <code>&lt;span&gt;</code> for layout structure. While these are valid fallback containers, they provide zero semantic meaning to parsing runtimes. Enterprise layouts use clean markup partitioning to describe document architecture directly:</p>
-
-      <ul>
-        <li><code>&lt;header&gt;</code> — Structural container isolating global site initialization settings, introductory branding elements, or site-wide navigation systems.</li>
-        <li><code>&lt;nav&gt;</code> — Identifies a dedicated structural block containing links for major platform directory routing.</li>
-        <li><code>&lt;main&gt;</code> — Isolates the primary unique content of the page. It can only appear *once* per document execution path.</li>
-        <li><code>&lt;section&gt;</code> — Represents a generic hierarchical grouping of correlated thematic content, typically requiring an accompanying heading element.</li>
-        <li><code>&lt;article&gt;</code> — Denotes a completely self-contained composition (such as a forum entry, a product list, or an independent news feed card) that can be logically reused or syndicated across decoupled architectures.</li>
-        <li><code>&lt;aside&gt;</code> — encloses document parts that weakly correlate to the main body, such as contextual ad-banners or analytical metrics widgets.</li>
-        <li><code>&lt;footer&gt;</code> — Contextual baseline tracking global copyright updates, secondary legal conditions, or cross-platform data anchors.</li>
-      </ul>
-
-      <h3>Part C — Critical Semantic Contrasts in Enterprise Architecture</h3>
-      <p>FAANG interviews frequently evaluate your mastery of micro-semantics—the subtle technical differences between seemingly identical structures. Let us evaluate the most critical operational distinctions:</p>
-
-      <table class="google-table">
-        <thead>
-          <tr>
-            <th>Element Pair</th>
-            <th class="bad">Incorrect / Unoptimized Selection</th>
-            <th class="good">Semantic / Enterprise Selection</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Action vs. Routing</strong></td>
-            <td class="bad"><code>&lt;a href="#" onclick="run()"&gt;</code> for state mutations</td>
-            <td class="good"><code>&lt;button type="button"&gt;</code> for programmatic logic execution</td>
-          </tr>
-          <tr>
-            <td><strong>Image Description</strong></td>
-            <td class="bad"><code>&lt;img src="graph.png"&gt;&lt;p&gt;Data details&lt;/p&gt;</code></td>
-            <td class="good"><code>&lt;figure&gt;</code> enclosing <code>&lt;img&gt;</code> combined with <code>&lt;figcaption&gt;</code></td>
-          </tr>
-          <tr>
-            <td><strong>Text Emphasis</strong></td>
-            <td class="bad"><code>&lt;b&gt;</code> or <code>&lt;i&gt;</code> (Purely visual text formatting styling)</td>
-            <td class="good"><code>&lt;strong&gt;</code> or <code>&lt;em&gt;</code> (Conveys true screen-reader context importance)</td>
-          </tr>
-          <tr>
-            <td><strong>List Definition</strong></td>
-            <td class="bad">Sequential paragraph blocks or flat <code>&lt;div&gt;</code> chains</td>
-            <td class="good">Strict <code>&lt;ul&gt;</code>/<code>&lt;ol&gt;</code> parents containing direct explicit <code>&lt;li&gt;</code> children</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>Part D — High-Performance Attribute Management</h3>
-      <p>Attributes configure crucial baseline mechanics for search optimization engines and localized application access networks. Two core operations demand perfect implementation:</p>
-      
-      <h4>1. Asset Load Strategies</h4>
-      <p>Unoptimized image assets cause layout shifting and tank client retention numbers. Modern HTML5 architectures enforce native lazy loading rules directly via the markup configuration layer:</p>
-      <p><code>&lt;img src="hero-banner.webp" alt="Global analytics visualization line chart" loading="lazy" width="1200" height="600"&gt;</code></p>
-      <p>Providing explicit dimension integers directly onto markup elements allows browsers to allocate appropriate placeholder dimensions *before* pixel streaming finishes. This eliminates disruptive cumulative layout shifts (CLS), protecting core runtime performance budgets.</p>
-
-      <h4>2. Anchor Security Anchoring</h4>
-      <p>When engineering high-throughput platform gateways containing out-of-network routing targets, look at this exact safety baseline:</p>
-      <p><code>&lt;a href="https://external-service.com" target="_blank" rel="noopener noreferrer"&gt;Read External Documentation&lt;/a&gt;</code></p>
-      <p>Omitting the <code>rel="noopener noreferrer"</code> attribute exposes your platform to a severe performance and security vulnerability known as **Tabnabbing**. Without this configuration, the destination tab gains a direct reference back to your origin space via the <code>window.opener</code> object interface. This allows unverified external host runtimes to manipulate your active client interface behind the scenes or run unneeded execution routines on the user's primary thread.</p>
-    </section>
-
-    <section class="section" id="s6">
-      <div class="section-header">
-        <span class="section-number">06</span>
-        <h2 class="section-title">Code Lab — Refactoring Structural Architecture</h2>
-      </div>
-      <p>Below is a direct deep-dive parsing simulation where we take unoptimized code patterns and refactor them up to enterprise technical specifications.</p>
-
-      <div class="tab-container">
-        <div class="tab-buttons">
-          <button class="tab-btn active" onclick="switchTab(this, 'lab1')">Legacy Layout Shims</button>
-          <button class="tab-btn" onclick="switchTab(this, 'lab2')">Broken Interactivity Models</button>
-          <button class="tab-btn" onclick="switchTab(this, 'lab3')">Form Accessibility Optimization</button>
-        </div>
-
-        <div class="tab-panel active" id="lab1">
-          <div class="error-card">
-            <div class="error-banner">
-              <span class="error-type">Anti-Pattern: The Div-Soup Layout Nightmare</span>
-            </div>
-            <div class="error-code-section">
-              <div class="error-label">Unoptimized Structure</div>
-<pre><span class="token-tag">&lt;div</span> <span class="token-attr">id</span>=<span class="token-str">"header"</span><span class="token-tag">&gt;</span>
-  <span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"logo"</span><span class="token-tag">&gt;</span>Enterprise Platform<span class="token-tag">&lt;/div&gt;</span>
-<span class="token-tag">&lt;/div&gt;</span>
-<span class="token-tag">&lt;div</span> <span class="token-attr">id</span>=<span class="token-str">"main-content"</span><span class="token-tag">&gt;</span>
-  <span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"title"</span><span class="token-tag">&gt;</span>Deployment Matrix<span class="token-tag">&lt;/div&gt;</span>
-<span class="token-tag">&lt;/div&gt;</span></pre>
-            </div>
-            <div class="error-explanation">
-              <div class="error-label">Production Enterprise Solution</div>
-<pre><span class="token-tag">&lt;header&gt;</span>
-  <span class="token-tag">&lt;h1&gt;</span>Enterprise Platform<span class="token-tag">&lt;/h1&gt;</span>
-<span class="token-tag">&lt;/header&gt;</span>
-<span class="token-tag">&lt;main&gt;</span>
-  <span class="token-tag">&lt;article&gt;</span>
-    <span class="token-tag">&lt;h2&gt;</span>Deployment Matrix<span class="token-tag">&lt;/h2&gt;</span>
-  <span class="token-tag">&lt;/article&gt;</span>
-<span class="token-tag">&lt;/main&gt;</span></pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Using class names to describe document structure leaves automated engines completely blind. Browsers see this as an anonymous block container with no clear entry points.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Converting to explicit structural landmarks gives automated engines explicit access anchors, dramatically improving layout parsing efficiency.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="lab2">
-          <div class="error-card">
-            <div class="error-banner">
-              <span class="error-type">Anti-Pattern: Pseudo-Interactive Intercept Elements</span>
-            </div>
-            <div class="error-code-section">
-              <div class="error-label">Unoptimized Structure</div>
-<pre><span class="token-tag">&lt;div</span> <span class="token-attr">class</span>=<span class="token-str">"custom-button"</span> <span class="token-attr">onclick</span>=<span class="token-str">"triggerDeployment()"</span><span class="token-tag">&gt;</span>
-  Execute Production Release
-<span class="token-tag">&lt;/div&gt;</span></pre>
-            </div>
-            <div class="error-explanation">
-              <div class="error-label">Production Enterprise Solution</div>
-<pre><span class="token-tag">&lt;button</span> <span class="token-attr">type</span>=<span class="token-str">"button"</span> <span class="token-attr">onclick</span>=<span class="token-str">"triggerDeployment()"</span><span class="token-tag">&gt;</span>
-  Execute Production Release
-<span class="token-tag">&lt;/button&gt;</span></pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Generic components cannot receive focus out of the box via hardware keyboard interfaces (Tab navigation). This completely breaks interaction for users relying on assistive hardware.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Using standard <code>&lt;button&gt;</code> components guarantees native focus tracking, default form integration pathways, and immediate support for standard click actions.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="lab3">
-          <div class="error-card">
-            <div class="error-banner">
-              <span class="error-type">Anti-Pattern: Orphan Inputs & Accessible Isolation</span>
-            </div>
-            <div class="error-code-section">
-              <div class="error-label">Unoptimized Structure</div>
-<pre><span class="token-tag">&lt;p&gt;</span>Enter Account Identifier String:<span class="token-tag">&lt;/p&gt;</span>
-<span class="token-tag">&lt;input</span> <span class="token-attr">type</span>=<span class="token-str">"text"</span> <span class="token-attr">name</span>=<span class="token-str">"userId"</span><span class="token-tag">&gt;</span></pre>
-            </div>
-            <div class="error-explanation">
-              <div class="error-label">Production Enterprise Solution</div>
-<pre><span class="token-tag">&lt;label</span> <span class="token-attr">for</span>=<span class="token-str">"account-input"</span><span class="token-tag">&gt;</span>Enter Account Identifier String:<span class="token-tag">&lt;/label&gt;</span>
-<span class="token-tag">&lt;input</span> <span class="token-attr">id</span>=<span class="token-str">"account-input"</span> <span class="token-attr">type</span>=<span class="token-str">"text"</span> <span class="token-attr">name</span>=<span class="token-str">"userId"</span> <span class="token-attr">required</span> <span class="token-attr">aria-required</span>=<span class="token-str">"true"</span><span class="token-tag">&gt;</span></pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">The standalone input element has no direct program link connecting it to its text description label. Screen readers cannot infer which data field they are currently reading aloud.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Explicitly pairing the <code>for</code> and <code>id</code> attribute tokens establishes an unbreakable programmatic connection, maximizing accessibility system indexing.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="s7">
-      <div class="section-header">
-        <span class="section-number">07</span>
-        <h2 class="section-title">Common Mistakes</h2>
-      </div>
-      <p>Review these real-world anti-patterns often seen in candidate interview submissions. Spotting these pitfalls early ensures your technical reviews meet standard enterprise requirements.</p>
-
-      <div class="mistakes-grid">
-        <div class="mistake-card">
-          <div class="mistake-num">MISTAKE 01</div>
-          <div class="mistake-title">Incorrect Heading Nesting Hierarchy</div>
-          <div class="mistake-body">Using heading elements out of order (e.g., jump-routing from an <code>&lt;h1&gt;</code> directly down to an <code>&lt;h4&gt;</code>) because you want a smaller visual font size. This breaks document layout index charts.</div>
-          <div class="fix-label">✓ The Fix</div>
-          <div class="mistake-body">Enforce strict linear step hierarchies (<code>h1 -&gt; h2 -&gt; h3</code>). If an element needs to look visually smaller, change its presentation layer using specialized CSS font rules instead of modifying structural semantic components.</div>
-        </div>
-
-        <div class="mistake-card">
-          <div class="mistake-num">MISTAKE 02</div>
-          <div class="mistake-title">Empty Image Fallback Alt Specifications</div>
-          <div class="mistake-body">Omitting the critical <code>alt</code> attribute string entirely, or populating it with generic filenames like <code>alt="image.jpg"</code>. This degrades accessibility standard profiles.</div>
-          <div class="fix-label">✓ The Fix</div>
-          <div class="mistake-body">Provide precise contextual descriptions for imagery. For decorative UI assets that do not convey data, configure the property cleanly as <code>alt=""</code> to signal to screen readers to skip parsing the node entirely.</div>
-        </div>
-
-        <div class="mistake-card">
-          <div class="mistake-num">MISTAKE 03</div>
-          <div class="mistake-title">Improper Tag Closure Formatting Structures</div>
-          <div class="mistake-body">Mismatching elements or overlaying structural boundaries inside multi-tier tag tracks (such as creating cross-nested chains: <code>&lt;div&gt;&lt;p&gt;&lt;/div&gt;&lt;/p&gt;</code>).</div>
-          <div class="fix-label">✓ The Fix</div>
-          <div class="mistake-body">Enforce strict complementary nested closures. Rely on high-performance code parsing tools like Prettier inside your IDE layout to capture overlapping elements early.</div>
-        </div>
-
-        <div class="mistake-card">
-          <div class="mistake-num">MISTAKE 04</div>
-          <div class="mistake-title">Over-Configuring Native Interactivity States</div>
-          <div class="mistake-body">Manually injecting complex keyboard focus indicators onto arbitrary layout divisions via attributes like <code>tabindex="0"</code> instead of using standard interactive elements.</div>
-          <div class="fix-label">✓ The Fix</div>
-          <div class="mistake-body">Always prioritize native interactive elements (like <code>&lt;button&gt;</code>, <code>&lt;input&gt;</code>, or <code>&lt;select&gt;</code>). Only hand-craft custom interactive elements using ARIA attributes when standard elements cannot support your design constraints.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="s8">
-      <div class="section-header">
-        <span class="section-number">08</span>
-        <h2 class="section-title">Real World — High-Scale System Impacts</h2>
-      </div>
-      <p>Why do FAANG organizations obsess over micro-optimized HTML? At hyper-scale, minor optimizations compound into noticeable changes in overall operational efficiency and business metrics.</p>
-
-      <div class="company-cards">
-        <div class="company-card">
-          <div class="company-name">Amazon Performance</div>
-          <div class="company-desc">Amazon found that every 100ms of extra latency cost them 1% in sales revenue. Unoptimized HTML size patterns and deep layout nesting delay structural DOM parsing, which directly increases initial load times and impact conversions.</div>
-        </div>
-        <div class="company-card">
-          <div class="company-name">GoogleBot Processing</div>
-          <div class="company-desc">Google processes billions of web pages daily. Websites that use clean semantic structures allow crawlers to discover data sections much faster, reducing overall indexing compute costs and directly boosting content discovery rates.</div>
-        </div>
-        <div class="company-card">
-          <div class="company-name">Netflix Device Target Scale</div>
-          <div class="company-desc">Netflix runs its app shell across diverse environments, including low-powered smart TVs and legacy streaming sticks. Using simple, specification-compliant DOM trees ensures predictable performance across different processing engines.</div>
-        </div>
-      </div>
-
-      <h3>The SEO Crawling Pipeline</h3>
-      <p>When high-scale search infrastructure analyzes an application view, it runs a multi-stage validation pipeline:</p>
-      <ol>
-        <li><strong>Structural Hierarchy Parsing:</strong> The system crawls headers and page titles to map out a clear topic structure. Misordered headings or flat structures can lead to miscategorized content indexing.</li>
-        <li><strong>Discovery Link Mapping:</strong> The engine scrapes links to find related content paths. If route triggers are hidden inside custom interactive elements rather than standard anchor tags, the crawler won't discover those links.</li>
-        <li><strong>Rich Snippet Processing:</strong> The pipeline looks for specialized section and semantic definitions to extract targeted interface fragments for display within rich search feature panels.</li>
-      </ol>
-    </section>
-
-    <section class="section" id="s9">
-      <div class="section-header">
-        <span class="section-number">09</span>
-        <h2 class="section-title">Interview Angle</h2>
-      </div>
-      <p>In mid-to-senior technical evaluations, structural semantic knowledge is rarely tested with raw trivia questions. Instead, it is evaluated by analyzing how you approach scale, user interaction constraints, and cross-platform compatibility.</p>
-
-      <div class="interview-q">
-        <div class="iq-label">Technical Challenge Scenario</div>
-        <div class="iq-question">"We are designing an infinite-scroll feed system similar to the Facebook or LinkedIn core app shell. As the user scrolls, thousands of content cards load into the viewport. How do you design the baseline markup architecture to mitigate performance degradation?"</div>
-        <div class="iq-answer"><strong>Strategic Architecture Formulation:</strong> "At extreme scale, deep DOM trees create memory leak risks and slow down browser reflow operations. First, I would enforce flat component hierarchies, avoiding unneeded nested wrappers. To minimize layout recalculation costs, every post card container must use strict, predefined size values via CSS, and images must use explicit aspect-ratio attributes to prevent visual layout shifts when loading. For heavy text content, using semantic <code>&lt;article&gt;</code> containers ensures clean document boundaries. Finally, I would coordinate with engineering teams to implement a virtualized list architecture. This technique mounts markup structures into the active DOM tree only when they cross the interactive view boundary, detaching them when they leave to keep overall memory usage low."</div>
-      </div>
-
-      <div class="interview-q">
-        <div class="iq-label">System Design Evaluation</div>
-        <div class="iq-question">"Explain what happens to the browser runtime pipeline when a developer inserts an 11MB block of unoptimized raw markup directly into an open client view via an element's innerHTML property."</div>
-        <div class="iq-answer"><strong>Engine Impact Analysis:</strong> "Injecting massive, untrusted markup blocks using the <code>innerHTML</code> property forces the browser's primary rendering thread to halt current script executions and re-tokenize the entire incoming payload. This blocks user interaction and triggers a long task. It also opens up security vulnerabilities by exposing the application to cross-site scripting (XSS) injection threats if the incoming content contains unsanitized text strings. A better approach is to use programmatic document fragment components or modern component architectures to batch update changed data blocks step-by-step."</div>
-      </div>
-    </section>
-
-    <section class="section" id="s10">
-      <div class="section-header">
-        <span class="section-number">10</span>
-        <h2 class="section-title">Explain It Test — Core Knowledge Check</h2>
-      </div>
-      <p>Test your understanding before continuing. Explain your answers out loud as if you were speaking directly to a senior interviewer, then flip the card to verify your technical accuracy.</p>
-
-      <div class="test-cards">
-        <div class="test-card" onclick="flipCard(this)">
-          <div class="test-card-front">
-            <div class="test-card-num">Question 01</div>
-            <div class="test-q">What is Tabnabbing, and how do you protect your applications against it when using external anchor links?</div>
-            <div class="test-hint">Think about the window.opener reference model ↗</div>
-          </div>
-          <div class="test-card-back">
-            <div class="test-card-num">Answer 01</div>
-            <div class="test-a">Tabnabbing is a security exploit where an opened external destination tab uses the <code>window.opener</code> reference object to redirect the original origin tab to a malicious spoofed URL. You prevent this by adding <code>rel="noopener noreferrer"</code> to your anchor tags, which strips out the cross-tab context reference.</div>
-            <div class="test-hint">Tap again to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="test-card" onclick="flipCard(this)">
-          <div class="test-card-front">
-            <div class="test-card-num">Question 02</div>
-            <div class="test-q">Explain the direct runtime difference between the browser processing configurations for Quirks Mode and Standards Mode.</div>
-            <div class="test-hint">What role does the declaration token play? ↗</div>
-          </div>
-          <div class="test-card-back">
-            <div class="test-card-num">Answer 02</div>
-            <div class="test-a">Standards Mode forces the browser engine to follow modern W3C HTML and CSS specifications. Quirks Mode emulates rendering bugs from old legacy layout frameworks. This mode triggers automatically if you omit the modern <code>&lt;!DOCTYPE html&gt;</code> token from the start of your document.</div>
-            <div class="test-hint">Tap again to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="test-card" onclick="flipCard(this)">
-          <div class="test-card-front">
-            <div class="test-card-num">Question 03</div>
-            <div class="test-q">Why is using generic divs with manual click attributes for user interface actions a critical failure during enterprise accessibility reviews?</div>
-            <div class="test-hint">Consider user accessibility and standard keyboard focus flows ↗</div>
-          </div>
-          <div class="test-card-back">
-            <div class="test-card-num">Answer 03</div>
-            <div class="test-a">Generic elements do not participate in the browser's standard keyboard focus loops out of the box, meaning users navigating via assistive hardware can't interact with them. They also lack the native screen reader role announcements that structured interactive elements like buttons provide naturally.</div>
-            <div class="test-hint">Tap again to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="test-card" onclick="flipCard(this)">
-          <div class="test-card-front">
-            <div class="test-card-num">Question 04</div>
-            <div class="test-q">How do explicit width and height attributes on imagery tags reduce Cumulative Layout Shift (CLS) scores?</div>
-            <div class="test-hint">What information does the layout engine need during early token parsing? ↗</div>
-          </div>
-          <div class="test-card-back">
-            <div class="test-card-num">Answer 04</div>
-            <div class="test-a">Providing explicit size attributes allows the browser's layout engine to compute the image's aspect ratio and reserve the required space *before* the actual image file downloads. This prevents the surrounding content from shifting abruptly when the asset finishes rendering.</div>
-            <div class="test-hint">Tap again to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="s11">
-      <div class="section-header">
-        <span class="section-number">11</span>
-        <h2 class="section-title">Do This Today — Practical Verification Milestones</h2>
-      </div>
-      <p>Complete these development tasks to solidify your understanding of high-performance document architecture. Click each milestone to track your progress.</p>
-
-      <div class="today-tasks">
-        <div class="today-task" onclick="toggleTask(this)">
-          <div class="task-check">✓</div>
-          <div class="task-content">
-            <div class="task-title">Task 1 — Profile a Core Corporate View Configuration (30 Min)</div>
-            <div class="task-desc">Open a major platform homepage (like Amazon or Google Search) and inspect it using your browser's Developer Tools (F12). Locate their primary <code>&lt;nav&gt;</code> landmarks, identify how they structure descriptive text for their imagery assets, and verify how they manage safe cross-origin links using rel attributes.</div>
-          </div>
-        </div>
-
-        <div class="today-task" onclick="toggleTask(this)">
-          <div class="task-check">✓</div>
-          <div class="task-content">
-            <div class="task-title">Task 2 — Build an Accessible Interface System Shell (30 Min)</div>
-            <div class="task-desc">Create a modern, clean HTML document using your local IDE setup. Build a mock enterprise interface module that contains a structured navigation header, an article body section featuring data tables, and an input form that includes explicit labels and accessibility markers. Run this code through the official W3C Markup Validation service to ensure zero linting warnings.</div>
-          </div>
-        </div>
-
-        <div class="today-task" onclick="toggleTask(this)">
-          <div class="task-check">✓</div>
-          <div class="task-content">
-            <div class="task-title">Task 3 — Run an Accessibility Profile Audit Using Lighthouse (30 Min)</div>
-            <div class="task-desc">Open your custom dashboard file inside a local browser window. Open DevTools, switch over to the Lighthouse performance audit panel, select the accessibility profiling configuration, and run a full layout compilation. Fix any identified element alignment errors until your document scores a perfect 100 on the verification index scale.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="s12">
-      <div class="section-header">
-        <span class="section-number">12</span>
-        <h2 class="section-title">3 Things + Terms</h2>
-      </div>
-      <p>These core principles form the baseline requirement for engineering production-tier document interfaces. Memorize them before moving to the next level.</p>
-
-      <div class="three-things">
-        <div class="thing-card">
-          <div class="thing-num">1</div>
-          <div class="thing-text">Always enforce semantic markup layouts. Div containers are visual structural mechanisms; use semantic elements to model your data explicitly for parsing runtimes.</div>
-        </div>
-        <div class="thing-card">
-          <div class="thing-num">2</div>
-          <div class="thing-text">Ensure all forms and buttons are fully accessible by default. Never build custom interactive components when native elements can support your design patterns.</div>
-        </div>
-        <div class="thing-card">
-          <div class="thing-num">3</div>
-          <div class="thing-text">Configure safe link rules on external anchors. Use rel protection tokens on multi-origin routings to guard client instances against background tab manipulation exploits.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="terms-grid">
-        <div class="term-item">
-          <div class="term-name">Document Object Model (DOM)</div>
-          <div class="term-def">The active tree data graph parsed by the browser layout runtime engine, mapping raw document markup strings into addressable node object targets.</div>
-        </div>
-        <div class="term-item">
-          <div class="term-name">Semantic HTML</div>
-          <div class="term-def">The practice of choosing markup elements that describe the actual meaning and purpose of content, rather than using generic container tags for visual placement.</div>
-        </div>
-        <div class="term-item">
-          <div class="term-name">Standards Mode</div>
-          <div class="term-def">The browser layout engine rendering state triggered by a valid doctype token, ensuring modern specifications guide text positioning and style calculations.</div>
-        </div>
-        <div class="term-item">
-          <div class="term-name">Tabnabbing</div>
-          <div class="term-def">A reverse phishing attack vector where a destination target tab manipulates the original background parent browser page using the opener context interface.</div>
-        </div>
-        <div class="term-item">
-          <div class="term-name">Cumulative Layout Shift (CLS)</div>
-          <div class="term-def">A user experience metric that tracks unexpected visual movement of page elements during the initial asset loading lifecycle phase.</div>
-        </div>
-        <div class="term-item">
-          <div class="term-name">Accessibility (a11y)</div>
-          <div class="term-def">Design practices focused on ensuring application modules remain usable for individuals accessing platform content via assistive technologies or screen readers.</div>
-        </div>
-      </div>
-
-      <div class="essay-footer">
-        <a class="next-btn" href="essay-1.2.html">
-            <div>
-              <div class="next-label">Advance to Next Syllabus Module</div>
-              <div class="next-title">Essay 1.2 - CSS: Layout Paradigms & Paint Budgets</div>
-            </div>
-            <div class="next-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section');
-const navItems = document.querySelectorAll('.nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.04 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) {
-          item.classList.add('active');
-        }
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -65% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealStep(el) { el.classList.toggle('revealed'); }
-function resetSteps() { document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('revealed')); }
-
-function switchTab(btn, panelId) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(panelId).classList.add('active');
-}
-
-function flipCard(el) { el.classList.toggle('flipped'); }
-if (window.personal_context) { delete window.personal_context; }
-function toggleTask(el) { el.classList.toggle('done'); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

@@ -537,21 +537,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1635,8 +1620,790 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-3">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+
+
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Event Logic Matrix</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-pink"></div>
+    <div class="glow-orb orb-cyan"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes</div>
+  <div class="hero-eyebrow">essay 3.6 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  
+  <h1 class="hero-title">
+    Event Architecture:<br>
+    Listeners, Bubbling, & <em>Delegation Pipelines</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering asymmetric event propagation vectors, capture and bubbling compilation phases, high-scale listener memory pooling, target event sourcing, and proactive event pipeline interception.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">3.6 — Event Engineering</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~55 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 3.5 (DOM Manipulation Mechanics)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">Event Bubbling · Capture Tracks · Delegation Pipelines · Memory Leak Defense</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; navigate event propagation paths</div>
+</div>
+
+<div class="layout-main-frame">
+  <main>
+
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        Browser event patterns manage user interface interactions. When building high-throughput dashboards, binding unique listeners to thousands of independent list rows creates massive memory allocation overhead and slows performance. This module targets structural event propagation vectors, detailing capture phases, bubbling tracks, resource-efficient event delegation pipelines, and listener unlinking habits to protect application memory.
+      </div>
+    </div>
+
+    <div class="interactive-framework-sector">
+      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
+      <div class="framework-flex-track">
+        <div class="frame-node-box done-node-box">Objects 3.4</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box done-node-box">DOM Logic 3.5</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box active-node-box">Events 3.6</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Async Apps 3.7</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">HTTP Client 3.9</div>
+      </div>
+    </div>
+
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many web developers configure event listeners by using isolated, repetitive inline bindings across active elements. **At enterprise scale, this procedural strategy introduces heavy system overhead.** Binding individual listener objects to large user interface collections—like infinite product scrolling directories or live account metrics trackers—wastes memory bandwidth, triggers garbage collection thrashing, and fragments interaction code blocks across files.</p>
+      <p>High-performance frontend architecture leverages standard browser propagation mechanics. Instead of scattering listeners across independent nodes, developers utilize the natural **Event Bubbling** lifecycle. By attaching a single centralized event listener wrapper to a shared parent layout node, you build an efficient **Event Delegation Pipeline**. This centralized tracking gateway intercepts events natively as they travel up the DOM tree, optimizing system tracking, avoiding memory bloat, and ensuring new list elements become interactive automatically without unneeded setup code.</p>
+      
+      
+
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ High-Scale Event Listener Allocation Formula:</div>
+        <div class="compute-value">Active Core Listeners = 1 Centralized Pipeline Wrapper Framework &lt;&lt; ∑(Dynamic Children Elements)</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>A senior full-stack UI architect avoids overloading runtime engines with repetitive event hooks. They manage user interactions using centralized delegation filters, catching events natively at parent nodes while leveraging event target parameters to identify execution tasks cleanly.</p>
+      </div>
+    </section>
+
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Apartment Complex Mail Delivery Analogy</h3>
+      <p>Imagine organizing a private logistics hub tasked with routing courier packages inside a vast 500-unit residential skyscraper tower. You could choose to dispatch 500 individual security guards to wait at every separate apartment front door simultaneously, tracking entries manually to look for incoming package updates.</p>
+      <p>Alternatively, you can station **a single centralized security routing desk inside the tower's primary ground-floor entry lobby.** As couriers step into the building checkpoint to deliver items, the lobby tracking desk logs package details, verifies apartment codes, and routes packages to units instantly from one spot. Event delegation functions exactly like that ground-floor lobby desk, catching interaction events cleanly at a shared parent container to cut out the overhead of individual node listeners.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When interface click responses lag or memory snapshot profiling logs reveal stacking listener overruns, look past temporary fixes. Ask an analytical question: <strong>"This interactive structure is scattering redundant listeners across dynamic elements. How can I route these actions through a single parent delegation pipeline to streamline resource management?"</strong> This focus guides optimization fixes.</p>
+      </div>
+
+      <h3>The Ripple in the Corporate Pond Model</h3>
+      <p>To write highly efficient script code, visualize dropping a small pebble into a nested multi-tier water pool channel system. The ripple doesn't freeze or lock inside its local entry block; its waves travel outward naturally, crossing boundary walls to reach the top-level parent reservoir pool. User clicks operate on this exact pattern: actions cascade upward through parent element wrappers natively, enabling your top-tier container layers to intercept and evaluate interactions smoothly.</p>
+    </section>
+
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Visual — Three-Phase Event Propagation Tracks</h2>
+      </div>
+      <p>Understanding how the browser layout engine compiles event signals and sweeps paths through the DOM tree is essential for preventing interface bugs. Click through each sequential lifecycle step to see how events travel from document roots to target children elements and bubble back up.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>🤖 &nbsp; W3C Standardized Three-Phase Event Propagation Loop &nbsp;·&nbsp; Click steps to trace data states.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">The Capturing Lifecycle Phase (Down Track)</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The event signal is initialized at the absolute top of the document tree (<code>window</code>). It travels downward through parent elements, tracking node paths sequentially to locate the target element context.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">The Target Activation Lifecycle Phase (At Source Element)</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The event arrives at the target child node that triggered the interaction. Local listeners register the signal, executing any attached callback procedures safely directly at the data element source.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">The Bubbling Lifecycle Phase (Up Track Override)</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>With target processing complete, the signal reverses direction and travels back up the parent DOM branches to the window root. This up-track movement enables parent delegation layers to intercept and process actions natively.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-action-row">
+          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Compilation Pipeline</button>
+        </div>
+      </div>
+
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="6" fill="#030208"/>
+          <g opacity="0.15">
+            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#ff007f" stroke-width="1"/>
+            <path d="M 390 40 L 390 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          
+          <text x="60" y="35" fill="#948cb3" font-family="Space Mono" font-size="12" font-weight="bold">Capturing Pass Track (Downwards)</text>
+          <text x="410" y="35" fill="#00f5d4" font-family="Space Mono" font-size="12" font-weight="bold">Bubbling Pass Track (Upwards Extraction)</text>
+          
+          <circle cx="200" cy="100" r="24" fill="#0d091f" stroke="#ff007f" stroke-width="2"/>
+          <text x="200" y="104" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">div.list</text>
+          <path d="M 200 124 L 200 196" stroke="#ff007f" stroke-width="2"/>
+
+          <circle cx="200" cy="220" r="24" fill="#0d091f" stroke="#ff007f" stroke-width="2"/>
+          <text x="200" y="224" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">button</text>
+
+          <circle cx="580" cy="220" r="24" fill="#0d091f" stroke="#00f5d4" stroke-width="2"/>
+          <text x="580" y="224" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">button</text>
+          <path d="M 580 196 L 580 124" stroke="#00f5d4" stroke-width="2"/>
+
+          <circle cx="580" cy="100" r="24" fill="#0d091f" stroke="#00f5d4" stroke-width="2"/>
+          <text x="580" y="104" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">div.list</text>
+        </svg>
+        <div class="infographic-caption">Vector Diagram 3.6: The Propagation Spectrum. Event capture tracking flows downward to locate target cells, before reversing direction to bubble back up through parent layers for easy event delegation.</div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Listener Registrations & Core Propagation Tokens</h3>
+      <p>Modern scripts manage event hooks using the standard <code>addEventListener</code> interface. This core method includes configuration parameters to control propagation behaviors:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">event-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-kw">const</span> dynamicMetricListNode = document.querySelector(<span class="t-str">"#metrics-stream"</span>);
+
+<span class="t-comment">// Configure a centralized event delegation parent wrapper listener</span>
+dynamicMetricListNode.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>(eventToken) {
+  
+  <span class="t-comment">// 1. eventToken.target: Identifies the precise child node clicked</span>
+  <span class="t-kw">const</span> clickedElementSource = eventToken.target;
+  
+  <span class="t-comment">// 2. eventToken.currentTarget: References this parent listener element</span>
+  <span class="t-kw">const</span> boundaryParentContainer = eventToken.currentTarget;
+  
+  <span class="t-kw">if</span> (clickedElementSource.matches(<span class="t-str">".action-trigger"</span>)) {
+    console.log(<span class="t-str">"Executing localized element tracking task pass..."</span>);
+  }
+}, { capture: <span class="t-val">false</span>, passive: <span class="t-val">true</span> });</pre>
+      </div>
+
+      <p>The third parameter options object optimizes network and scrolling threads. Setting <code>passive: true</code> alerts the browser layout engine that the callback will never call <code>preventDefault()</code>, allowing the browser to optimize touch and scroll performance immediately without waiting for script evaluations.</p>
+      <p>The <code>capture: false</code> parameter configures the listener for the upward **Bubbling Phase** (the default path). Setting this option to true switches the listener to the downward **Capture Phase**, intercepting signals early before they reach target child nodes.</p>
+
+      <h3>Part B — Event Interception Gates: stopPropagation vs. preventDefault</h3>
+      <p>Managing complex web application interfaces requires controlling default browser behaviors and propagation paths carefully. Let us contrast these core interception methods:</p>
+      
+      <ul>
+        <li><code>event.stopPropagation()</code> — Freezes event propagation tracks immediately. The event signal is blocked from climbing or dropping to adjacent parent layers, isolating interaction signals to the current element block.</li>
+        <li><code>event.preventDefault()</code> — Instructs the browser engine to skip its default built-in element actions (such as intercepting form link page refreshes or blocking checkbox toggles) while allowing the event signal to continue climbing up the DOM tree.</li>
+      </ul>
+
+      <h3>Part C — Resolving Memory Leaks from Stale Listeners</h3>
+      <p>A primary cause of application memory bloat in single-page applications is unmanaged event listeners. Every active listener bound to an element creates a permanent reference loop in Heap memory storage that blocks garbage collection cleanup passes.</p>
+      <p>If an element card is removed from the DOM tree while its event listener remains active, the detached node is trapped in memory as a **Detached DOM Tree** leak. To clean up your application memory footprint responsibly, unlink listeners explicitly when destroying components: <code>el.removeEventListener("click", namedCallback);</code>. Note that this cleanup pass requires a reference to a **named callback function**; anonymous inline functions cannot be targeted for removal, leaving memory paths clogged.</p>
+
+      <h3>Part D — High-Performance Event Management Methods Comparison</h3>
+      <p>Enterprise layout engineering requires choosing event architectures deliberately to protect main thread resource budgets. Let us evaluate common event models:</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Delegation Pipelines</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Passive Scroll Listeners</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">StopPropagation Limits</button>
+        </div>
+        
+        <div class="hud-tab-panel active-hud-panel" id="t1">
+          <p>Event delegation centralizes event tracking into a single parent listener, reducing system memory usage by avoiding the need to bind independent hooks to thousands of individual child nodes.</p>
+        </div>
+        <div class="hud-tab-panel" id="t2">
+          <p>Configuring listeners with the <code>passive: true</code> flag lets browsers scroll page layouts smoothly and immediately, bypassing the main thread delays typical of standard event verification checks.</p>
+        </div>
+        <div class="hud-tab-panel" id="t3">
+          <p>While <code>stopPropagation()</code> can quickly isolate layout elements, overusing it can disrupt global analytics tracking, dashboard close triggers, or third-party monitoring workflows.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Scattered Event Bindings</h2>
+      </div>
+      <p>Let us explore real production listener bottlenecks, refactoring scattered element hooks into a centralized, memory-efficient event delegation pipeline.</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">listener-bloat-refactor.js</span></div>
+        <pre><span class="t-comment">// Anti-Pattern: Individual hooks bound to every list item inject unneeded memory allocations</span>
+<span class="t-kw">const</span> unoptimizedCardElements = document.querySelectorAll(<span class="t-str">".matrix-card"</span>);
+
+unoptimizedCardElements.forEach((cardNode) => {
+  cardNode.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>() {
+    console.log(<span class="t-str">"💥 Initializing unoptimized local event listener thread..."</span>);
+  });
+});</pre>
+        <div class="error-explanation">
+          <div class="error-label">Production Refactored Configuration</div>
+          <pre><span class="t-comment">// Centralize tracking through a single parent delegation pipeline wrapper</span>
+<span class="t-kw">const</span> unifiedParentContainer = document.querySelector(<span class="t-str">"#shared-grid-parent"</span>);
+
+unifiedParentContainer.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>(eventToken) {
+  <span class="t-comment">// Locate target match bounds cleanly using element match criteria</span>
+  <span class="t-kw">const</span> targetedActionButton = eventToken.target.closest(<span class="t-str">".matrix-card"</span>);
+  
+  <span class="t-kw">if</span> (targetedActionButton) {
+    console.log(<span class="t-str">"✓ Intercepted action smoothly via centralized delegation gateway."</span>);
+  }
+});</pre>
+          <div class="error-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-key">Root Problem Analysis</div>
+              <div class="breakdown-val">Binding independent event handlers to thousands of list rows consumes extensive Heap memory storage and requires manual re-binding whenever items load dynamically.</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-key">Refactored Result</div>
+              <div class="breakdown-val">Routing interactions through a single parent container wrapper minimizes listener memory overhead, while ensuring new list elements become interactive automatically.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common event propagation and listener tracking pitfalls during senior technical reviews. Keeping your interaction pipelines centralized protects full-stack system stability.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Overusing stopPropagation to Patch Interactivity Side Effects</div>
+          <div class="pitfall-body">Calling <code>stopPropagation()</code> indiscriminately across child widgets to mask layout alignment or bubble bugs, breaking outer document listeners.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Clean up your event logic paths, managing target verification matches through explicit conditional checks rather than blocking signals entirely.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Failing to Unlink Active Event Handlers on Teardown</div>
+          <div class="pitfall-body">Leaving event handlers attached to global document listeners during page layout updates, creating detached DOM node memory leaks.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Call <code>removeEventListener</code> explicitly with reference to your named callback function whenever dismantling interface components.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Binding Listeners via Anonymous Inner Functions</div>
+          <div class="pitfall-body">Declaring event handlers inline using anonymous arrow patterns, which blocks the cleanup engine from targeting and removing the listener later.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Bind event logic to explicit **named function references** to ensure handlers can be targeted and cleaned up cleanly during component teardowns.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Confusing event.target with event.currentTarget Parameters</div>
+          <div class="pitfall-body">Assuming target parameter flags always point to the parent node possessing the listener rather than the deep nested element clicked.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Use <code>target</code> to identify the exact child node clicked; rely on <code>currentTarget</code> to reference the parent container holding the listener.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Real World — High-Scale Event Optimization</h2>
+      </div>
+      <p>Top-tier web systems leverage centralized event delegation pipelines to minimize memory footprints and ensure smooth user interactions across massive product lines.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">React Synthetic Events</div>
+          <div class="cell-desc">React optimizes web memory performance by using a centralized event management system. Instead of binding listeners to individual elements, the framework catches events natively at the document root, routing actions through a single high-performance pipeline.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Facebook Infinite Feeds</div>
+          <div class="cell-desc">Meta engineers manage endless timelines and comment matrices using centralized delegation layers. Attaching listeners to shared parent wrappers ensures new posts are instantly interactive without requiring initialization code.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Salesforce Activity Logs</div>
+          <div class="cell-desc">Salesforce monitors workspace interactions using passive event configurations. Using passive flags on heavy mouse and scroll trackers ensures scrolling stays completely smooth while background analytics capture events.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In senior technical evaluations, event architecture choices are evaluated by testing your understanding of propagation vectors, listener resource costs, and code organization rules.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are reviewing an enterprise transaction ledger dashboard list where users click actions across thousands of data rows. The current code binds unique listeners to every item row. Interface actions stutter under load, and profiles show memory leaks. How do you re-engineer this interaction layer?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The performance bottleneck stems from memory overhead and detached DOM leaks. Binding unique event handlers to thousands of individual rows fills up Heap storage with redundant listener objects. To streamline resource management and eliminate leaks, I would move to an event delegation model. First, I would remove individual item hooks, replacing them with a single centralized listener attached to the shared parent table or list container. This setup utilizes natural browser event bubbling, allowing event signals to cascade up the DOM tree where our parent wrapper catches them in a single pass. Inside this centralized handler, I would use the <code>event.target</code> parameter combined with <code>.closest('.item-row')</code> to identify the exact row clicked. This change slashes listener memory overhead down to a single reference, and ensures newly loaded rows become interactive automatically without unneeded setup loops. Finally, I would bind the logic to a named function reference to guarantee handlers can be cleaned up cleanly on component teardowns."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain the operational performance trade-offs an engineer faces when choosing between using standard event parameters and passive: true configuration options on heavy viewport scroll tracking handlers."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "By default, when a scroll event triggers, the browser's rendering engine must pause page layout scrolling to evaluate your event listener scripts, checking if code invokes <code>event.preventDefault()</code> to block the interaction. This script evaluation pause introduces scrolling lag. Adding the <code>passive: true</code> flag alerts the layout scanner early that the callback will never block the scroll action, allowing the browser to render page movement instantly on its accelerated composition layers to maintain a fluid 60fps experience."</div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">Detail the structural lifecycle paths of event signals travelling across the browser DOM tree layout.</div>
+            <div class="r-action-hint">Recite the three definitive propagation phases ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">Event signals move through a three-phase propagation lifecycle: 1. The Capturing Phase (travelling down from the window root to the source element), 2. The Target Phase (arriving at the clicked element child node), and 3. The Bubbling Phase (reversing direction to cascade back up through parent layers).</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why does binding event handlers inline via anonymous arrow patterns create detached DOM memory leak risks?</div>
+            <div class="r-action-hint">Consider reference targeting constraints during cleanup loops ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">The browser's cleanup engine requires reference to a named function to unbind event handlers via <code>removeEventListener</code>. Inline anonymous arrow declarations build a new unique function block on every parse, blocking explicit cleanup paths and creating memory leaks.</div>
+            <div class="r-action-hint">Tap to flip back ↗ </div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Contrast the target and currentTarget event parameter fields within centralized delegation loops.</div>
+            <div class="r-action-hint">Contrast the source of the click with the container holding the hook ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The <code>event.target</code> parameter references the exact child element node that triggered the interaction. The <code>event.currentTarget</code> parameter points directly to the parent layout container holding the event listener wrapper itself.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">How does configuring the passive: true parameter flag boost page scroll performance speeds?</div>
+            <div class="r-action-hint">Consider thread blocking checks during rendering passes ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">The <code>passive: true</code> configuration flag signals to the layout engine that the listener script will never invoke <code>preventDefault()</code> to block the user action. This information lets the browser update page layouts instantly on separate threads, preventing scrolling lag.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these interaction design tasks to master centralized event delegation pipelines. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Active Event Listeners via browser Elements Panels (30 Min)</div>
+            <div class="row-desc">Open a complex web application dashboard view and launch browser DevTools. Open the Event Listeners sub-tab inside the Elements panel to audit active listener objects, tracking capturing and bubbling phase flags across elements.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a High-Scale Centralized Event Delegation Pipeline (30 Min)</div>
+            <div class="row-desc">Create an isolated test layout sandbox locally. Construct a long data list view, attaching a single event listener to the parent container to handle button interactions across rows smoothly using target matching parameters.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Verify Listener Cleanup Actions via named Callback References (30 Min)</div>
+            <div class="row-desc">Design a local component lifecycle script that hooks a listener to a window resize callback. Implement explicit cleanup passes using named function references, and monitor performance panels to ensure no detached DOM memory leaks persist.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Benchmark Passive Scroll Tracking across intensive Layout fields (30 Min)</div>
+            <div class="row-desc">Incorporate heavy scroll-driven event animations across long layout views. Alternate your scroll event listener setup between standard loops and <code>passive: true</code> configurations, using performance profiling graphs to verify frame rates.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="recap-section">
+      <div class="comprehensive-recap-panel">
+        <h3 class="recap-title-hud">🎯 Event Architecture Performance Recap</h3>
+        <div class="recap-grid-hud">
+          <div class="recap-item-node">
+            <div class="recap-item-title">Delegation Pipeline Logic</div>
+            <div class="recap-item-desc">Centralize event tracking into a single parent listener container, leveraging event target filtering parameters to route interaction scripts cleanly from one spot.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Memory Overrun Defense</div>
+            <div class="recap-item-desc">Bind event logic to explicit named function references to ensure handlers can be targeted and cleaned up cleanly during component teardowns, avoiding memory leaks.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Passive Thread Operations</div>
+            <div class="recap-item-desc">Deploy passive property configuration flags across high-frequency mouse and scroll tracking events to prevent main-thread script loops from blocking smooth page layouts.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Interception Gateway Boundaries</div>
+            <div class="recap-item-desc">Manage event interception parameters deliberately, avoiding over-allocations of stopPropagation filters to ensure analytical tracking streams flow predictably.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These interaction engineering laws form the baseline requirement for building high-performance full-stack communication platforms. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Route clicks via delegation. Centralize event hooks into a single parent layout node to reduce system memory usage and handle dynamic items gracefully.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Bind named function references. Avoid inline anonymous arrow functions to ensure your event handlers can be targeted and unlinked cleanly on teardown.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Optimize scroll paths using passive flags. Use passive listener configurations on intense tracking loops to keep page layouts fluid and prevent main thread lag.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Event Delegation</div>
+          <div class="g-node-definition">The architectural practice of centralizing event tracking into a single parent container wrapper, leveraging natural bubbling tracks to optimize memory footprints.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Event Bubbling Phase</div>
+          <div class="g-node-definition">The upward propagation track where an interaction signal travels back up through parent DOM branches to the window root after target activation.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Event Capturing Phase</div>
+          <div class="g-node-definition">The early downward propagation track where an event signal travels from the window root down through elements to locate the target child node.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">event.target Parameter</div>
+          <div class="g-node-definition">The explicit element property descriptor that references the exact, deep child node that received the user interaction click.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">event.currentTarget</div>
+          <div class="g-node-definition">The layout property variable that points directly to the parent container wrapper element currently processing the active event listener callback.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Passive Listener Option</div>
+          <div class="g-node-definition">A performance configuration flag (<code>passive: true</code>) that signals to layout scanners that a callback will never halt scrolling, keeping rendering threads fluid.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Detached DOM Node</div>
+          <div class="g-node-definition">A memory leak issue that happens when an element is removed from view templates while an active listener hook anchors its data fields in Heap storage.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">stopPropagation Gate</div>
+          <div class="g-node-definition">A style method that stops an event signal from climbing or dropping to neighboring parent context layers, isolating interactions to the current node.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">preventDefault Utility</div>
+          <div class="g-node-definition">A built-in expression that instructs browser engines to skip default element actions (like form link page reloads) while letting event bubbling continue.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Scope NodeList Matrix</div>
+          <div class="g-node-definition">A non-reactive snapshot collection of element pointers in memory returned by query engines, clear of the overhead of live collections.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Synthetic Event System</div>
+          <div class="g-node-definition">A framework-level layer that wraps native browser elements inside cross-platform event structures to optimize memory usage.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Garbage Collection sweep</div>
+          <div class="g-node-definition">The automated runtime engine cleaning phase that scans variables in Heap storage to identify and reclaim memory from unlinked data references.</div>
+        </div>
+      </div>
+
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-3.7.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 3.7 - Asynchronous JavaScript: Timers, Promises, & Event Loop Architectures</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  
+  body.classList.toggle('light-theme');
+  
+  if (body.classList.contains('light-theme')) {
+    themeText.innerText = "Light Lab";
+  } else {
+    themeText.innerText = "Dark Cyber";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2072,90 +2839,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3292,817 +3975,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-3">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-
-
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Event Logic Matrix</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-pink"></div>
-    <div class="glow-orb orb-cyan"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes</div>
-  <div class="hero-eyebrow">essay 3.6 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  
-  <h1 class="hero-title">
-    Event Architecture:<br>
-    Listeners, Bubbling, & <em>Delegation Pipelines</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering asymmetric event propagation vectors, capture and bubbling compilation phases, high-scale listener memory pooling, target event sourcing, and proactive event pipeline interception.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">3.6 — Event Engineering</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~55 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essay 3.5 (DOM Manipulation Mechanics)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">Event Bubbling · Capture Tracks · Delegation Pipelines · Memory Leak Defense</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; navigate event propagation paths</div>
-</div>
-
-<div class="layout-main-frame">
-  <main>
-
-    <div class="executive-summary-panel">
-      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
-      <div class="summary-text-hud">
-        Browser event patterns manage user interface interactions. When building high-throughput dashboards, binding unique listeners to thousands of independent list rows creates massive memory allocation overhead and slows performance. This module targets structural event propagation vectors, detailing capture phases, bubbling tracks, resource-efficient event delegation pipelines, and listener unlinking habits to protect application memory.
-      </div>
-    </div>
-
-    <div class="interactive-framework-sector">
-      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
-      <div class="framework-flex-track">
-        <div class="frame-node-box done-node-box">Objects 3.4</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box done-node-box">DOM Logic 3.5</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box active-node-box">Events 3.6</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Async Apps 3.7</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">HTTP Client 3.9</div>
-      </div>
-    </div>
-
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many web developers configure event listeners by using isolated, repetitive inline bindings across active elements. **At enterprise scale, this procedural strategy introduces heavy system overhead.** Binding individual listener objects to large user interface collections—like infinite product scrolling directories or live account metrics trackers—wastes memory bandwidth, triggers garbage collection thrashing, and fragments interaction code blocks across files.</p>
-      <p>High-performance frontend architecture leverages standard browser propagation mechanics. Instead of scattering listeners across independent nodes, developers utilize the natural **Event Bubbling** lifecycle. By attaching a single centralized event listener wrapper to a shared parent layout node, you build an efficient **Event Delegation Pipeline**. This centralized tracking gateway intercepts events natively as they travel up the DOM tree, optimizing system tracking, avoiding memory bloat, and ensuring new list elements become interactive automatically without unneeded setup code.</p>
-      
-      
-
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ High-Scale Event Listener Allocation Formula:</div>
-        <div class="compute-value">Active Core Listeners = 1 Centralized Pipeline Wrapper Framework &lt;&lt; ∑(Dynamic Children Elements)</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>A senior full-stack UI architect avoids overloading runtime engines with repetitive event hooks. They manage user interactions using centralized delegation filters, catching events natively at parent nodes while leveraging event target parameters to identify execution tasks cleanly.</p>
-      </div>
-    </section>
-
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Apartment Complex Mail Delivery Analogy</h3>
-      <p>Imagine organizing a private logistics hub tasked with routing courier packages inside a vast 500-unit residential skyscraper tower. You could choose to dispatch 500 individual security guards to wait at every separate apartment front door simultaneously, tracking entries manually to look for incoming package updates.</p>
-      <p>Alternatively, you can station **a single centralized security routing desk inside the tower's primary ground-floor entry lobby.** As couriers step into the building checkpoint to deliver items, the lobby tracking desk logs package details, verifies apartment codes, and routes packages to units instantly from one spot. Event delegation functions exactly like that ground-floor lobby desk, catching interaction events cleanly at a shared parent container to cut out the overhead of individual node listeners.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When interface click responses lag or memory snapshot profiling logs reveal stacking listener overruns, look past temporary fixes. Ask an analytical question: <strong>"This interactive structure is scattering redundant listeners across dynamic elements. How can I route these actions through a single parent delegation pipeline to streamline resource management?"</strong> This focus guides optimization fixes.</p>
-      </div>
-
-      <h3>The Ripple in the Corporate Pond Model</h3>
-      <p>To write highly efficient script code, visualize dropping a small pebble into a nested multi-tier water pool channel system. The ripple doesn't freeze or lock inside its local entry block; its waves travel outward naturally, crossing boundary walls to reach the top-level parent reservoir pool. User clicks operate on this exact pattern: actions cascade upward through parent element wrappers natively, enabling your top-tier container layers to intercept and evaluate interactions smoothly.</p>
-    </section>
-
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Visual — Three-Phase Event Propagation Tracks</h2>
-      </div>
-      <p>Understanding how the browser layout engine compiles event signals and sweeps paths through the DOM tree is essential for preventing interface bugs. Click through each sequential lifecycle step to see how events travel from document roots to target children elements and bubble back up.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>🤖 &nbsp; W3C Standardized Three-Phase Event Propagation Loop &nbsp;·&nbsp; Click steps to trace data states.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">The Capturing Lifecycle Phase (Down Track)</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The event signal is initialized at the absolute top of the document tree (<code>window</code>). It travels downward through parent elements, tracking node paths sequentially to locate the target element context.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">The Target Activation Lifecycle Phase (At Source Element)</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The event arrives at the target child node that triggered the interaction. Local listeners register the signal, executing any attached callback procedures safely directly at the data element source.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">The Bubbling Lifecycle Phase (Up Track Override)</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>With target processing complete, the signal reverses direction and travels back up the parent DOM branches to the window root. This up-track movement enables parent delegation layers to intercept and process actions natively.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flow-action-row">
-          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Compilation Pipeline</button>
-        </div>
-      </div>
-
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="6" fill="#030208"/>
-          <g opacity="0.15">
-            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#ff007f" stroke-width="1"/>
-            <path d="M 390 40 L 390 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
-          </g>
-          
-          <text x="60" y="35" fill="#948cb3" font-family="Space Mono" font-size="12" font-weight="bold">Capturing Pass Track (Downwards)</text>
-          <text x="410" y="35" fill="#00f5d4" font-family="Space Mono" font-size="12" font-weight="bold">Bubbling Pass Track (Upwards Extraction)</text>
-          
-          <circle cx="200" cy="100" r="24" fill="#0d091f" stroke="#ff007f" stroke-width="2"/>
-          <text x="200" y="104" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">div.list</text>
-          <path d="M 200 124 L 200 196" stroke="#ff007f" stroke-width="2"/>
-
-          <circle cx="200" cy="220" r="24" fill="#0d091f" stroke="#ff007f" stroke-width="2"/>
-          <text x="200" y="224" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">button</text>
-
-          <circle cx="580" cy="220" r="24" fill="#0d091f" stroke="#00f5d4" stroke-width="2"/>
-          <text x="580" y="224" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">button</text>
-          <path d="M 580 196 L 580 124" stroke="#00f5d4" stroke-width="2"/>
-
-          <circle cx="580" cy="100" r="24" fill="#0d091f" stroke="#00f5d4" stroke-width="2"/>
-          <text x="580" y="104" fill="#faf9fc" font-family="Space Mono" font-size="11" text-anchor="middle">div.list</text>
-        </svg>
-        <div class="infographic-caption">Vector Diagram 3.6: The Propagation Spectrum. Event capture tracking flows downward to locate target cells, before reversing direction to bubble back up through parent layers for easy event delegation.</div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Listener Registrations & Core Propagation Tokens</h3>
-      <p>Modern scripts manage event hooks using the standard <code>addEventListener</code> interface. This core method includes configuration parameters to control propagation behaviors:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">event-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-kw">const</span> dynamicMetricListNode = document.querySelector(<span class="t-str">"#metrics-stream"</span>);
-
-<span class="t-comment">// Configure a centralized event delegation parent wrapper listener</span>
-dynamicMetricListNode.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>(eventToken) {
-  
-  <span class="t-comment">// 1. eventToken.target: Identifies the precise child node clicked</span>
-  <span class="t-kw">const</span> clickedElementSource = eventToken.target;
-  
-  <span class="t-comment">// 2. eventToken.currentTarget: References this parent listener element</span>
-  <span class="t-kw">const</span> boundaryParentContainer = eventToken.currentTarget;
-  
-  <span class="t-kw">if</span> (clickedElementSource.matches(<span class="t-str">".action-trigger"</span>)) {
-    console.log(<span class="t-str">"Executing localized element tracking task pass..."</span>);
-  }
-}, { capture: <span class="t-val">false</span>, passive: <span class="t-val">true</span> });</pre>
-      </div>
-
-      <p>The third parameter options object optimizes network and scrolling threads. Setting <code>passive: true</code> alerts the browser layout engine that the callback will never call <code>preventDefault()</code>, allowing the browser to optimize touch and scroll performance immediately without waiting for script evaluations.</p>
-      <p>The <code>capture: false</code> parameter configures the listener for the upward **Bubbling Phase** (the default path). Setting this option to true switches the listener to the downward **Capture Phase**, intercepting signals early before they reach target child nodes.</p>
-
-      <h3>Part B — Event Interception Gates: stopPropagation vs. preventDefault</h3>
-      <p>Managing complex web application interfaces requires controlling default browser behaviors and propagation paths carefully. Let us contrast these core interception methods:</p>
-      
-      <ul>
-        <li><code>event.stopPropagation()</code> — Freezes event propagation tracks immediately. The event signal is blocked from climbing or dropping to adjacent parent layers, isolating interaction signals to the current element block.</li>
-        <li><code>event.preventDefault()</code> — Instructs the browser engine to skip its default built-in element actions (such as intercepting form link page refreshes or blocking checkbox toggles) while allowing the event signal to continue climbing up the DOM tree.</li>
-      </ul>
-
-      <h3>Part C — Resolving Memory Leaks from Stale Listeners</h3>
-      <p>A primary cause of application memory bloat in single-page applications is unmanaged event listeners. Every active listener bound to an element creates a permanent reference loop in Heap memory storage that blocks garbage collection cleanup passes.</p>
-      <p>If an element card is removed from the DOM tree while its event listener remains active, the detached node is trapped in memory as a **Detached DOM Tree** leak. To clean up your application memory footprint responsibly, unlink listeners explicitly when destroying components: <code>el.removeEventListener("click", namedCallback);</code>. Note that this cleanup pass requires a reference to a **named callback function**; anonymous inline functions cannot be targeted for removal, leaving memory paths clogged.</p>
-
-      <h3>Part D — High-Performance Event Management Methods Comparison</h3>
-      <p>Enterprise layout engineering requires choosing event architectures deliberately to protect main thread resource budgets. Let us evaluate common event models:</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Delegation Pipelines</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Passive Scroll Listeners</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">StopPropagation Limits</button>
-        </div>
-        
-        <div class="hud-tab-panel active-hud-panel" id="t1">
-          <p>Event delegation centralizes event tracking into a single parent listener, reducing system memory usage by avoiding the need to bind independent hooks to thousands of individual child nodes.</p>
-        </div>
-        <div class="hud-tab-panel" id="t2">
-          <p>Configuring listeners with the <code>passive: true</code> flag lets browsers scroll page layouts smoothly and immediately, bypassing the main thread delays typical of standard event verification checks.</p>
-        </div>
-        <div class="hud-tab-panel" id="t3">
-          <p>While <code>stopPropagation()</code> can quickly isolate layout elements, overusing it can disrupt global analytics tracking, dashboard close triggers, or third-party monitoring workflows.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Scattered Event Bindings</h2>
-      </div>
-      <p>Let us explore real production listener bottlenecks, refactoring scattered element hooks into a centralized, memory-efficient event delegation pipeline.</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">listener-bloat-refactor.js</span></div>
-        <pre><span class="t-comment">// Anti-Pattern: Individual hooks bound to every list item inject unneeded memory allocations</span>
-<span class="t-kw">const</span> unoptimizedCardElements = document.querySelectorAll(<span class="t-str">".matrix-card"</span>);
-
-unoptimizedCardElements.forEach((cardNode) => {
-  cardNode.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>() {
-    console.log(<span class="t-str">"💥 Initializing unoptimized local event listener thread..."</span>);
-  });
-});</pre>
-        <div class="error-explanation">
-          <div class="error-label">Production Refactored Configuration</div>
-          <pre><span class="t-comment">// Centralize tracking through a single parent delegation pipeline wrapper</span>
-<span class="t-kw">const</span> unifiedParentContainer = document.querySelector(<span class="t-str">"#shared-grid-parent"</span>);
-
-unifiedParentContainer.addEventListener(<span class="t-str">"click"</span>, <span class="t-kw">function</span>(eventToken) {
-  <span class="t-comment">// Locate target match bounds cleanly using element match criteria</span>
-  <span class="t-kw">const</span> targetedActionButton = eventToken.target.closest(<span class="t-str">".matrix-card"</span>);
-  
-  <span class="t-kw">if</span> (targetedActionButton) {
-    console.log(<span class="t-str">"✓ Intercepted action smoothly via centralized delegation gateway."</span>);
-  }
-});</pre>
-          <div class="error-breakdown">
-            <div class="breakdown-item">
-              <div class="breakdown-key">Root Problem Analysis</div>
-              <div class="breakdown-val">Binding independent event handlers to thousands of list rows consumes extensive Heap memory storage and requires manual re-binding whenever items load dynamically.</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-key">Refactored Result</div>
-              <div class="breakdown-val">Routing interactions through a single parent container wrapper minimizes listener memory overhead, while ensuring new list elements become interactive automatically.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common event propagation and listener tracking pitfalls during senior technical reviews. Keeping your interaction pipelines centralized protects full-stack system stability.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Overusing stopPropagation to Patch Interactivity Side Effects</div>
-          <div class="pitfall-body">Calling <code>stopPropagation()</code> indiscriminately across child widgets to mask layout alignment or bubble bugs, breaking outer document listeners.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Clean up your event logic paths, managing target verification matches through explicit conditional checks rather than blocking signals entirely.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Failing to Unlink Active Event Handlers on Teardown</div>
-          <div class="pitfall-body">Leaving event handlers attached to global document listeners during page layout updates, creating detached DOM node memory leaks.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Call <code>removeEventListener</code> explicitly with reference to your named callback function whenever dismantling interface components.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Binding Listeners via Anonymous Inner Functions</div>
-          <div class="pitfall-body">Declaring event handlers inline using anonymous arrow patterns, which blocks the cleanup engine from targeting and removing the listener later.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Bind event logic to explicit **named function references** to ensure handlers can be targeted and cleaned up cleanly during component teardowns.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Confusing event.target with event.currentTarget Parameters</div>
-          <div class="pitfall-body">Assuming target parameter flags always point to the parent node possessing the listener rather than the deep nested element clicked.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Use <code>target</code> to identify the exact child node clicked; rely on <code>currentTarget</code> to reference the parent container holding the listener.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Real World — High-Scale Event Optimization</h2>
-      </div>
-      <p>Top-tier web systems leverage centralized event delegation pipelines to minimize memory footprints and ensure smooth user interactions across massive product lines.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">React Synthetic Events</div>
-          <div class="cell-desc">React optimizes web memory performance by using a centralized event management system. Instead of binding listeners to individual elements, the framework catches events natively at the document root, routing actions through a single high-performance pipeline.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Facebook Infinite Feeds</div>
-          <div class="cell-desc">Meta engineers manage endless timelines and comment matrices using centralized delegation layers. Attaching listeners to shared parent wrappers ensures new posts are instantly interactive without requiring initialization code.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Salesforce Activity Logs</div>
-          <div class="cell-desc">Salesforce monitors workspace interactions using passive event configurations. Using passive flags on heavy mouse and scroll trackers ensures scrolling stays completely smooth while background analytics capture events.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In senior technical evaluations, event architecture choices are evaluated by testing your understanding of propagation vectors, listener resource costs, and code organization rules.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are reviewing an enterprise transaction ledger dashboard list where users click actions across thousands of data rows. The current code binds unique listeners to every item row. Interface actions stutter under load, and profiles show memory leaks. How do you re-engineer this interaction layer?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The performance bottleneck stems from memory overhead and detached DOM leaks. Binding unique event handlers to thousands of individual rows fills up Heap storage with redundant listener objects. To streamline resource management and eliminate leaks, I would move to an event delegation model. First, I would remove individual item hooks, replacing them with a single centralized listener attached to the shared parent table or list container. This setup utilizes natural browser event bubbling, allowing event signals to cascade up the DOM tree where our parent wrapper catches them in a single pass. Inside this centralized handler, I would use the <code>event.target</code> parameter combined with <code>.closest('.item-row')</code> to identify the exact row clicked. This change slashes listener memory overhead down to a single reference, and ensures newly loaded rows become interactive automatically without unneeded setup loops. Finally, I would bind the logic to a named function reference to guarantee handlers can be cleaned up cleanly on component teardowns."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain the operational performance trade-offs an engineer faces when choosing between using standard event parameters and passive: true configuration options on heavy viewport scroll tracking handlers."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "By default, when a scroll event triggers, the browser's rendering engine must pause page layout scrolling to evaluate your event listener scripts, checking if code invokes <code>event.preventDefault()</code> to block the interaction. This script evaluation pause introduces scrolling lag. Adding the <code>passive: true</code> flag alerts the layout scanner early that the callback will never block the scroll action, allowing the browser to render page movement instantly on its accelerated composition layers to maintain a fluid 60fps experience."</div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">Detail the structural lifecycle paths of event signals travelling across the browser DOM tree layout.</div>
-            <div class="r-action-hint">Recite the three definitive propagation phases ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">Event signals move through a three-phase propagation lifecycle: 1. The Capturing Phase (travelling down from the window root to the source element), 2. The Target Phase (arriving at the clicked element child node), and 3. The Bubbling Phase (reversing direction to cascade back up through parent layers).</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why does binding event handlers inline via anonymous arrow patterns create detached DOM memory leak risks?</div>
-            <div class="r-action-hint">Consider reference targeting constraints during cleanup loops ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">The browser's cleanup engine requires reference to a named function to unbind event handlers via <code>removeEventListener</code>. Inline anonymous arrow declarations build a new unique function block on every parse, blocking explicit cleanup paths and creating memory leaks.</div>
-            <div class="r-action-hint">Tap to flip back ↗ </div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Contrast the target and currentTarget event parameter fields within centralized delegation loops.</div>
-            <div class="r-action-hint">Contrast the source of the click with the container holding the hook ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">The <code>event.target</code> parameter references the exact child element node that triggered the interaction. The <code>event.currentTarget</code> parameter points directly to the parent layout container holding the event listener wrapper itself.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">How does configuring the passive: true parameter flag boost page scroll performance speeds?</div>
-            <div class="r-action-hint">Consider thread blocking checks during rendering passes ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">The <code>passive: true</code> configuration flag signals to the layout engine that the listener script will never invoke <code>preventDefault()</code> to block the user action. This information lets the browser update page layouts instantly on separate threads, preventing scrolling lag.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these interaction design tasks to master centralized event delegation pipelines. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Active Event Listeners via browser Elements Panels (30 Min)</div>
-            <div class="row-desc">Open a complex web application dashboard view and launch browser DevTools. Open the Event Listeners sub-tab inside the Elements panel to audit active listener objects, tracking capturing and bubbling phase flags across elements.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a High-Scale Centralized Event Delegation Pipeline (30 Min)</div>
-            <div class="row-desc">Create an isolated test layout sandbox locally. Construct a long data list view, attaching a single event listener to the parent container to handle button interactions across rows smoothly using target matching parameters.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Verify Listener Cleanup Actions via named Callback References (30 Min)</div>
-            <div class="row-desc">Design a local component lifecycle script that hooks a listener to a window resize callback. Implement explicit cleanup passes using named function references, and monitor performance panels to ensure no detached DOM memory leaks persist.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Benchmark Passive Scroll Tracking across intensive Layout fields (30 Min)</div>
-            <div class="row-desc">Incorporate heavy scroll-driven event animations across long layout views. Alternate your scroll event listener setup between standard loops and <code>passive: true</code> configurations, using performance profiling graphs to verify frame rates.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="recap-section">
-      <div class="comprehensive-recap-panel">
-        <h3 class="recap-title-hud">🎯 Event Architecture Performance Recap</h3>
-        <div class="recap-grid-hud">
-          <div class="recap-item-node">
-            <div class="recap-item-title">Delegation Pipeline Logic</div>
-            <div class="recap-item-desc">Centralize event tracking into a single parent listener container, leveraging event target filtering parameters to route interaction scripts cleanly from one spot.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Memory Overrun Defense</div>
-            <div class="recap-item-desc">Bind event logic to explicit named function references to ensure handlers can be targeted and cleaned up cleanly during component teardowns, avoiding memory leaks.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Passive Thread Operations</div>
-            <div class="recap-item-desc">Deploy passive property configuration flags across high-frequency mouse and scroll tracking events to prevent main-thread script loops from blocking smooth page layouts.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Interception Gateway Boundaries</div>
-            <div class="recap-item-desc">Manage event interception parameters deliberately, avoiding over-allocations of stopPropagation filters to ensure analytical tracking streams flow predictably.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These interaction engineering laws form the baseline requirement for building high-performance full-stack communication platforms. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Route clicks via delegation. Centralize event hooks into a single parent layout node to reduce system memory usage and handle dynamic items gracefully.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Bind named function references. Avoid inline anonymous arrow functions to ensure your event handlers can be targeted and unlinked cleanly on teardown.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Optimize scroll paths using passive flags. Use passive listener configurations on intense tracking loops to keep page layouts fluid and prevent main thread lag.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Event Delegation</div>
-          <div class="g-node-definition">The architectural practice of centralizing event tracking into a single parent container wrapper, leveraging natural bubbling tracks to optimize memory footprints.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Event Bubbling Phase</div>
-          <div class="g-node-definition">The upward propagation track where an interaction signal travels back up through parent DOM branches to the window root after target activation.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Event Capturing Phase</div>
-          <div class="g-node-definition">The early downward propagation track where an event signal travels from the window root down through elements to locate the target child node.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">event.target Parameter</div>
-          <div class="g-node-definition">The explicit element property descriptor that references the exact, deep child node that received the user interaction click.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">event.currentTarget</div>
-          <div class="g-node-definition">The layout property variable that points directly to the parent container wrapper element currently processing the active event listener callback.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Passive Listener Option</div>
-          <div class="g-node-definition">A performance configuration flag (<code>passive: true</code>) that signals to layout scanners that a callback will never halt scrolling, keeping rendering threads fluid.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Detached DOM Node</div>
-          <div class="g-node-definition">A memory leak issue that happens when an element is removed from view templates while an active listener hook anchors its data fields in Heap storage.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">stopPropagation Gate</div>
-          <div class="g-node-definition">A style method that stops an event signal from climbing or dropping to neighboring parent context layers, isolating interactions to the current node.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">preventDefault Utility</div>
-          <div class="g-node-definition">A built-in expression that instructs browser engines to skip default element actions (like form link page reloads) while letting event bubbling continue.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Scope NodeList Matrix</div>
-          <div class="g-node-definition">A non-reactive snapshot collection of element pointers in memory returned by query engines, clear of the overhead of live collections.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Synthetic Event System</div>
-          <div class="g-node-definition">A framework-level layer that wraps native browser elements inside cross-platform event structures to optimize memory usage.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Garbage Collection sweep</div>
-          <div class="g-node-definition">The automated runtime engine cleaning phase that scans variables in Heap storage to identify and reclaim memory from unlinked data references.</div>
-        </div>
-      </div>
-
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-3.7.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 3.7 - Asynchronous JavaScript: Timers, Promises, & Event Loop Architectures</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-function toggleThemeHUD() {
-  const body = document.body;
-  const themeText = document.getElementById('theme-text');
-  
-  body.classList.toggle('light-theme');
-  
-  if (body.classList.contains('light-theme')) {
-    themeText.innerText = "Light Lab";
-  } else {
-    themeText.innerText = "Dark Cyber";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

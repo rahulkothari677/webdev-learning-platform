@@ -506,21 +506,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1604,8 +1589,947 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="phase-2">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+
+
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Matrix Navigation</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-pink"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
+  <div class="hero-eyebrow">essay 2.4 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  
+  <h1 class="hero-title">
+    Responsive Design:<br>
+    Mobile-First Viewports & <em>Media Queries</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering fluid fluid layout matrices, viewport meta controls, CSS media query break configurations, relative sizing units, and structural element adaptive resizing mechanics.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">2.4 — Responsive Engines</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~46 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Phase 2 (CSS 2.1 - 2.3)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">Fluid Bounds Algebra · Viewport Reset · Breakpoint Strategies · Relative Units</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; inspect fluid transformation boundaries</div>
+</div>
+
+<div class="layout-main-frame">
+  <main>
+
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many frontend developers approach adaptive design as a series of patches. They write desktop style rules first, then stack desktop overrides inside disconnected media queries when elements overflow. <strong>This desktop-first approach degrades layout code maintainability.</strong> When cross-platform applications expand to support varying mobile, tablet, and ultra-wide screens, desktop-first workflows introduce heavy property conflicts and code clutter.</p>
+      <p>Responsive web engineering relies on a mobile-first paradigm. By declaring base styles for minimal screens first, engineers can layer on complex styles step-by-step as device viewports expand. This module breaks down adaptive media queries, relative size unit conversion scales, and fluid layout math boundaries. Mastering these responsive mechanisms allows you to write structured styles that scale cleanly across varying screen sizes.</p>
+      
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Fluid Layout Bounds Conversion Formula:</div>
+        <div class="compute-value">Target Dimension = (Container Width - Padding Bounds) &times; Scale Coefficient</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The operational difference between an enterprise frontend architect and a junior developer lies in layout fluidity strategies. Juniors write rigid pixel layouts and patch breaks using a maze of media queries. Masters write fluid base styles using relative units (<code>rem</code>, <code>em</code>, <code>ch</code>, <code>vw</code>) first, allowing elements to scale naturally and using explicit media queries only to guide component layout shifts.</p>
+      </div>
+    </section>
+
+    <section class="section-card" id="s2">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">Where This Fits</h2>
+      </div>
+      <p>Now that you have configured single-axis flex fields (2.2) and engineered complex two-dimensional CSS Grid area matrices (2.3), we shift directly into multi-device adaptive engineering. Responsive design acts as the flexible wrapper for your layouts.</p>
+      
+      <div class="phase-map">
+        <div class="phase-node done"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Flow</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node done"><div class="phase-circle">2.3</div><div class="phase-label">Grid Matrix</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node current"><div class="phase-circle">2.4</div><div class="phase-label">Responsive MQ</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.5</div><div class="phase-label">CSS Anim</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.6</div><div class="phase-label">Tailwind CSS</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Execution</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Systems</div></div>
+      </div>
+      
+      <p>Every dynamic application shell layout, media dashboard feed row, and entry form group built in later units must adapt cleanly to user screens. Mastering viewport scaling logic prepares you to write highly maintainable style guides before moving on to custom web transitions or utility-first responsive setups.</p>
+
+      <div class="hud-callout hud-callout-tip">
+        <div class="hud-callout-label">Return Here Often</div>
+        <p>Keep these breakpoint mapping guidelines close at hand. The first few times your multi-column grids compress poorly on small tablets or text containers clip margins on ultra-wide desktop monitors, track your style parameters through these viewport rules. After testing relative units across a few environments, structuring fluid layouts will become second nature.</p>
+      </div>
+    </section>
+
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Liquid Architecture Blueprint</h3>
+      <p>Imagine designing a high-end luxury display container intended to transport valuable delicate cargo safely. You could build a solid steel box with fixed, unchanging internal compartment dividers. This layout choice secures cargo of one exact shape, but if you need to ship cargo of varying sizes, the fixed walls quickly become impractical.</p>
+      <p>Alternatively, you can build **a liquid-adaptive container fitted with expanding pressure sensors, sliding track boundaries, and flexible interior dividers that adjust shape automatically.** As the shipping track narrows or widens, the interior walls shift smoothly to protect the internal layout space. Mobile-first design works exactly like that adaptive container. It treats the viewport as a liquid channel, configuring base rules that adjust naturally before media queries introduce structural updates.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When an element box overflows or scales poorly on narrow screens, use a systematic debugging question: <strong>"This presentation layer is trapped behind rigid layout assumptions. How can I refactor its dimensions into relative percentage or viewport tokens so it responds to screen shifts naturally?"</strong> This fluid focus simplifies layout fixes.</p>
+      </div>
+
+      <h3>The Expanding Telescope Concept</h3>
+      <p>To write clean adaptive style rules, visualize a pocket telescope built with nested cylindrical segments. When collapsed tight inside your pocket, the tool takes up minimal space, showing only core components. As you pull the telescope open, extra segments extend, adding functional range while maintaining structural connection to the base cylinder. Mobile-first style design operates on this exact pattern: your base rules capture the core layout, extending space and adding columns smoothly as the screen expands.</p>
+    </section>
+
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Visual — Viewport Query Compilation Lifecycle</h2>
+      </div>
+      <p>Understanding how browser engines calculate style transformations across changing screen sizes is essential for optimizing responsive layouts. Click through each section block to trace how style engines evaluate responsive media rules.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>📊 &nbsp; Internal Viewport Style Mapping Lifecycle &nbsp;·&nbsp; Click steps to trace allocations.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Mobile-First Baseline Core Parse Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The browser style matching engine processes your base layout declarations first. In a mobile-first architecture, these rules are declared outside of media queries, establishing a clean design default that applies naturally to mobile devices.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Viewport Width Threshold Verification Loop</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>As the user screen resizes, the browser layout engine continually monitors active viewport widths against your style breakpoints (e.g., <code>@media (min-width: 768px)</code>). If the current width crosses a threshold, the matching rules activate.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Responsive Style Mapping & DOM Reflow Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>When a media query triggers, the engine merges the responsive style parameters into the active CSSOM tree. This change updates layout boundaries, triggering a smooth DOM reflow pass to repaint modified pixel coordinates across the screen.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-action-row">
+          <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
+        </div>
+      </div>
+
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="12" fill="#03030d"/>
+          <g opacity="0.15">
+            <path d="M 50 60 L 750 60 M 50 160 L 750 160 M 50 260 L 750 260" stroke="#00f5d4" stroke-width="1"/>
+            <path d="M 240 40 L 240 280 M 540 40 L 540 280" stroke="#ff007f" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          
+          <text x="250" y="35" fill="#ff007f" font-family="Fira Code" font-size="11" font-weight="bold">Tablet Bounds (min-width: 768px)</text>
+          <text x="550" y="35" fill="#ff007f" font-family="Fira Code" font-size="11" font-weight="bold">Desktop Bounds (min-width: 1024px)</text>
+          
+          <rect x="60" y="70" width="150" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="135" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Base Mobile Layout</text>
+
+          <rect x="260" y="70" width="250" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="385" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Layered Tablet Styles</text>
+
+          <rect x="560" y="70" width="180" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
+          <text x="650" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Extended Desktop Grid</text>
+        </svg>
+        <div class="infographic-caption">Vector Infographic 2.4: Mobile-First Extension Tracks. Styles stack progressively as viewport widths cross pre-allocated pixel thresholds, keeping presentation structures clean.</div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Mobile-First Specifics & Progressing Weight Stack Rules</h3>
+      <p>Mobile-first codebases declare layout parameters cleanly without bounding base styles inside desktop constraints. Let us evaluate a production-grade responsive configuration template:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">responsive-engine.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">/* Base Viewport Style Guide - Default Mobile Layout */</span>
+<span class="t-sel">.workspace-matrix-card</span> {
+  <span class="t-prop">display</span>: <span class="t-val">flex</span>;
+  <span class="t-prop">flex-direction</span>: <span class="t-val">column</span>;
+  <span class="t-prop">padding</span>: <span class="t-val">1rem</span>;
+}
+
+<span class="t-comment">/* Progressive Tablet Extension Layer */</span>
+<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">768px</span>) {
+  <span class="t-sel">.workspace-matrix-card</span> {
+    <span class="t-prop">padding</span>: <span class="t-val">1.5rem</span>;
+  }
+}
+
+<span class="t-comment">/* Progressive Desktop Framework Layer */</span>
+<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">1024px</span>) {
+  <span class="t-sel">.workspace-matrix-card</span> {
+    <span class="t-prop">flex-direction</span>: <span class="t-val">row</span>;
+    <span class="t-prop">padding</span>: <span class="t-val">2rem</span>;
+  }
+}</pre>
+      </div>
+
+      <p>Writing styles mobile-first keeps your cascade inheritance predictable. The browser parses your baseline style rules and runs them on small viewports naturally, using <code>min-width</code> queries to layer on layout changes progressively as extra screen space becomes available. This keeps layout adjustments clean and modular.</p>
+
+      <h3>Part B — Viewport Configurations & Reset Parameters</h3>
+      <p>To ensure mobile devices handle responsive design rules predictably, applications must declare a viewport meta property in the document HTML head section. Let us review that core configuration tag:</p>
+      <p><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></p>
+      <p>Omitting this meta declaration forces mobile devices to virtualize desktop dimensions (typically emulating a wide 980-pixel screen template). This virtualization forces browsers to downscale layouts to fit physical screens, breaking relative units and making text hard to read. Enforcing the explicit <code>width=device-width</code> constraint instructs browser engines to map site coordinate pixels straight to physical screen bounds, ensuring your media queries trigger reliably across all mobile devices.</p>
+
+      <h3>Part C — Relative Layout Sizing Metrics Scale Maps</h3>
+      <p>Enterprise layout engineering requires choosing the right measurement units for specific component use cases. Let us review the primary relative sizing options:</p>
+      
+      <ul>
+        <li><code>rem</code> (Root Em) — Scales properties relative to the document's root element font size (usually defaulting to <code>16px</code>). Use rems for margins, paddings, and typographic line scales to ensure layouts scale cleanly with user accessibility settings.</li>
+        <li><code>em</code> (Element Em) — Computes dimensions relative to the font-size of the element's immediate local parent container. Em units are perfect for sizing context menus or close icons that must adjust scale dynamically relative to their surrounding text.</li>
+        <li><code>ch</code> (Character Unit) — Measures space relative to the width of the zero character (<code>0</code>) of the active font file. Use ch units to set clean line lengths on reading paragraphs, keeping blocks easy to read by capping text columns to optimal reading widths (e.g., <code>max-width: 65ch</code>).</li>
+        <li><code>vw</code> / <code>vh</code> (Viewport Metrics) — Computes dimensions relative to 1% of the viewport window's total width or height tracks. These metrics are ideal for sizing full-screen application landing hero screens or sliding navigation bars.</li>
+      </ul>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">The Clamp Logic Secret</div>
+        <p>Using the CSS clamp function allows you to define fluid typographical scaling rules without cluttering sheets with media queries: <code>font-size: clamp(1rem, 2.5vw + 0.5rem, 2.5rem);</code>. The styling engine evaluates viewport width metrics dynamically, scaling values smoothly between your chosen minimum and maximum limits.</p>
+      </div>
+
+      <h3>Part D — Responsive Property Behaviors Matrix</h3>
+      <p>High-performance cross-platform design requires managing layout reflow passes carefully. Let us contrast the behavior profiles of common responsive layout choices:</p>
+
+      <table class="google-table">
+        <thead>
+          <tr>
+            <th>Layout Metric Strategy</th>
+            <th>Default Unit Format</th>
+            <th>Cascade Flow Weight</th>
+            <th>Impact Profile Evaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fixed Dimensions Reset</td>
+            <td class="bad"><code>px</code> (Pixels)</td>
+            <td>Rigid Scale Bound</td>
+            <td>Hardcodes exact element lengths, breaking fluid layouts and risking layout clipping on small screens.</td>
+          </tr>
+          <tr>
+            <td>Root Proportional Unit Scale</td>
+            <td class="good"><code>rem</code> (Root Em)</td>
+            <td>Dynamic Proportional Flow</td>
+            <td>Computes dimensions relative to the root font size, supporting user accessibility configurations naturally.</td>
+          </tr>
+          <tr>
+            <td>Viewport Window Unit Scale</td>
+            <td class="good"><code>vw</code> / <code>vh</code> (Viewport Fraction)</td>
+            <td>Viewport Metric Dependent</td>
+            <td>Ties box layout boundaries straight to viewport dimensions, making it ideal for fluid full-screen hero elements.</td>
+          </tr>
+          <tr>
+            <td>Dynamic Range Limiter</td>
+            <td class="good"><code>clamp()</code> function</td>
+            <td>Algorithmic Value Limit</td>
+            <td>Scales dimensions dynamically based on viewport shifts while securing property ranges safely within minimum boundaries.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Overlapping Responsive Viewports</h2>
+      </div>
+      <p>Let us analyze real production layout errors and refactor them to ensure smooth, mobile-first responsive configurations.</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Desktop-First Overrides</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Rigid Pixel Scale Crushes</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Max-Width Text Wraps</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Fluid Typographical Clamp</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Pipeline Logs</button>
+        </div>
+
+        <div class="hud-tab-panel active-hud-panel" id="l1">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">desktop-first-nightmare.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Desktop design values patched with maximum width overrides */</span>
+<span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">padding</span>: <span class="t-val">3rem</span>; }
+<span class="t-kw">@media</span> (<span class="t-prop">max-width</span>: <span class="t-val">768px</span>) {
+  <span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">padding</span>: <span class="t-val">1rem</span>; }
+}</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Refactor progressively using a mobile-first min-width layout */</span>
+<span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">padding</span>: <span class="t-val">1rem</span>; }
+<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">768px</span>) {
+  <span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">padding</span>: <span class="t-val">3rem</span>; }
+}</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Using <code>max-width</code> properties forces style engines to override desktop rules repeatedly to strip space from mobile layouts, cluttering development sheets.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Structuring styles mobile-first keeps base rules light, progressive layering cleanly scaling up design layouts as the screen area expands.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tab-panel" id="l2">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">pixel-crush.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Rigid component widths clip screen margins on mobile devices */</span>
+<span class="t-sel">.profile-hud-panel</span> { <span class="t-prop">width</span>: <span class="t-val">600px</span>; <span class="t-prop">padding-left</span>: <span class="t-val">24px</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Transition layout values to relative percentage bounds */</span>
+<span class="t-sel">.profile-hud-panel</span> { <span class="t-prop">width</span>: <span class="t-val">min(100%, 600px)</span>; <span class="t-prop">padding-left</span>: <span class="t-val">1.5rem</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Hardcoded pixel limits block components from scaling fluidly on smaller screens, forcing content out of line and breaking layouts.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Using relative parameters limits container bounds automatically, keeping panels within view budgets without requiring media query overrides.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tab-panel" id="l3">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">max-width-text.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Long text paragraphs expand out overly wide on large monitors */</span>
+<span class="t-sel">.article-body-paragraph</span> { <span class="t-prop">width</span>: <span class="t-val">100%</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Scope textual layouts cleanly using character width properties */</span>
+<span class="t-sel">.article-body-paragraph</span> { <span class="t-prop">max-width</span>: <span class="t-val">65ch</span>; <span class="t-prop">margin-inline</span>: <span class="t-val">auto</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Allowing copy blocks to stretch completely wide across desktop resolutions increases line lengths past comfortable visual ranges, lowering reading comfort.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Capping column widths with character parameters preserves optimal reading structures across high-resolution displays.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tab-panel" id="l4">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">clamp-typog.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">/* Anti-Pattern: Massive heading text sizes require multiple tracking queries */</span>
+<span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">1.5rem</span>; }
+<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">1024px</span>) { <span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">3rem</span>; } }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="t-comment">/* Enforce fluid typographical scaling curves via clamp logic functions */</span>
+<span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">clamp(1.5rem, 4vw + 1rem, 3.5rem)</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Relying on discrete step overrides causes typography sizes to jump abruptly during window resizing, increasing maintainability overhead.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Leveraging internal engine clamp systems scales font sizes smoothly between your chosen thresholds, matching viewport shifts naturally.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-tab-panel" id="l5">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">viewport-telemetry.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+            <pre><span class="t-comment">// Track layout changes programmatically during screen transitions</span>
+window.addEventListener(<span class="t-str">'resize'</span>, () => {
+  console.log(<span class="t-str">"[Telemetry Viewport Active Width Check]:"</span>, window.innerWidth);
+});</pre>
+            <div class="error-explanation">
+              <div class="error-label">Three Guidelines for Responsive Pipeline Optimization</div>
+              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
+                <strong style="color:var(--neon-electric-cyan);">1. Keep media breakpoints generic.</strong> Use standard device widths (such as 640px, 768px, 1024px) to construct clean progressive layout layers across your applications.<br><br>
+                <strong style="color:var(--neon-laser-pink);">2. Test components using container queries.</strong> Use properties like <code>@container (min-width: 400px)</code> to size elements based on their immediate wrapper space rather than full screen bounds.<br><br>
+                <strong style="color:var(--neon-sunset-orange);">3. Leverage DevTools responsive tools.</strong> Toggle Device Toolbar controls inside your browser console to test layout transformations across diverse hardware dimensions seamlessly.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common responsive structure mistakes during frontend technical reviews. Designing with fluid parameters prevents element clipping as viewports scale.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Nesting overlapping max-width and min-width rule paths</div>
+          <div class="pitfall-body">Mixing responsive bounds queries awkwardly (like <code>@media (max-width: 768px)</code> alongside <code>min-width: 768px</code>) creating style collisions at specific widths.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Commit strictly to mobile-first progressive styling, using clean upward <code>min-width</code> selectors to scale components smoothly.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Omitting viewport initialization configuration headers</div>
+          <div class="pitfall-body">Leaving standard meta definitions out of document headers, which prompts mobile engines to emulate desktop width parameters.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Always include the modern <code>width=device-width, initial-scale=1.0</code> token manifest inside your HTML page head layer.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Hardcoding pixel text sizes inside fluid view layouts</div>
+          <div class="pitfall-body">Declaring static sizes like <code>font-size: 24px;</code> across core labels, which blocks text from scaling with user accessibility choices.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Define typographic sizes using relative <code>rem</code> or <code>em</code> units to support user system configurations naturally.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Using viewport percentage variables on copy fields blind</div>
+          <div class="pitfall-body">Sizing text fonts using raw viewport width values (like <code>font-size: 5vw</code>), leading to tiny text columns on mobile or giant headers on wide screens.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Wrap responsive font sizes within protective <code>clamp()</code> functions to keep text legible across all viewport environments.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 05</div>
+          <div class="pitfall-title">Creating unmanaged breakpoint matrices for single assets</div>
+          <div class="pitfall-body">Writing unique media queries for every component element independently, making your stylesheets difficult to manage and scale over time.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Organize responsive styles around a clean, centralized breakpoint grid, or group queries within unified component files.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 06</div>
+          <div class="pitfall-title">Assuming fluid elements resize nested images by default</div>
+          <div class="pitfall-body">Expecting graphical media elements to shrink inside mobile layouts without declaring fluid boundaries on the assets themselves.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Enforce an explicit global asset reset rule like <code>max-width: 100%; height: auto;</code> to ensure media elements scale smoothly within fluid grids.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Real World — High-Scale Adaptive Implementations</h2>
+      </div>
+      <p>Top-tier web applications run progress-stacked responsive frameworks to ensure interface layouts scale uniformly across millions of international device screens.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">YouTube Mobile Engine</div>
+          <div class="cell-desc">YouTube manages intense media feeds across low-power mobile views, tablet devices, and wide smart TVs. Their architecture uses mobile-first flex lines to shift grid layouts smoothly between orientations based on viewport tracking thresholds.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Miro Workspace Matrices</div>
+          <div class="cell-desc">Miro's high-speed canvas tools use dynamic style adjustments to keep control sidebars readable across devices. Their engineering code uses relative character limits to preserve tool structures cleanly on high-resolution screens.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Amazon Shopping Frameworks</div>
+          <div class="cell-desc">Amazon engineers product catalogs using robust progressive layout rules. Their stylesheets apply lightweight cell grids on mobile views, layering on rich asset columns and dynamic options as screen width budgets grow.</div>
+        </div>
+      </div>
+
+      <h3>The Production Responsive Optimization Pipeline</h3>
+      <p>Modern frontend deployment setups process responsive stylesheets through automated build steps before staging launch passes:</p>
+      <ol>
+        <li><strong>Automated Viewport Regression Scans:</strong> Virtual test suites evaluate layouts across hundreds of screen profiles to catch element clipping errors early.</li>
+        <li><strong>Media Query Rule Merging:</strong> Build-time compilation passes group matching breakpoint conditions together, consolidating styles to shrink file delivery footprints.</li>
+        <li><strong>Atomic Utility Style Generation:</strong> Post-processing engines convert layouts into compact responsive classes, reducing browser style evaluation passes at scale.</li>
+      </ol>
+    </section>
+
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In senior technical assessments, responsive system design choices are evaluated by testing your understanding of viewport mechanics, fluid rendering pathways, and clean code layout engineering.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are engineering a global analytics platform grid layout where component blocks must mount into a variety of application layout environments—including full-page dashboards, tight slide-out workspace drawers, and multi-column feeds. Relying on classic screen media queries causes sub-elements to crowd awkwardly inside tight widget boxes on wide monitors. How do you re-engineer this presenting layer?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The layout conflict happens because traditional viewport media queries evaluate style targets based strictly on the full browser screen size, completely ignoring the immediate wrapper space available to a component. To build a decoupled component system that scales reliably across layout regions, I would shift from viewport queries to **CSS Container Queries**. First, I would establish an active container context space on the parent element by declaring <code>container-type: inline-size;</code>. Next, I would refactor child style modifications to adapt based on their parent's immediate wrapper width using container query selectors: <code>@container (min-width: 450px) { ... }</code>. This ensures components scale fluidly based on their available container space, whether positioned within a narrow sidebar drawer or an expanded central workspace view."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Walk us through what occurs along the browser's critical rendering path when a user transitions their mobile screen from a portrait layout to a horizontal landscape viewport track dynamically."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Rotating the screen flips your viewport dimensions, triggering updates across your style rules. The browser's layout scanner detects the window adjustment, matches the new width track against active media query parameters, and updates the active CSSOM tree. This change prompts the styling engine to run a full layout validation pass (Reflow), recalculating box coordinates, margin values, and text wraps across the DOM tree before executing a screen repaint to display pixels accurately."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Architecture Rule Evaluation</div>
+        <div class="pb-q-title">"A candidate suggests standardizing an absolute pixel rule system (such as font-size: 16px, padding: 20px) across all project applications to keep visual elements uniform. Critically evaluate this styling directive."</div>
+        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing rigid pixel parameters across enterprise codebases creates significant accessibility barriers. Hardcoded pixel limits prevent typographical elements from responding when users adjust system font zoom tools, breaking visual reading comfort. High-performance projects should use relative <code>rem</code> units instead, allowing layouts to scale naturally with user font settings to ensure accessibility compliance."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Layout Range Assessment</div>
+        <div class="pb-q-title">"Explain how the browser layout engine calculates values when evaluating clamp parameters relative to unmanaged media query rules during text rendering passes."</div>
+        <div class="pb-hud-answer"><strong>Layout Engine Optimization Trace:</strong> "The <code>clamp()</code> expression lets browser style engines calculate fluid transitions natively in a single pass. The layout engine reads your minimum, preferred relative value, and maximum thresholds, scaling element lengths smoothly as screen dimensions shift. This approach avoids the main-thread layout thrashing often triggered by continuous media query rule switches."</div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">Why does progressive mobile-first engineering provide a superior architectural pattern compared to desktop-first strategies?</div>
+            <div class="r-action-hint">Consider cascade inheritance and property complexity ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">Mobile-first engineering sets lean baseline styles for small viewports first, progressively adding layout complexity as the screen expands. This progressive approach keeps styles modular and prevents the code conflict issues typical of desktop-first overrides.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">What browser layout failure happens when an enterprise full-stack platform omits viewport meta initialization tags?</div>
+            <div class="r-action-hint">Consider virtual desktop layout emulation profiles ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Leaving out viewport configuration tags prompts mobile browsers to emulate wide desktop resolutions (often defaulting to 980px). This forces the engine to scale down the full interface page, breaking relative text units and layout proportions.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Explain the operational differences between rem units and em units when calculating element dimensions.</div>
+            <div class="r-action-hint">Contrast root font thresholds with local parent context vectors ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The <code>rem</code> unit scales properties relative to the document's root font size (usually 16px), keeping sizing uniform across elements. The <code>em</code> unit calculates dimensions based on its immediate parent container's font size, making it ideal for isolated sub-component styling.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">How do container queries enhance component reusability across modern modular dashboard ecosystems?</div>
+            <div class="r-action-hint">Consider component-driven adaptive design logic ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">Container queries evaluate style boundaries based on the immediate parent container's width rather than full viewport bounds. This lets widgets adapt their layout fluidly based on their placement context, making them modular and highly reusable.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 05</div>
+            <div class="r-question-text">Why does bounding typographic layout rules inside character (ch) units optimize copy readability?</div>
+            <div class="r-action-hint">Consider line length constraints on text paragraphs ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 05</div>
+            <div class="r-answer-text">The <code>ch</code> unit measures space relative to the width of the zero character (<code>0</code>) of the active font file. Capping reading blocks to optimal widths (like <code>max-width: 65ch</code>) keeps line lengths comfortable, preventing reading eye fatigue across large desktop monitors.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 06</div>
+            <div class="r-question-text">What specific browser calculation benefit do you gain by replacing media query steps with clamp function systems?</div>
+            <div class="r-action-hint">Consider style calculations along the critical path ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 06</div>
+            <div class="r-answer-text">The <code>clamp()</code> system lets the browser layout engine scale property dimensions continuously between your chosen minimum and maximum limits. This approach handles fluid sizing changes smoothly in a single pass, avoiding the main-thread layout thrashing caused by discrete media query rule switches.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these responsive engineering tasks to master progressive fluid design. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Enterprise Viewport Scaling via DevTools Toggles (30 Min)</div>
+            <div class="row-desc">Open a complex platform layout view and launch browser DevTools (F12). Activate the Device Toolbar overlay, toggle between diverse mobile hardware profiles, and audit how structural grid layouts and components transform across view bounds.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Progressive Mobile-First Layout System Sandbox (30 Min)</div>
+            <div class="row-desc">Create an isolated style sandbox page locally. Construct a multi-column card layout component without using max-width rules. Define clean mobile-first base styles, and layer on structural grid modifications progressively using <code>min-width</code> queries as space expands.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Implement Fluid Typography curves using Clamp functions (30 Min)</div>
+            <div class="row-desc">Design a text-heavy documentation module. Replace discrete media query steps with fluid <code>clamp()</code> functions to scale title headers and reading paragraph columns fluidly, keeping content legible across all screen resolutions.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Benchmark Container Query Adaptations Inside Dashboard Widgets (30 Min)</div>
+            <div class="row-desc">Erect an active container context space (<code>container-type: inline-size;</code>) on a sidebar wrapper. Apply explicit <code>@container</code> queries to size sub-components fluidly based on their immediate wrapper space, ensuring widgets scale reliably regardless of browser screen dimensions.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">Don't Skip These Exercises</div>
+        <p>Reviewing responsive layouts text without writing code is like analyzing grid networks without testing wire loads. Progressive fluid parameters and adaptive container context blocks become second nature only through hands-on practice. Shifting selector scales and managing view boundaries locally builds the performance mindset required when engineering scale web applications down the line.</p>
+      </div>
+    </section>
+
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">12</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These layout fluid laws form the operational requirement for engineering high-performance cross-platform design architectures. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Commit to mobile-first progress tracks. Declare style defaults for minimal viewports first, progressively adding style rules using upward min-width queries to keep code maintainable.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Prioritize relative calculation units. Utilize rem, em, and character metrics to size elements, supporting user system zoom configurations naturally.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Isolate widgets using container queries. Size complex sub-components based on their immediate container space to build modular, cross-platform layouts.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Mobile-First Paradigm</div>
+          <div class="g-node-definition">The progressive architectural practice of coding style rules for small screens first, using upward min-width queries to layer on styles as screen space grows.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Viewport Reset Meta</div>
+          <div class="g-node-definition">The document head tag constraint that instructs mobile engines to map layout pixels straight to physical screen bounds, avoiding desktop virtualization scaling.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Root Proportional (rem)</div>
+          <div class="g-node-definition">A relative unit that sizes layout elements based on the document's root font size, supporting accessibility settings naturally.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Element Proportional (em)</div>
+          <div class="g-node-definition">A contextual relative unit that computes property dimensions based on the font size of its immediate parent container wrapper.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Character Sizing (ch)</div>
+          <div class="g-node-definition">A precise metric that measures spacing relative to the width of the zero character (<code>0</code>), helping engineers set comfortable paragraph column lengths.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Container Query Scope</div>
+          <div class="g-node-definition">A modern styling system that evaluates design boundaries based on a parent container's width rather than global screen dimensions.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">CSS clamp Function</div>
+          <div class="g-node-definition">An internal expression that scales properties continuously between chosen minimum and maximum limits based on viewport width metrics.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Layout Reflow Pass</div>
+          <div class="g-node-definition">An intensive browser computing phase where the engine calculates boundary positions and spatial coordinates down the DOM tree.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Viewport Width Fractions</div>
+          <div class="g-node-definition">Relative measurement parameters (<code>vw</code> / <code>vh</code>) that correspond directly to 1% of the browser window's full width or height tracks.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Breakpoint Threshold</div>
+          <div class="g-node-definition">The designated pixel limits configured within media query tracks to prompt layout shifts across device sizes.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Fluid Layout System</div>
+          <div class="g-node-definition">Presentation patterns designed using relative sizing ratios rather than static coordinates, allowing elements to adapt fluidly across devices.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Shadow DOM Barrier</div>
+          <div class="g-node-definition">An advanced browser isolation mechanic that seals internal component elements away, blocking out external cascading style conflicts entirely.</div>
+        </div>
+      </div>
+
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-2.5.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 2.5 - CSS Transitions & Animations: High-Performance Visual Timelines</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+/* Collapsible Navigation Hud Control Engine with safe boundary tracking */
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2041,90 +2965,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3261,974 +4101,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="phase-2"               >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-
-
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Matrix Navigation</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">08</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-cyan"></div>
-    <div class="glow-orb orb-pink"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
-  <div class="hero-eyebrow">essay 2.4 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  
-  <h1 class="hero-title">
-    Responsive Design:<br>
-    Mobile-First Viewports & <em>Media Queries</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering fluid fluid layout matrices, viewport meta controls, CSS media query break configurations, relative sizing units, and structural element adaptive resizing mechanics.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">2.4 — Responsive Engines</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~46 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Phase 2 (CSS 2.1 - 2.3)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">Fluid Bounds Algebra · Viewport Reset · Breakpoint Strategies · Relative Units</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; inspect fluid transformation boundaries</div>
-</div>
-
-<div class="layout-main-frame">
-  <main>
-
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many frontend developers approach adaptive design as a series of patches. They write desktop style rules first, then stack desktop overrides inside disconnected media queries when elements overflow. <strong>This desktop-first approach degrades layout code maintainability.</strong> When cross-platform applications expand to support varying mobile, tablet, and ultra-wide screens, desktop-first workflows introduce heavy property conflicts and code clutter.</p>
-      <p>Responsive web engineering relies on a mobile-first paradigm. By declaring base styles for minimal screens first, engineers can layer on complex styles step-by-step as device viewports expand. This module breaks down adaptive media queries, relative size unit conversion scales, and fluid layout math boundaries. Mastering these responsive mechanisms allows you to write structured styles that scale cleanly across varying screen sizes.</p>
-      
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ Fluid Layout Bounds Conversion Formula:</div>
-        <div class="compute-value">Target Dimension = (Container Width - Padding Bounds) &times; Scale Coefficient</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>The operational difference between an enterprise frontend architect and a junior developer lies in layout fluidity strategies. Juniors write rigid pixel layouts and patch breaks using a maze of media queries. Masters write fluid base styles using relative units (<code>rem</code>, <code>em</code>, <code>ch</code>, <code>vw</code>) first, allowing elements to scale naturally and using explicit media queries only to guide component layout shifts.</p>
-      </div>
-    </section>
-
-    <section class="section-card" id="s2">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">Where This Fits</h2>
-      </div>
-      <p>Now that you have configured single-axis flex fields (2.2) and engineered complex two-dimensional CSS Grid area matrices (2.3), we shift directly into multi-device adaptive engineering. Responsive design acts as the flexible wrapper for your layouts.</p>
-      
-      <div class="phase-map">
-        <div class="phase-node done"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Flow</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node done"><div class="phase-circle">2.3</div><div class="phase-label">Grid Matrix</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node current"><div class="phase-circle">2.4</div><div class="phase-label">Responsive MQ</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.5</div><div class="phase-label">CSS Anim</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.6</div><div class="phase-label">Tailwind CSS</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Execution</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">Scale Systems</div></div>
-      </div>
-      
-      <p>Every dynamic application shell layout, media dashboard feed row, and entry form group built in later units must adapt cleanly to user screens. Mastering viewport scaling logic prepares you to write highly maintainable style guides before moving on to custom web transitions or utility-first responsive setups.</p>
-
-      <div class="hud-callout hud-callout-tip">
-        <div class="hud-callout-label">Return Here Often</div>
-        <p>Keep these breakpoint mapping guidelines close at hand. The first few times your multi-column grids compress poorly on small tablets or text containers clip margins on ultra-wide desktop monitors, track your style parameters through these viewport rules. After testing relative units across a few environments, structuring fluid layouts will become second nature.</p>
-      </div>
-    </section>
-
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Liquid Architecture Blueprint</h3>
-      <p>Imagine designing a high-end luxury display container intended to transport valuable delicate cargo safely. You could build a solid steel box with fixed, unchanging internal compartment dividers. This layout choice secures cargo of one exact shape, but if you need to ship cargo of varying sizes, the fixed walls quickly become impractical.</p>
-      <p>Alternatively, you can build **a liquid-adaptive container fitted with expanding pressure sensors, sliding track boundaries, and flexible interior dividers that adjust shape automatically.** As the shipping track narrows or widens, the interior walls shift smoothly to protect the internal layout space. Mobile-first design works exactly like that adaptive container. It treats the viewport as a liquid channel, configuring base rules that adjust naturally before media queries introduce structural updates.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When an element box overflows or scales poorly on narrow screens, use a systematic debugging question: <strong>"This presentation layer is trapped behind rigid layout assumptions. How can I refactor its dimensions into relative percentage or viewport tokens so it responds to screen shifts naturally?"</strong> This fluid focus simplifies layout fixes.</p>
-      </div>
-
-      <h3>The Expanding Telescope Concept</h3>
-      <p>To write clean adaptive style rules, visualize a pocket telescope built with nested cylindrical segments. When collapsed tight inside your pocket, the tool takes up minimal space, showing only core components. As you pull the telescope open, extra segments extend, adding functional range while maintaining structural connection to the base cylinder. Mobile-first style design operates on this exact pattern: your base rules capture the core layout, extending space and adding columns smoothly as the screen expands.</p>
-    </section>
-
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Visual — Viewport Query Compilation Lifecycle</h2>
-      </div>
-      <p>Understanding how browser engines calculate style transformations across changing screen sizes is essential for optimizing responsive layouts. Click through each section block to trace how style engines evaluate responsive media rules.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>📊 &nbsp; Internal Viewport Style Mapping Lifecycle &nbsp;·&nbsp; Click steps to trace allocations.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Mobile-First Baseline Core Parse Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The browser style matching engine processes your base layout declarations first. In a mobile-first architecture, these rules are declared outside of media queries, establishing a clean design default that applies naturally to mobile devices.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Viewport Width Threshold Verification Loop</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>As the user screen resizes, the browser layout engine continually monitors active viewport widths against your style breakpoints (e.g., <code>@media (min-width: 768px)</code>). If the current width crosses a threshold, the matching rules activate.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Responsive Style Mapping & DOM Reflow Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>When a media query triggers, the engine merges the responsive style parameters into the active CSSOM tree. This change updates layout boundaries, triggering a smooth DOM reflow pass to repaint modified pixel coordinates across the screen.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flow-action-row">
-          <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
-        </div>
-      </div>
-
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="12" fill="#03030d"/>
-          <g opacity="0.15">
-            <path d="M 50 60 L 750 60 M 50 160 L 750 160 M 50 260 L 750 260" stroke="#00f5d4" stroke-width="1"/>
-            <path d="M 240 40 L 240 280 M 540 40 L 540 280" stroke="#ff007f" stroke-width="2" stroke-dasharray="4 4"/>
-          </g>
-          
-          <text x="250" y="35" fill="#ff007f" font-family="Fira Code" font-size="11" font-weight="bold">Tablet Bounds (min-width: 768px)</text>
-          <text x="550" y="35" fill="#ff007f" font-family="Fira Code" font-size="11" font-weight="bold">Desktop Bounds (min-width: 1024px)</text>
-          
-          <rect x="60" y="70" width="150" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="135" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Base Mobile Layout</text>
-
-          <rect x="260" y="70" width="250" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="385" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Layered Tablet Styles</text>
-
-          <rect x="560" y="70" width="180" height="160" rx="6" fill="#0d0d26" stroke="var(--border-neon)" stroke-width="2"/>
-          <text x="650" y="155" fill="#f1f5f9" font-family="Plus Jakarta Sans" font-size="12" text-anchor="middle">Extended Desktop Grid</text>
-        </svg>
-        <div class="infographic-caption">Vector Infographic 2.4: Mobile-First Extension Tracks. Styles stack progressively as viewport widths cross pre-allocated pixel thresholds, keeping presentation structures clean.</div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Mobile-First Specifics & Progressing Weight Stack Rules</h3>
-      <p>Mobile-first codebases declare layout parameters cleanly without bounding base styles inside desktop constraints. Let us evaluate a production-grade responsive configuration template:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">responsive-engine.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">/* Base Viewport Style Guide - Default Mobile Layout */</span>
-<span class="t-sel">.workspace-matrix-card</span> {
-  <span class="t-prop">display</span>: <span class="t-val">flex</span>;
-  <span class="t-prop">flex-direction</span>: <span class="t-val">column</span>;
-  <span class="t-prop">padding</span>: <span class="t-val">1rem</span>;
-}
-
-<span class="t-comment">/* Progressive Tablet Extension Layer */</span>
-<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">768px</span>) {
-  <span class="t-sel">.workspace-matrix-card</span> {
-    <span class="t-prop">padding</span>: <span class="t-val">1.5rem</span>;
-  }
-}
-
-<span class="t-comment">/* Progressive Desktop Framework Layer */</span>
-<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">1024px</span>) {
-  <span class="t-sel">.workspace-matrix-card</span> {
-    <span class="t-prop">flex-direction</span>: <span class="t-val">row</span>;
-    <span class="t-prop">padding</span>: <span class="t-val">2rem</span>;
-  }
-}</pre>
-      </div>
-
-      <p>Writing styles mobile-first keeps your cascade inheritance predictable. The browser parses your baseline style rules and runs them on small viewports naturally, using <code>min-width</code> queries to layer on layout changes progressively as extra screen space becomes available. This keeps layout adjustments clean and modular.</p>
-
-      <h3>Part B — Viewport Configurations & Reset Parameters</h3>
-      <p>To ensure mobile devices handle responsive design rules predictably, applications must declare a viewport meta property in the document HTML head section. Let us review that core configuration tag:</p>
-      <p><code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code></p>
-      <p>Omitting this meta declaration forces mobile devices to virtualize desktop dimensions (typically emulating a wide 980-pixel screen template). This virtualization forces browsers to downscale layouts to fit physical screens, breaking relative units and making text hard to read. Enforcing the explicit <code>width=device-width</code> constraint instructs browser engines to map site coordinate pixels straight to physical screen bounds, ensuring your media queries trigger reliably across all mobile devices.</p>
-
-      <h3>Part C — Relative Layout Sizing Metrics Scale Maps</h3>
-      <p>Enterprise layout engineering requires choosing the right measurement units for specific component use cases. Let us review the primary relative sizing options:</p>
-      
-      <ul>
-        <li><code>rem</code> (Root Em) — Scales properties relative to the document's root element font size (usually defaulting to <code>16px</code>). Use rems for margins, paddings, and typographic line scales to ensure layouts scale cleanly with user accessibility settings.</li>
-        <li><code>em</code> (Element Em) — Computes dimensions relative to the font-size of the element's immediate local parent container. Em units are perfect for sizing context menus or close icons that must adjust scale dynamically relative to their surrounding text.</li>
-        <li><code>ch</code> (Character Unit) — Measures space relative to the width of the zero character (<code>0</code>) of the active font file. Use ch units to set clean line lengths on reading paragraphs, keeping blocks easy to read by capping text columns to optimal reading widths (e.g., <code>max-width: 65ch</code>).</li>
-        <li><code>vw</code> / <code>vh</code> (Viewport Metrics) — Computes dimensions relative to 1% of the viewport window's total width or height tracks. These metrics are ideal for sizing full-screen application landing hero screens or sliding navigation bars.</li>
-      </ul>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">The Clamp Logic Secret</div>
-        <p>Using the CSS clamp function allows you to define fluid typographical scaling rules without cluttering sheets with media queries: <code>font-size: clamp(1rem, 2.5vw + 0.5rem, 2.5rem);</code>. The styling engine evaluates viewport width metrics dynamically, scaling values smoothly between your chosen minimum and maximum limits.</p>
-      </div>
-
-      <h3>Part D — Responsive Property Behaviors Matrix</h3>
-      <p>High-performance cross-platform design requires managing layout reflow passes carefully. Let us contrast the behavior profiles of common responsive layout choices:</p>
-
-      <table class="google-table">
-        <thead>
-          <tr>
-            <th>Layout Metric Strategy</th>
-            <th>Default Unit Format</th>
-            <th>Cascade Flow Weight</th>
-            <th>Impact Profile Evaluation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Fixed Dimensions Reset</td>
-            <td class="bad"><code>px</code> (Pixels)</td>
-            <td>Rigid Scale Bound</td>
-            <td>Hardcodes exact element lengths, breaking fluid layouts and risking layout clipping on small screens.</td>
-          </tr>
-          <tr>
-            <td>Root Proportional Unit Scale</td>
-            <td class="good"><code>rem</code> (Root Em)</td>
-            <td>Dynamic Proportional Flow</td>
-            <td>Computes dimensions relative to the root font size, supporting user accessibility configurations naturally.</td>
-          </tr>
-          <tr>
-            <td>Viewport Window Unit Scale</td>
-            <td class="good"><code>vw</code> / <code>vh</code> (Viewport Fraction)</td>
-            <td>Viewport Metric Dependent</td>
-            <td>Ties box layout boundaries straight to viewport dimensions, making it ideal for fluid full-screen hero elements.</td>
-          </tr>
-          <tr>
-            <td>Dynamic Range Limiter</td>
-            <td class="good"><code>clamp()</code> function</td>
-            <td>Algorithmic Value Limit</td>
-            <td>Scales dimensions dynamically based on viewport shifts while securing property ranges safely within minimum boundaries.</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Overlapping Responsive Viewports</h2>
-      </div>
-      <p>Let us analyze real production layout errors and refactor them to ensure smooth, mobile-first responsive configurations.</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Desktop-First Overrides</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Rigid Pixel Scale Crushes</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Max-Width Text Wraps</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Fluid Typographical Clamp</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Pipeline Logs</button>
-        </div>
-
-        <div class="hud-tab-panel active-hud-panel" id="l1">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">desktop-first-nightmare.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Desktop design values patched with maximum width overrides */</span>
-<span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">padding</span>: <span class="t-val">3rem</span>; }
-<span class="t-kw">@media</span> (<span class="t-prop">max-width</span>: <span class="t-val">768px</span>) {
-  <span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">padding</span>: <span class="t-val">1rem</span>; }
-}</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Refactor progressively using a mobile-first min-width layout */</span>
-<span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">display</span>: <span class="t-val">flex</span>; <span class="t-prop">padding</span>: <span class="t-val">1rem</span>; }
-<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">768px</span>) {
-  <span class="t-sel">.navigation-bar-container</span> { <span class="t-prop">padding</span>: <span class="t-val">3rem</span>; }
-}</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Using <code>max-width</code> properties forces style engines to override desktop rules repeatedly to strip space from mobile layouts, cluttering development sheets.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Structuring styles mobile-first keeps base rules light, progressive layering cleanly scaling up design layouts as the screen area expands.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hud-tab-panel" id="l2">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">pixel-crush.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Rigid component widths clip screen margins on mobile devices */</span>
-<span class="t-sel">.profile-hud-panel</span> { <span class="t-prop">width</span>: <span class="t-val">600px</span>; <span class="t-prop">padding-left</span>: <span class="t-val">24px</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Transition layout values to relative percentage bounds */</span>
-<span class="t-sel">.profile-hud-panel</span> { <span class="t-prop">width</span>: <span class="t-val">min(100%, 600px)</span>; <span class="t-prop">padding-left</span>: <span class="t-val">1.5rem</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Hardcoded pixel limits block components from scaling fluidly on smaller screens, forcing content out of line and breaking layouts.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Using relative parameters limits container bounds automatically, keeping panels within view budgets without requiring media query overrides.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hud-tab-panel" id="l3">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">max-width-text.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Long text paragraphs expand out overly wide on large monitors */</span>
-<span class="t-sel">.article-body-paragraph</span> { <span class="t-prop">width</span>: <span class="t-val">100%</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Scope textual layouts cleanly using character width properties */</span>
-<span class="t-sel">.article-body-paragraph</span> { <span class="t-prop">max-width</span>: <span class="t-val">65ch</span>; <span class="t-prop">margin-inline</span>: <span class="t-val">auto</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Allowing copy blocks to stretch completely wide across desktop resolutions increases line lengths past comfortable visual ranges, lowering reading comfort.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Capping column widths with character parameters preserves optimal reading structures across high-resolution displays.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hud-tab-panel" id="l4">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">clamp-typog.css</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">/* Anti-Pattern: Massive heading text sizes require multiple tracking queries */</span>
-<span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">1.5rem</span>; }
-<span class="t-kw">@media</span> (<span class="t-prop">min-width</span>: <span class="t-val">1024px</span>) { <span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">3rem</span>; } }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="t-comment">/* Enforce fluid typographical scaling curves via clamp logic functions */</span>
-<span class="t-sel">.main-title</span> { <span class="t-prop">font-size</span>: <span class="t-val">clamp(1.5rem, 4vw + 1rem, 3.5rem)</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Relying on discrete step overrides causes typography sizes to jump abruptly during window resizing, increasing maintainability overhead.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Leveraging internal engine clamp systems scales font sizes smoothly between your chosen thresholds, matching viewport shifts naturally.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hud-tab-panel" id="l5">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">viewport-telemetry.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-            <pre><span class="t-comment">// Track layout changes programmatically during screen transitions</span>
-window.addEventListener(<span class="t-str">'resize'</span>, () => {
-  console.log(<span class="t-str">"[Telemetry Viewport Active Width Check]:"</span>, window.innerWidth);
-});</pre>
-            <div class="error-explanation">
-              <div class="error-label">Three Guidelines for Responsive Pipeline Optimization</div>
-              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
-                <strong style="color:var(--neon-electric-cyan);">1. Keep media breakpoints generic.</strong> Use standard device widths (such as 640px, 768px, 1024px) to construct clean progressive layout layers across your applications.<br><br>
-                <strong style="color:var(--neon-laser-pink);">2. Test components using container queries.</strong> Use properties like <code>@container (min-width: 400px)</code> to size elements based on their immediate wrapper space rather than full screen bounds.<br><br>
-                <strong style="color:var(--neon-sunset-orange);">3. Leverage DevTools responsive tools.</strong> Toggle Device Toolbar controls inside your browser console to test layout transformations across diverse hardware dimensions seamlessly.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common responsive structure mistakes during frontend technical reviews. Designing with fluid parameters prevents element clipping as viewports scale.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Nesting overlapping max-width and min-width rule paths</div>
-          <div class="pitfall-body">Mixing responsive bounds queries awkwardly (like <code>@media (max-width: 768px)</code> alongside <code>min-width: 768px</code>) creating style collisions at specific widths.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Commit strictly to mobile-first progressive styling, using clean upward <code>min-width</code> selectors to scale components smoothly.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Omitting viewport initialization configuration headers</div>
-          <div class="pitfall-body">Leaving standard meta definitions out of document headers, which prompts mobile engines to emulate desktop width parameters.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Always include the modern <code>width=device-width, initial-scale=1.0</code> token manifest inside your HTML page head layer.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Hardcoding pixel text sizes inside fluid view layouts</div>
-          <div class="pitfall-body">Declaring static sizes like <code>font-size: 24px;</code> across core labels, which blocks text from scaling with user accessibility choices.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Define typographic sizes using relative <code>rem</code> or <code>em</code> units to support user system configurations naturally.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Using viewport percentage variables on copy fields blind</div>
-          <div class="pitfall-body">Sizing text fonts using raw viewport width values (like <code>font-size: 5vw</code>), leading to tiny text columns on mobile or giant headers on wide screens.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Wrap responsive font sizes within protective <code>clamp()</code> functions to keep text legible across all viewport environments.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 05</div>
-          <div class="pitfall-title">Creating unmanaged breakpoint matrices for single assets</div>
-          <div class="pitfall-body">Writing unique media queries for every component element independently, making your stylesheets difficult to manage and scale over time.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Organize responsive styles around a clean, centralized breakpoint grid, or group queries within unified component files.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 06</div>
-          <div class="pitfall-title">Assuming fluid elements resize nested images by default</div>
-          <div class="pitfall-body">Expecting graphical media elements to shrink inside mobile layouts without declaring fluid boundaries on the assets themselves.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Enforce an explicit global asset reset rule like <code>max-width: 100%; height: auto;</code> to ensure media elements scale smoothly within fluid grids.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Real World — High-Scale Adaptive Implementations</h2>
-      </div>
-      <p>Top-tier web applications run progress-stacked responsive frameworks to ensure interface layouts scale uniformly across millions of international device screens.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">YouTube Mobile Engine</div>
-          <div class="cell-desc">YouTube manages intense media feeds across low-power mobile views, tablet devices, and wide smart TVs. Their architecture uses mobile-first flex lines to shift grid layouts smoothly between orientations based on viewport tracking thresholds.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Miro Workspace Matrices</div>
-          <div class="cell-desc">Miro's high-speed canvas tools use dynamic style adjustments to keep control sidebars readable across devices. Their engineering code uses relative character limits to preserve tool structures cleanly on high-resolution screens.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Amazon Shopping Frameworks</div>
-          <div class="cell-desc">Amazon engineers product catalogs using robust progressive layout rules. Their stylesheets apply lightweight cell grids on mobile views, layering on rich asset columns and dynamic options as screen width budgets grow.</div>
-        </div>
-      </div>
-
-      <h3>The Production Responsive Optimization Pipeline</h3>
-      <p>Modern frontend deployment setups process responsive stylesheets through automated build steps before staging launch passes:</p>
-      <ol>
-        <li><strong>Automated Viewport Regression Scans:</strong> Virtual test suites evaluate layouts across hundreds of screen profiles to catch element clipping errors early.</li>
-        <li><strong>Media Query Rule Merging:</strong> Build-time compilation passes group matching breakpoint conditions together, consolidating styles to shrink file delivery footprints.</li>
-        <li><strong>Atomic Utility Style Generation:</strong> Post-processing engines convert layouts into compact responsive classes, reducing browser style evaluation passes at scale.</li>
-      </ol>
-    </section>
-
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In senior technical assessments, responsive system design choices are evaluated by testing your understanding of viewport mechanics, fluid rendering pathways, and clean code layout engineering.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are engineering a global analytics platform grid layout where component blocks must mount into a variety of application layout environments—including full-page dashboards, tight slide-out workspace drawers, and multi-column feeds. Relying on classic screen media queries causes sub-elements to crowd awkwardly inside tight widget boxes on wide monitors. How do you re-engineer this presenting layer?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The layout conflict happens because traditional viewport media queries evaluate style targets based strictly on the full browser screen size, completely ignoring the immediate wrapper space available to a component. To build a decoupled component system that scales reliably across layout regions, I would shift from viewport queries to **CSS Container Queries**. First, I would establish an active container context space on the parent element by declaring <code>container-type: inline-size;</code>. Next, I would refactor child style modifications to adapt based on their parent's immediate wrapper width using container query selectors: <code>@container (min-width: 450px) { ... }</code>. This ensures components scale fluidly based on their available container space, whether positioned within a narrow sidebar drawer or an expanded central workspace view."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Walk us through what occurs along the browser's critical rendering path when a user transitions their mobile screen from a portrait layout to a horizontal landscape viewport track dynamically."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Rotating the screen flips your viewport dimensions, triggering updates across your style rules. The browser's layout scanner detects the window adjustment, matches the new width track against active media query parameters, and updates the active CSSOM tree. This change prompts the styling engine to run a full layout validation pass (Reflow), recalculating box coordinates, margin values, and text wraps across the DOM tree before executing a screen repaint to display pixels accurately."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Architecture Rule Evaluation</div>
-        <div class="pb-q-title">"A candidate suggests standardizing an absolute pixel rule system (such as font-size: 16px, padding: 20px) across all project applications to keep visual elements uniform. Critically evaluate this styling directive."</div>
-        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enforcing rigid pixel parameters across enterprise codebases creates significant accessibility barriers. Hardcoded pixel limits prevent typographical elements from responding when users adjust system font zoom tools, breaking visual reading comfort. High-performance projects should use relative <code>rem</code> units instead, allowing layouts to scale naturally with user font settings to ensure accessibility compliance."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Layout Range Assessment</div>
-        <div class="pb-q-title">"Explain how the browser layout engine calculates values when evaluating clamp parameters relative to unmanaged media query rules during text rendering passes."</div>
-        <div class="pb-hud-answer"><strong>Layout Engine Optimization Trace:</strong> "The <code>clamp()</code> expression lets browser style engines calculate fluid transitions natively in a single pass. The layout engine reads your minimum, preferred relative value, and maximum thresholds, scaling element lengths smoothly as screen dimensions shift. This approach avoids the main-thread layout thrashing often triggered by continuous media query rule switches."</div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">Why does progressive mobile-first engineering provide a superior architectural pattern compared to desktop-first strategies?</div>
-            <div class="r-action-hint">Consider cascade inheritance and property complexity ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">Mobile-first engineering sets lean baseline styles for small viewports first, progressively adding layout complexity as the screen expands. This progressive approach keeps styles modular and prevents the code conflict issues typical of desktop-first overrides.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">What browser layout failure happens when an enterprise full-stack platform omits viewport meta initialization tags?</div>
-            <div class="r-action-hint">Consider virtual desktop layout emulation profiles ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Leaving out viewport configuration tags prompts mobile browsers to emulate wide desktop resolutions (often defaulting to 980px). This forces the engine to scale down the full interface page, breaking relative text units and layout proportions.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Explain the operational differences between rem units and em units when calculating element dimensions.</div>
-            <div class="r-action-hint">Contrast root font thresholds with local parent context vectors ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">The <code>rem</code> unit scales properties relative to the document's root font size (usually 16px), keeping sizing uniform across elements. The <code>em</code> unit calculates dimensions based on its immediate parent container's font size, making it ideal for isolated sub-component styling.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">How do container queries enhance component reusability across modern modular dashboard ecosystems?</div>
-            <div class="r-action-hint">Consider component-driven adaptive design logic ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">Container queries evaluate style boundaries based on the immediate parent container's width rather than full viewport bounds. This lets widgets adapt their layout fluidly based on their placement context, making them modular and highly reusable.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 05</div>
-            <div class="r-question-text">Why does bounding typographic layout rules inside character (ch) units optimize copy readability?</div>
-            <div class="r-action-hint">Consider line length constraints on text paragraphs ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 05</div>
-            <div class="r-answer-text">The <code>ch</code> unit measures space relative to the width of the zero character (<code>0</code>) of the active font file. Capping reading blocks to optimal widths (like <code>max-width: 65ch</code>) keeps line lengths comfortable, preventing reading eye fatigue across large desktop monitors.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 06</div>
-            <div class="r-question-text">What specific browser calculation benefit do you gain by replacing media query steps with clamp function systems?</div>
-            <div class="r-action-hint">Consider style calculations along the critical path ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 06</div>
-            <div class="r-answer-text">The <code>clamp()</code> system lets the browser layout engine scale property dimensions continuously between your chosen minimum and maximum limits. This approach handles fluid sizing changes smoothly in a single pass, avoiding the main-thread layout thrashing caused by discrete media query rule switches.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these responsive engineering tasks to master progressive fluid design. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Enterprise Viewport Scaling via DevTools Toggles (30 Min)</div>
-            <div class="row-desc">Open a complex platform layout view and launch browser DevTools (F12). Activate the Device Toolbar overlay, toggle between diverse mobile hardware profiles, and audit how structural grid layouts and components transform across view bounds.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a Progressive Mobile-First Layout System Sandbox (30 Min)</div>
-            <div class="row-desc">Create an isolated style sandbox page locally. Construct a multi-column card layout component without using max-width rules. Define clean mobile-first base styles, and layer on structural grid modifications progressively using <code>min-width</code> queries as space expands.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Implement Fluid Typography curves using Clamp functions (30 Min)</div>
-            <div class="row-desc">Design a text-heavy documentation module. Replace discrete media query steps with fluid <code>clamp()</code> functions to scale title headers and reading paragraph columns fluidly, keeping content legible across all screen resolutions.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Benchmark Container Query Adaptations Inside Dashboard Widgets (30 Min)</div>
-            <div class="row-desc">Erect an active container context space (<code>container-type: inline-size;</code>) on a sidebar wrapper. Apply explicit <code>@container</code> queries to size sub-components fluidly based on their immediate wrapper space, ensuring widgets scale reliably regardless of browser screen dimensions.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">Don't Skip These Exercises</div>
-        <p>Reviewing responsive layouts text without writing code is like analyzing grid networks without testing wire loads. Progressive fluid parameters and adaptive container context blocks become second nature only through hands-on practice. Shifting selector scales and managing view boundaries locally builds the performance mindset required when engineering scale web applications down the line.</p>
-      </div>
-    </section>
-
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">12</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These layout fluid laws form the operational requirement for engineering high-performance cross-platform design architectures. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Commit to mobile-first progress tracks. Declare style defaults for minimal viewports first, progressively adding style rules using upward min-width queries to keep code maintainable.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Prioritize relative calculation units. Utilize rem, em, and character metrics to size elements, supporting user system zoom configurations naturally.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Isolate widgets using container queries. Size complex sub-components based on their immediate container space to build modular, cross-platform layouts.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Mobile-First Paradigm</div>
-          <div class="g-node-definition">The progressive architectural practice of coding style rules for small screens first, using upward min-width queries to layer on styles as screen space grows.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Viewport Reset Meta</div>
-          <div class="g-node-definition">The document head tag constraint that instructs mobile engines to map layout pixels straight to physical screen bounds, avoiding desktop virtualization scaling.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Root Proportional (rem)</div>
-          <div class="g-node-definition">A relative unit that sizes layout elements based on the document's root font size, supporting accessibility settings naturally.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Element Proportional (em)</div>
-          <div class="g-node-definition">A contextual relative unit that computes property dimensions based on the font size of its immediate parent container wrapper.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Character Sizing (ch)</div>
-          <div class="g-node-definition">A precise metric that measures spacing relative to the width of the zero character (<code>0</code>), helping engineers set comfortable paragraph column lengths.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Container Query Scope</div>
-          <div class="g-node-definition">A modern styling system that evaluates design boundaries based on a parent container's width rather than global screen dimensions.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">CSS clamp Function</div>
-          <div class="g-node-definition">An internal expression that scales properties continuously between chosen minimum and maximum limits based on viewport width metrics.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Layout Reflow Pass</div>
-          <div class="g-node-definition">An intensive browser computing phase where the engine calculates boundary positions and spatial coordinates down the DOM tree.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Viewport Width Fractions</div>
-          <div class="g-node-definition">Relative measurement parameters (<code>vw</code> / <code>vh</code>) that correspond directly to 1% of the browser window's full width or height tracks.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Breakpoint Threshold</div>
-          <div class="g-node-definition">The designated pixel limits configured within media query tracks to prompt layout shifts across device sizes.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Fluid Layout System</div>
-          <div class="g-node-definition">Presentation patterns designed using relative sizing ratios rather than static coordinates, allowing elements to adapt fluidly across devices.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Shadow DOM Barrier</div>
-          <div class="g-node-definition">An advanced browser isolation mechanic that seals internal component elements away, blocking out external cascading style conflicts entirely.</div>
-        </div>
-      </div>
-
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-2.5.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 2.5 - CSS Transitions & Animations: High-Performance Visual Timelines</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-/* Collapsible Navigation Hud Control Engine with safe boundary tracking */
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

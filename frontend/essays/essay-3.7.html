@@ -519,21 +519,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1617,8 +1602,806 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-3">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+
+
+<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD RAIL ═══════════════════════════════ -->
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">Async Runtime Matrix</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<!-- ═══════════════════════════════ HIGH-ENERGY HERO ENGINE RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-green"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes[cite: 2]</div>
+  <div class="hero-eyebrow">essay 3.7 of 88 &nbsp;·&nbsp; series: faang roadmap[cite: 2]</div>
+  
+  <h1 class="hero-title">
+    Async JavaScript:<br>
+    Timers, Promises, & <em>Event Loop Architectures</em>[cite: 2]
+  </h1>
+  <p class="hero-subtitle">
+    Deconstructing non-blocking concurrency execution setups, Web API threading tasks, microtask and macrotask queue prioritization, Promise compilation statuses, and async/await syntax synchronization.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">3.7 — Async Concurrency[cite: 2]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~55 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 3.6 (Event Architecture)[cite: 2]</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">V8 Event Loop · Microtask Queue · Promise State Engineering · Async Exception Handling[cite: 2]</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; inspect non-blocking event loops</div>
+</div>
+
+<!-- ═══════════════════════════════ LAYOUT MAIN TRACK ═══════════════════════════════ -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        JavaScript executes operations as a single-threaded runtime engine. High-performance browser system design requires offloading heavy blocking operations like network requests or file reads onto external concurrency frameworks. This masterclass module breaks down the inner workings of the V8 Event Loop, Web API threading structures, Microtask vs. Macrotask queue prioritization, and Promise resolution states to safeguard client responsiveness.
+      </div>
+    </div>
+
+    <!-- ── SYSTEM PRESENTATION PROGRESS MATRIX MAP ── -->
+    <div class="interactive-framework-sector">
+      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
+      <div class="framework-flex-track">
+        <div class="frame-node-box done-node-box">DOM Logic (3.5)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box done-node-box">Events (3.6)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box active-node-box">Async JS (3.7)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Fetch API (3.8)[cite: 2]</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">ES6+ Features (3.9)[cite: 2]</div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many frontend candidates assume JavaScript executes multi-threaded code paths naturally because of non-blocking features like <code>setTimeout</code> or <code>fetch</code>[cite: 2]. <strong>This complete conceptual misunderstanding leads to catastrophic thread blockages in production systems.</strong> Because the script runtime runs tasks on a single thread, executing slow synchronous calculations or handling asynchronous timers incorrectly can freeze user views, delay interface paints, and disrupt core application tasks.</p>
+      <p>Asynchronous operations rely on browser coordination frameworks. The V8 script runtime uses a continuous lookahead checking system called the **Event Loop** to coordinate tasks between the single-threaded Call Stack and background **Web API** environments. This module covers Promise compilation statuses, microtask queue scheduling passes, and type-safe exception handling[cite: 2]. Structuring your async logic to align with these runtime loops ensures your platform experiences stay responsive, snappy, and free of thread stalls under load.</p>
+      
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ Asynchronous Concurrency Processing Path Formula:</div>
+        <div class="compute-value">Thread Availability = Main Call Stack Empty pass &rarr; Process Microtask Queue &rarr; Process Macrotask Line</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>A senior full-stack systems engineer tracks execution pipelines relative to queue priority thresholds. They avoid overcrowding runtime queues, managing network requests (via Microtasks) and visual updates responsibly to maintain fluid interface interactions across target user devices.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Single-Chef Kitchen and Pager Model</h3>
+      <p>Imagine managing a high-end gourmet restaurant kitchen run by a single master chef. If a customer orders a slow-cooked roasted entrée that requires two hours of baking inside a closed brick oven, the chef can't sit in front of the timer doors doing nothing for two hours without backing up subsequent orders and causing guests to leave.</p>
+      <p>Instead, the chef preps the entrée container, **slides the pan inside the oven tracking system, sets a wireless notification pager buzzer, and returns to chopping fresh salads or plating fast appetizers instantly on the central island counter.** When the oven timer alerts, the chef completes the entrée processing pass during the next open window. Asynchronous JavaScript works exactly like that single-chef kitchen, offloading network waits to browser threads to keep the main code stack moving forward smoothly.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When asynchronous task responses return out of sequence or cause interface glitch states, look past surface-level code patches. Ask an analytical question: <strong>"This execution block has mismatched queue priority parameters. Where is the runtime routing this callback, and how can I align my code structure with the event loop to preserve task order?"</strong> This framing guides concurrency fixes.</p>
+      </div>
+
+      <h3>The VIP Airport Boarding Line Paradigm</h3>
+      <p>To master advanced asynchronous execution flows, visualize a crowded airport flight terminal boarding gate. Passeneger groups don't board the aircraft haphazardly; airline gate agents sort passengers based on strict priority cards. Standard ticket holders (Macrotasks like <code>setTimeout</code>) wait in a long public line, while premium first-class ticket holders (Microtasks like resolved Promises) form a priority queue that passes through the gate ahead of the main line, ensuring optimal passenger routing.</p>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Visual — Concurrency Loop Execution Lifecycle</h2>
+      </div>
+      <p>Understanding how the event loop coordinates execution contexts between internal stack frames and background queues is essential for preventing layout freezes. Click through each sequential step to trace asynchronous data states.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>🖥️ &nbsp; V8 Concurrency Engine Task Routing Lifecycle &nbsp;·&nbsp; Click steps to trace data states.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Call Stack Execution & Web API Hand-Off Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The single-threaded Call Stack reads async functions (like <code>fetch()</code> or <code>setTimeout()</code>)[cite: 2]. It registers the task parameters, hands off the execution tracking work to background Web API browser threads instantly, and pops the initial caller frame to keep processing subsequent main code blocks.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Queue Priority Classification & Task Enqueuing</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>When background operations conclude, the browser routes callbacks to specialized queues based on source origin: settled Promise handlers (<code>.then()</code>/<code>await</code> updates) enter the high-priority Microtask Queue, while timer intervals pass into the Macrotask Queue.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Event Loop Call Stack Ingestion Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The Event Loop monitors the Call Stack continuously. Once the stack empties completely, the loop sweeps the Microtask Queue first, flushing out all pending promise callbacks before processing the first task in the macrotask line, ensuring fluid client performance.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-action-row">
+          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Concurrency Pipeline</button>
+        </div>
+      </div>
+
+      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="6" fill="#020503"/>
+          <g opacity="0.15">
+            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#00f5d4" stroke-width="1"/>
+            <path d="M 390 40 L 390 280" stroke="#39ff14" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          
+          <text x="60" y="35" fill="#8ca399" font-family="Space Mono" font-size="12" font-weight="bold">High-Priority Microtask Line (Promises Engine)</text>
+          <text x="410" y="35" fill="#39ff14" font-family="Space Mono" font-size="12" font-weight="bold">Standard Macrotask Line (Timers / Events)[cite: 2]</text>
+          
+          <!-- Microtask Queue Elements -->
+          <rect x="60" y="110" width="280" height="50" rx="4" fill="#08140f" stroke="var(--border-neon-vivid)" stroke-width="2"/>
+          <text x="200" y="140" fill="#f2fcf8" font-family="Space Mono" font-size="12" text-anchor="middle">Promise.then() Callback 1</text>
+          
+          <!-- Macrotask Queue Elements -->
+          <rect x="420" y="110" width="320" height="50" rx="4" fill="#08140f" stroke="#39ff14" stroke-width="2"/>
+          <text x="580" y="140" fill="#f2fcf8" font-family="Space Mono" font-size="12" text-anchor="middle">setTimeout() Callback 1[cite: 2]</text>
+        </svg>
+        <div class="infographic-caption">Vector Diagram 3.7: The Event Loop Queue Spectrum. Resolved Promise microtasks possess maximum execution priority over standard macro-tier callbacks[cite: 2], draining completely before timers run.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Promise Lifecycle States & State Transitions</h3>
+      <p>A **Promise** is a native JavaScript object placeholder container representing the eventual completion or failure of an asynchronous operation[cite: 2]. Runtimes manage promise instances through three exclusive state boundaries:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">promise-states.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">// Instantiate a promise wrapper tracking asynchronous data states</span>
+<span class="t-kw">const</span> telemetryFetchPromise = <span class="t-kw">new</span> Promise((resolve, reject) => {
+  <span class="t-kw">let</span> responseSuccess = <span class="t-val">true</span>;
+  
+  <span class="t-kw">if</span> (responseSuccess) {
+    resolve({ data: <span class="t-val">"DATA_STRING_PACKET"</span> }); <span class="t-comment">// Moves instance to FULFILLED state</span>
+  } <span class="t-kw">else</span> {
+    reject(<span class="t-kw">new</span> Error(<span class="t-str">"CONNECTION_TIMEOUT_ERROR"</span>)); <span class="t-comment">// Moves instance to REJECTED state</span>
+  }
+});</pre>
+      </div>
+
+      <p>Promises initialize in a **Pending** state, indicating the background work is still in progress. Executing the <code>resolve()</code> handler transitions the instance permanently into a **Fulfilled** state, which automatically schedules any attached <code>.then()</code> callbacks into the high-priority Microtask Queue. Conversely, calling the <code>reject()</code> trigger moves the promise into a **Rejected** state, routing error details straight down to your <code>.catch()</code> fallback blocks[cite: 2]. Once settled (either fulfilled or rejected), a promise's state locks permanently; it cannot change or execute secondary transitions, ensuring data consistency.</p>
+
+      <h3>Part B — Async / Await Syntactical Synchronization</h3>
+      <p>The <code>async/await</code> syntax provides an expressive, synchronous-looking wrapper over standard Promise configurations[cite: 2]. It simplifies complex callback chains without blocking browser main threads:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">async-await-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">// Marking functions with the async keyword forces them to return a Promise[cite: 2]</span>
+<span class="t-kw">async</span> <span class="t-kw">function</span> compileTelemetryPipeline() {
+  <span class="t-kw">try</span> {
+    <span class="t-comment">// The await token pauses function execution until the promise settles[cite: 2]</span>
+    <span class="t-kw">const</span> operationalDataResponse = <span class="t-kw">await</span> fetchTelemetryNode();[cite: 2]
+    console.log(<span class="t-str">"Processed dataset parameters:"</span>, operationalDataResponse);
+  } <span class="t-kw">catch</span> (runtimeError) {[cite: 2]
+    console.error(<span class="t-str">"Intercepted pipeline failure context:"</span>, runtimeError.message);[cite: 2]
+  }
+}</pre>
+      </div>
+
+      <p>The <code>await</code> keyword can only be used inside functions marked with the <code>async</code> modifier[cite: 2]. When the engine hits an await token, it pauses execution of that specific async function block, registering the remaining steps as a microtask callback and returning control to the primary Call Stack to keep user interactions smooth.</p>
+
+      <h3>Part C — Robust Exception Management & Catch Chains</h3>
+      <p>Asynchronous exception handling demands careful planning. Standard try/catch statement blocks can't catch unhandled rejections inside legacy asynchronous operations like <code>setTimeout</code> because those callbacks run on entirely separate event loop ticks long after the parent block concludes execution. Production environments should handle errors cleanly by pairing async/await workflows with structured <code>try/catch</code> blocks, or chaining defensive <code>.catch()</code> filters directly onto promise streams to avoid silent application failures[cite: 2].</p>
+
+      <h3>Part D — Concurrency Queue Prioritization Performance Comparison</h3>
+      <p>High-performance full-stack applications require choosing asynchronous tools deliberately to protect frame rates. Let us contrast the behavior profiles of modern async tools:</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Promises / Microtasks</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Timers / Macrotasks[cite: 2]</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">Async/Await Loops[cite: 2]</button>
+        </div>
+        
+        <div class="hud-tab-panel active-hud-panel" id="t1">
+          <p>Promises manage high-priority asynchronous actions. Settled promise callbacks route straight into the Microtask Queue, routing through the Call Stack ahead of standard timers to keep application data states consistent.</p>
+        </div>
+        <div class="hud-tab-panel" id="t2">
+          <p>Timers (such as <code>setTimeout</code> or <code>setInterval</code>) manage lower-priority, macro-tier scheduling tasks[cite: 2]. Their callbacks execute during separate event loop iterations, allowing browsers to handle layout repaints smoothly between passes.</p>
+        </div>
+        <div class="hud-tab-panel" id="t3">
+          <p>The async/await syntax wraps promises in a highly readable, synchronous-looking style[cite: 2]. It leverages native microtask queues under the hood, enabling clean exception tracking using standard try/catch blocks[cite: 2].</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Callback Spaghettis</h2>
+      </div>
+      <p>Let us analyze real production concurrency bottlenecks, step-by-step refactoring nested callback chains into clean, predictable async/await pipelines[cite: 2].</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">concurrency-hell-refactor.js</span></div>
+        <pre><span class="t-comment">// Anti-Pattern: Deeply nested callbacks create hard-to-maintain "callback hell" code</span>
+fetchUserData((user) => {
+  fetchUserPreferences(user.id, (prefs) => {
+    fetchTargetDashboardMetrics(prefs.theme, (metrics) => {
+      console.log(<span class="t-str">"💥 Finished processing unoptimized callback chain steps..."</span>);
+    });
+  });
+});</pre>
+        <div class="error-explanation">
+          <div class="error-label">Production Refactored Configuration</div>
+          <pre><span class="t-comment">// Refactor cleanly into a linear, readable async/await architecture[cite: 2]</span>
+<span class="t-kw">async</span> <span class="t-kw">function</span> executeSystemIngestionPass() {
+  <span class="t-kw">try</span> {
+    <span class="t-kw">const</span> userProfileData = <span class="t-kw">await</span> fetchUserDataPromise();[cite: 2]
+    <span class="t-kw">const</span> userPreferences = <span class="t-kw">await</span> fetchUserPreferencesPromise(userProfileData.id);[cite: 2]
+    <span class="t-kw">const</span> dashboardMetrics = <span class="t-kw">await</span> fetchTargetDashboardMetricsPromise(userPreferences.theme);[cite: 2]
+    
+    console.log(<span class="t-str">"✓ Processed complete data ingestion pass successfully."</span>);
+  } <span class="t-kw">catch</span> (pipelineBypassError) {[cite: 2]
+    console.error(<span class="t-str">"Critical pipeline exception intercepted:"</span>, pipelineBypassError.message);[cite: 2]
+  }
+}</pre>
+          <div class="error-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-key">Root Problem Analysis</div>
+              <div class="breakdown-val">Deep nested callback structures obscure logic paths and complicate error tracking, making asynchronous workflows difficult to manage as software scales.</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-key">Refactored Result</div>
+              <div class="breakdown-val">Transitioning to <code>async/await</code> flattens your code layout[cite: 2], using native microtask queues and standard try/catch blocks to ensure clean, readable error management[cite: 2].</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common asynchronous structure mistakes during technical interview reviews. Aligning execution paths with event loop rules prevents main thread delays as platform apps scale.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Neglecting Try/Catch Overrides within Async Operations[cite: 2]</div>
+          <div class="pitfall-body">Leaving async/await functions unprotected without try/catch wrappers[cite: 2], allowing unhandled promise rejections to crash execution loops silently.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Wrap async execution blocks inside explicit <code>try/catch</code> blocks to catch and manage operational runtime failures cleanly[cite: 2].</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Overloading Microtask Queues via Infinite Loops</div>
+          <div class="pitfall-body">Recursively scheduling resolved promise loops continuously, which starves the Macrotask Queue and blocks the browser from handling layout repaints or user clicks.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Break up intensive, repetitive calculation loops by scheduling checks via macrotask tools like <code>setTimeout</code> to let the main thread render page updates[cite: 2].</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Executing Independent Async Actions in Strict Sequence</div>
+          <div class="pitfall-body">Awaiting unrelated network requests sequentially (e.g., awaiting task 2 only after task 1 completes), introducing unnecessary connection latency bottlenecks.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Run independent network requests concurrently using parallel execution utilities like <code>Promise.all()</code> to speed up data fetches.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Expecting Timers to Execute with Absolute Pixel Accuracy[cite: 2]</div>
+          <div class="pitfall-body">Assuming a <code>setTimeout(fn, 1000)</code> call will trigger its callback at exactly 1000ms[cite: 2], while ignoring active blocking calculations on the primary stack frame.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Remember timer configurations declare a minimum waiting threshold, not an absolute execution line[cite: 2]. Keep main stack tasks light to ensure accurate timings.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Real World — High-Scale Concurrency Pipelines</h2>
+      </div>
+      <p>Top-tier web systems manage asynchronous data pipelines systematically to lock down loading times and maintain fluid user experiences under heavy user traffic.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Netflix Video Streaming Core</div>
+          <div class="cell-desc">Netflix optimizes media buffer delivery tracks by running parallel promise configurations. Fetching video fragments and audio chunks concurrently via asynchronous layers eliminates buffer delays, ensuring smooth video playback.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Uber Live Vehicle Tracking</div>
+          <div class="cell-desc">Uber routes live vehicle coordinate updates through non-blocking asynchronous event drivers. Offloading telemetry API requests to background threads keeps ride-sharing dashboard maps completely smooth and interactive.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Stripe Gateway Checkouts</div>
+          <div class="cell-desc">Stripe designs sensitive checkout verification pipelines using async/await structures wrapped in comprehensive try/catch safety gates[cite: 2]. This architecture secures transaction verifications, preventing silent connection failures from disrupting user purchases.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In senior technical evaluations, asynchronous design patterns are evaluated by testing your understanding of event loop mechanics, queue priority limits, and error handling configurations[cite: 2].</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"Walk us through what occurs within the browser runtime engine when a script executes a mix of standard console logs, resolved promises, and setTimeout intervals concurrently. How does the event loop prioritize execution?"[cite: 2]</div>
+        <div class="pb-hud-answer"><strong>Strategic Engine Trace Formulation:</strong> "The V8 engine processes incoming tasks based on strict queue priority thresholds. First, synchronous operations (like a standard <code>console.log()</code> statement) execute directly on the primary single-threaded Call Stack. When the engine encounters an asynchronous timer like <code>setTimeout()</code>, it hands off the tracking task to background browser Web API threads, which queue the callback in the Macrotask Queue once the timer expires[cite: 2]. When a resolved Promise is encountered, its completion handlers are routed straight to the separate Microtask Queue. Once the main Call Stack empties completely, the Event Loop activates its priority verification sweep. It drains the Microtask Queue entirely first, executing all settled promise callbacks in order. Only after the microtask line is completely clear does the loop check the macrotask line, pulling the first pending timer callback onto the stack to ensure optimal task synchronization."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain the core runtime differences between running multiple asynchronous database lookups sequentially versus orchestrating them in parallel inside a Node.js API endpoint."[cite: 2]</div>
+        <div class="pb-hud-answer"><strong>Concurrency Resource Analysis:</strong> "Awaiting multiple independent database lookups sequentially using separate await statements forces the engine to halt execution at each line, waiting for the current promise to settle before firing the next request. This sequential approach stacks connection wait times, creating latency bottlenecks. Refactoring the operations to use parallel execution tools like <code>Promise.all()</code> fires all requests concurrently. The runtime handles the independent connections simultaneously, resolving the combined data payload in a single pass to slash API response times."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">Detail the operational role of the Event Loop inside modern single-threaded script runtimes.</div>
+            <div class="r-action-hint">Consider stack loops and background queue checks ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">The Event Loop coordinates non-blocking execution paths. It monitors the single-threaded Call Stack continuously, and as soon as the stack empties completely, it flushes out pending promise handlers from the Microtask Queue before pulling tasks from the Macrotask line[cite: 2].</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why do resolved Promise callbacks execute ahead of expired timer intervals inside runtime pipelines?[cite: 2]</div>
+            <div class="r-action-hint">Consider queue priority thresholds ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Resolved promise callbacks are categorized into the high-priority Microtask Queue. The event loop engine drains the microtask line entirely during every tick pass before checking the standard Macrotask Queue[cite: 2], giving promises execution priority over timers[cite: 2].</div>
+            <div class="r-action-hint">Tap to flip back ↗ </div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">What distinct task is handled by the browser Web API environment during async executions?[cite: 2]</div>
+            <div class="r-action-hint">Consider thread offloading and background tracking ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The Web API environment acts as an external processing field. It handles multi-threaded operations like network request fetches or timer countdowns in the background, offloading the work to keep the primary JavaScript main thread free for user interactions[cite: 2].</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">How does the async/await syntax simplify asynchronous code flows without blocking layout threads?[cite: 2]</div>
+            <div class="r-action-hint">Consider promise abstractions and stack pauses[cite: 2] ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">The <code>async/await</code> syntax abstracts standard promise chains into a clean, linear layout[cite: 2]. The <code>await</code> token pauses function execution, registering the remaining steps as a microtask callback and freeing the main stack to handle other tasks smoothly[cite: 2].</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these asynchronous execution tasks to master event loop coordination and concurrency management. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Async Queue Execution using browser Performance panels (30 Min)</div>
+            <div class="row-desc">Open an active application dashboard view and launch browser DevTools (F12). Open the Performance panel, record a short capture session while running async data updates, and analyze the tracking logs to trace task queues.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Parallel Network Request Orchestration Matrix (30 Min)</div>
+            <div class="row-desc">Create an isolated script testing sandbox locally. Build multiple mock API promise functions, and practice executing data fetches concurrently using parallel tools like <code>Promise.all()</code> to minimize connection latency.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Implement Robust Exception Handling across Async Pipelines[cite: 2] (30 Min)</div>
+            <div class="row-desc">Design a local asynchronous workflow function using async/await syntax[cite: 2]. Wrap your execution paths in comprehensive <code>try/catch</code> blocks to capture and handle network failures cleanly without crashing your scripts[cite: 2].</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Map Microtask vs Macrotask Execution Sequences (30 Min)</div>
+            <div class="row-desc">Construct a test script containing mixed console logs, resolved promises, and <code>setTimeout</code> calls[cite: 2]. Run the code in your terminal, and trace output logs to verify how the event loop coordinates queue priority layers.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMPREHENSIVE CONCURRENCY RECAP PANEL ── -->
+    <section class="section-card" id="recap-section">
+      <div class="comprehensive-recap-panel">
+        <h3 class="recap-title-hud">🎯 Asynchronous Concurrency Performance Recap</h3>
+        <div class="recap-grid-hud">
+          <div class="recap-item-node">
+            <div class="recap-item-title">Queue Priority Management</div>
+            <div class="recap-item-desc">Structure async operations to align with microtask queue priorities, ensuring settled promise callbacks process ahead of macro-tier actions.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Exception Defenses[cite: 2]</div>
+            <div class="recap-item-desc">Wrap async/await execution pipelines inside explicit try/catch blocks to capture and manage server connection failures cleanly[cite: 2].</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Parallel Optimization</div>
+            <div class="recap-item-desc">Orchestrate independent network data requests concurrently using parallel utilities to cut down connection latency bottlenecks.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Main Thread Protection</div>
+            <div class="recap-item-desc">Avoid executing heavy, blocking calculations directly on the primary call stack, offloading heavy tasks to protect browser responsiveness.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These asynchronous concurrency rules form the baseline operational requirement for high-performance frontend data layers. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Orchestrate async tasks via queues. Align script operations with microtask priority thresholds to process network data updates ahead of standard timers[cite: 2].</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Secure paths with try/catch blocks[cite: 2]. Use type-safe error blocks inside your async/await workflows to capture network failures cleanly[cite: 2].</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Run requests concurrently. Leverage parallel execution tools to fetch independent data streams simultaneously, cutting out network latency bottlenecks.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Event Loop Engine</div>
+          <div class="g-node-definition">The runtime check loop that monitors the Call Stack, flushing out pending microtasks and macrotasks once the primary stack empties[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Microtask Queue</div>
+          <div class="g-node-definition">The high-priority execution line that handles settled promise callbacks, running through the stack ahead of standard macro-tier actions.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Macrotask Queue[cite: 2]</div>
+          <div class="g-node-definition">The standard priority line that schedules macro-tier callbacks (like <code>setTimeout</code> or DOM click events)[cite: 2] for separate event loop ticks.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Web API Environment[cite: 2]</div>
+          <div class="g-node-definition">The browser concurrency framework that runs multi-threaded tasks like network requests or timers in the background, keeping the main thread free[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Promise Object Container[cite: 2]</div>
+          <div class="g-node-definition">A native language placeholder object that tracks the current state and eventual outcome of an asynchronous operation[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Pending State</div>
+          <div class="g-node-definition">The initial, unresolved state of a promise instance indicating that the associated background operation is still running in the background.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Fulfilled State</div>
+          <div class="g-node-definition">The successful settled state of a promise instance that automatically triggers and schedules attached <code>.then()</code> completion callbacks.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Rejected State[cite: 2]</div>
+          <div class="g-node-definition">The failed settled state of a promise instance that routes execution straight down to your attached <code>.catch()</code> error-handling blocks[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">async Modifier Keyword[cite: 2]</div>
+          <div class="g-node-definition">A statement modifier that transforms standard functions, ensuring they return a Promise automatically upon execution[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">await Token Operator[cite: 2]</div>
+          <div class="g-node-definition">An operator that pauses an async function block until a promise settles, scheduling the remaining steps as a microtask[cite: 2].</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Parallel Concurrency</div>
+          <div class="g-node-definition">The practice of firing independent asynchronous requests simultaneously using tools like <code>Promise.all()</code> to minimize connection latency.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Unhandled Rejection</div>
+          <div class="g-node-definition">A serious script error that happens when a promise reject trigger fires without an active catch handler block to receive the failure context[cite: 2].</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-3.8.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 3.8 - Fetch API: Making Network Requests & Parsing JSON Payloads</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  
+  body.classList.toggle('light-theme');
+  
+  if (body.classList.contains('light-theme')) {
+    themeText.innerText = "Light Lab";
+  } else {
+    themeText.innerText = "Dark Cyber";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2054,90 +2837,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3274,833 +3973,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-3">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-
-
-<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD RAIL ═══════════════════════════════ -->
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">Async Runtime Matrix</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<!-- ═══════════════════════════════ HIGH-ENERGY HERO ENGINE RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-cyan"></div>
-    <div class="glow-orb orb-green"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes[cite: 2]</div>
-  <div class="hero-eyebrow">essay 3.7 of 88 &nbsp;·&nbsp; series: faang roadmap[cite: 2]</div>
-  
-  <h1 class="hero-title">
-    Async JavaScript:<br>
-    Timers, Promises, & <em>Event Loop Architectures</em>[cite: 2]
-  </h1>
-  <p class="hero-subtitle">
-    Deconstructing non-blocking concurrency execution setups, Web API threading tasks, microtask and macrotask queue prioritization, Promise compilation statuses, and async/await syntax synchronization.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">3.7 — Async Concurrency[cite: 2]</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~55 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essay 3.6 (Event Architecture)[cite: 2]</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">V8 Event Loop · Microtask Queue · Promise State Engineering · Async Exception Handling[cite: 2]</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; inspect non-blocking event loops</div>
-</div>
-
-<!-- ═══════════════════════════════ LAYOUT MAIN TRACK ═══════════════════════════════ -->
-<div class="layout-main-frame">
-  <main>
-
-    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
-    <div class="executive-summary-panel">
-      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
-      <div class="summary-text-hud">
-        JavaScript executes operations as a single-threaded runtime engine. High-performance browser system design requires offloading heavy blocking operations like network requests or file reads onto external concurrency frameworks. This masterclass module breaks down the inner workings of the V8 Event Loop, Web API threading structures, Microtask vs. Macrotask queue prioritization, and Promise resolution states to safeguard client responsiveness.
-      </div>
-    </div>
-
-    <!-- ── SYSTEM PRESENTATION PROGRESS MATRIX MAP ── -->
-    <div class="interactive-framework-sector">
-      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
-      <div class="framework-flex-track">
-        <div class="frame-node-box done-node-box">DOM Logic (3.5)[cite: 2]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box done-node-box">Events (3.6)[cite: 2]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box active-node-box">Async JS (3.7)[cite: 2]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Fetch API (3.8)[cite: 2]</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">ES6+ Features (3.9)[cite: 2]</div>
-      </div>
-    </div>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many frontend candidates assume JavaScript executes multi-threaded code paths naturally because of non-blocking features like <code>setTimeout</code> or <code>fetch</code>[cite: 2]. <strong>This complete conceptual misunderstanding leads to catastrophic thread blockages in production systems.</strong> Because the script runtime runs tasks on a single thread, executing slow synchronous calculations or handling asynchronous timers incorrectly can freeze user views, delay interface paints, and disrupt core application tasks.</p>
-      <p>Asynchronous operations rely on browser coordination frameworks. The V8 script runtime uses a continuous lookahead checking system called the **Event Loop** to coordinate tasks between the single-threaded Call Stack and background **Web API** environments. This module covers Promise compilation statuses, microtask queue scheduling passes, and type-safe exception handling[cite: 2]. Structuring your async logic to align with these runtime loops ensures your platform experiences stay responsive, snappy, and free of thread stalls under load.</p>
-      
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ Asynchronous Concurrency Processing Path Formula:</div>
-        <div class="compute-value">Thread Availability = Main Call Stack Empty pass &rarr; Process Microtask Queue &rarr; Process Macrotask Line</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>A senior full-stack systems engineer tracks execution pipelines relative to queue priority thresholds. They avoid overcrowding runtime queues, managing network requests (via Microtasks) and visual updates responsibly to maintain fluid interface interactions across target user devices.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Single-Chef Kitchen and Pager Model</h3>
-      <p>Imagine managing a high-end gourmet restaurant kitchen run by a single master chef. If a customer orders a slow-cooked roasted entrée that requires two hours of baking inside a closed brick oven, the chef can't sit in front of the timer doors doing nothing for two hours without backing up subsequent orders and causing guests to leave.</p>
-      <p>Instead, the chef preps the entrée container, **slides the pan inside the oven tracking system, sets a wireless notification pager buzzer, and returns to chopping fresh salads or plating fast appetizers instantly on the central island counter.** When the oven timer alerts, the chef completes the entrée processing pass during the next open window. Asynchronous JavaScript works exactly like that single-chef kitchen, offloading network waits to browser threads to keep the main code stack moving forward smoothly.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When asynchronous task responses return out of sequence or cause interface glitch states, look past surface-level code patches. Ask an analytical question: <strong>"This execution block has mismatched queue priority parameters. Where is the runtime routing this callback, and how can I align my code structure with the event loop to preserve task order?"</strong> This framing guides concurrency fixes.</p>
-      </div>
-
-      <h3>The VIP Airport Boarding Line Paradigm</h3>
-      <p>To master advanced asynchronous execution flows, visualize a crowded airport flight terminal boarding gate. Passeneger groups don't board the aircraft haphazardly; airline gate agents sort passengers based on strict priority cards. Standard ticket holders (Macrotasks like <code>setTimeout</code>) wait in a long public line, while premium first-class ticket holders (Microtasks like resolved Promises) form a priority queue that passes through the gate ahead of the main line, ensuring optimal passenger routing.</p>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Visual — Concurrency Loop Execution Lifecycle</h2>
-      </div>
-      <p>Understanding how the event loop coordinates execution contexts between internal stack frames and background queues is essential for preventing layout freezes. Click through each sequential step to trace asynchronous data states.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>🖥️ &nbsp; V8 Concurrency Engine Task Routing Lifecycle &nbsp;·&nbsp; Click steps to trace data states.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Call Stack Execution & Web API Hand-Off Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The single-threaded Call Stack reads async functions (like <code>fetch()</code> or <code>setTimeout()</code>)[cite: 2]. It registers the task parameters, hands off the execution tracking work to background Web API browser threads instantly, and pops the initial caller frame to keep processing subsequent main code blocks.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Queue Priority Classification & Task Enqueuing</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>When background operations conclude, the browser routes callbacks to specialized queues based on source origin: settled Promise handlers (<code>.then()</code>/<code>await</code> updates) enter the high-priority Microtask Queue, while timer intervals pass into the Macrotask Queue.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Event Loop Call Stack Ingestion Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The Event Loop monitors the Call Stack continuously. Once the stack empties completely, the loop sweeps the Microtask Queue first, flushing out all pending promise callbacks before processing the first task in the macrotask line, ensuring fluid client performance.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flow-action-row">
-          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Concurrency Pipeline</button>
-        </div>
-      </div>
-
-      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="6" fill="#020503"/>
-          <g opacity="0.15">
-            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#00f5d4" stroke-width="1"/>
-            <path d="M 390 40 L 390 280" stroke="#39ff14" stroke-width="2" stroke-dasharray="4 4"/>
-          </g>
-          
-          <text x="60" y="35" fill="#8ca399" font-family="Space Mono" font-size="12" font-weight="bold">High-Priority Microtask Line (Promises Engine)</text>
-          <text x="410" y="35" fill="#39ff14" font-family="Space Mono" font-size="12" font-weight="bold">Standard Macrotask Line (Timers / Events)[cite: 2]</text>
-          
-          <!-- Microtask Queue Elements -->
-          <rect x="60" y="110" width="280" height="50" rx="4" fill="#08140f" stroke="var(--border-neon-vivid)" stroke-width="2"/>
-          <text x="200" y="140" fill="#f2fcf8" font-family="Space Mono" font-size="12" text-anchor="middle">Promise.then() Callback 1</text>
-          
-          <!-- Macrotask Queue Elements -->
-          <rect x="420" y="110" width="320" height="50" rx="4" fill="#08140f" stroke="#39ff14" stroke-width="2"/>
-          <text x="580" y="140" fill="#f2fcf8" font-family="Space Mono" font-size="12" text-anchor="middle">setTimeout() Callback 1[cite: 2]</text>
-        </svg>
-        <div class="infographic-caption">Vector Diagram 3.7: The Event Loop Queue Spectrum. Resolved Promise microtasks possess maximum execution priority over standard macro-tier callbacks[cite: 2], draining completely before timers run.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Promise Lifecycle States & State Transitions</h3>
-      <p>A **Promise** is a native JavaScript object placeholder container representing the eventual completion or failure of an asynchronous operation[cite: 2]. Runtimes manage promise instances through three exclusive state boundaries:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">promise-states.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">// Instantiate a promise wrapper tracking asynchronous data states</span>
-<span class="t-kw">const</span> telemetryFetchPromise = <span class="t-kw">new</span> Promise((resolve, reject) => {
-  <span class="t-kw">let</span> responseSuccess = <span class="t-val">true</span>;
-  
-  <span class="t-kw">if</span> (responseSuccess) {
-    resolve({ data: <span class="t-val">"DATA_STRING_PACKET"</span> }); <span class="t-comment">// Moves instance to FULFILLED state</span>
-  } <span class="t-kw">else</span> {
-    reject(<span class="t-kw">new</span> Error(<span class="t-str">"CONNECTION_TIMEOUT_ERROR"</span>)); <span class="t-comment">// Moves instance to REJECTED state</span>
-  }
-});</pre>
-      </div>
-
-      <p>Promises initialize in a **Pending** state, indicating the background work is still in progress. Executing the <code>resolve()</code> handler transitions the instance permanently into a **Fulfilled** state, which automatically schedules any attached <code>.then()</code> callbacks into the high-priority Microtask Queue. Conversely, calling the <code>reject()</code> trigger moves the promise into a **Rejected** state, routing error details straight down to your <code>.catch()</code> fallback blocks[cite: 2]. Once settled (either fulfilled or rejected), a promise's state locks permanently; it cannot change or execute secondary transitions, ensuring data consistency.</p>
-
-      <h3>Part B — Async / Await Syntactical Synchronization</h3>
-      <p>The <code>async/await</code> syntax provides an expressive, synchronous-looking wrapper over standard Promise configurations[cite: 2]. It simplifies complex callback chains without blocking browser main threads:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">async-await-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">// Marking functions with the async keyword forces them to return a Promise[cite: 2]</span>
-<span class="t-kw">async</span> <span class="t-kw">function</span> compileTelemetryPipeline() {
-  <span class="t-kw">try</span> {
-    <span class="t-comment">// The await token pauses function execution until the promise settles[cite: 2]</span>
-    <span class="t-kw">const</span> operationalDataResponse = <span class="t-kw">await</span> fetchTelemetryNode();[cite: 2]
-    console.log(<span class="t-str">"Processed dataset parameters:"</span>, operationalDataResponse);
-  } <span class="t-kw">catch</span> (runtimeError) {[cite: 2]
-    console.error(<span class="t-str">"Intercepted pipeline failure context:"</span>, runtimeError.message);[cite: 2]
-  }
-}</pre>
-      </div>
-
-      <p>The <code>await</code> keyword can only be used inside functions marked with the <code>async</code> modifier[cite: 2]. When the engine hits an await token, it pauses execution of that specific async function block, registering the remaining steps as a microtask callback and returning control to the primary Call Stack to keep user interactions smooth.</p>
-
-      <h3>Part C — Robust Exception Management & Catch Chains</h3>
-      <p>Asynchronous exception handling demands careful planning. Standard try/catch statement blocks can't catch unhandled rejections inside legacy asynchronous operations like <code>setTimeout</code> because those callbacks run on entirely separate event loop ticks long after the parent block concludes execution. Production environments should handle errors cleanly by pairing async/await workflows with structured <code>try/catch</code> blocks, or chaining defensive <code>.catch()</code> filters directly onto promise streams to avoid silent application failures[cite: 2].</p>
-
-      <h3>Part D — Concurrency Queue Prioritization Performance Comparison</h3>
-      <p>High-performance full-stack applications require choosing asynchronous tools deliberately to protect frame rates. Let us contrast the behavior profiles of modern async tools:</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Promises / Microtasks</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Timers / Macrotasks[cite: 2]</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">Async/Await Loops[cite: 2]</button>
-        </div>
-        
-        <div class="hud-tab-panel active-hud-panel" id="t1">
-          <p>Promises manage high-priority asynchronous actions. Settled promise callbacks route straight into the Microtask Queue, routing through the Call Stack ahead of standard timers to keep application data states consistent.</p>
-        </div>
-        <div class="hud-tab-panel" id="t2">
-          <p>Timers (such as <code>setTimeout</code> or <code>setInterval</code>) manage lower-priority, macro-tier scheduling tasks[cite: 2]. Their callbacks execute during separate event loop iterations, allowing browsers to handle layout repaints smoothly between passes.</p>
-        </div>
-        <div class="hud-tab-panel" id="t3">
-          <p>The async/await syntax wraps promises in a highly readable, synchronous-looking style[cite: 2]. It leverages native microtask queues under the hood, enabling clean exception tracking using standard try/catch blocks[cite: 2].</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Callback Spaghettis</h2>
-      </div>
-      <p>Let us analyze real production concurrency bottlenecks, step-by-step refactoring nested callback chains into clean, predictable async/await pipelines[cite: 2].</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">concurrency-hell-refactor.js</span></div>
-        <pre><span class="t-comment">// Anti-Pattern: Deeply nested callbacks create hard-to-maintain "callback hell" code</span>
-fetchUserData((user) => {
-  fetchUserPreferences(user.id, (prefs) => {
-    fetchTargetDashboardMetrics(prefs.theme, (metrics) => {
-      console.log(<span class="t-str">"💥 Finished processing unoptimized callback chain steps..."</span>);
-    });
-  });
-});</pre>
-        <div class="error-explanation">
-          <div class="error-label">Production Refactored Configuration</div>
-          <pre><span class="t-comment">// Refactor cleanly into a linear, readable async/await architecture[cite: 2]</span>
-<span class="t-kw">async</span> <span class="t-kw">function</span> executeSystemIngestionPass() {
-  <span class="t-kw">try</span> {
-    <span class="t-kw">const</span> userProfileData = <span class="t-kw">await</span> fetchUserDataPromise();[cite: 2]
-    <span class="t-kw">const</span> userPreferences = <span class="t-kw">await</span> fetchUserPreferencesPromise(userProfileData.id);[cite: 2]
-    <span class="t-kw">const</span> dashboardMetrics = <span class="t-kw">await</span> fetchTargetDashboardMetricsPromise(userPreferences.theme);[cite: 2]
-    
-    console.log(<span class="t-str">"✓ Processed complete data ingestion pass successfully."</span>);
-  } <span class="t-kw">catch</span> (pipelineBypassError) {[cite: 2]
-    console.error(<span class="t-str">"Critical pipeline exception intercepted:"</span>, pipelineBypassError.message);[cite: 2]
-  }
-}</pre>
-          <div class="error-breakdown">
-            <div class="breakdown-item">
-              <div class="breakdown-key">Root Problem Analysis</div>
-              <div class="breakdown-val">Deep nested callback structures obscure logic paths and complicate error tracking, making asynchronous workflows difficult to manage as software scales.</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-key">Refactored Result</div>
-              <div class="breakdown-val">Transitioning to <code>async/await</code> flattens your code layout[cite: 2], using native microtask queues and standard try/catch blocks to ensure clean, readable error management[cite: 2].</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common asynchronous structure mistakes during technical interview reviews. Aligning execution paths with event loop rules prevents main thread delays as platform apps scale.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Neglecting Try/Catch Overrides within Async Operations[cite: 2]</div>
-          <div class="pitfall-body">Leaving async/await functions unprotected without try/catch wrappers[cite: 2], allowing unhandled promise rejections to crash execution loops silently.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Wrap async execution blocks inside explicit <code>try/catch</code> blocks to catch and manage operational runtime failures cleanly[cite: 2].</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Overloading Microtask Queues via Infinite Loops</div>
-          <div class="pitfall-body">Recursively scheduling resolved promise loops continuously, which starves the Macrotask Queue and blocks the browser from handling layout repaints or user clicks.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Break up intensive, repetitive calculation loops by scheduling checks via macrotask tools like <code>setTimeout</code> to let the main thread render page updates[cite: 2].</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Executing Independent Async Actions in Strict Sequence</div>
-          <div class="pitfall-body">Awaiting unrelated network requests sequentially (e.g., awaiting task 2 only after task 1 completes), introducing unnecessary connection latency bottlenecks.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Run independent network requests concurrently using parallel execution utilities like <code>Promise.all()</code> to speed up data fetches.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Expecting Timers to Execute with Absolute Pixel Accuracy[cite: 2]</div>
-          <div class="pitfall-body">Assuming a <code>setTimeout(fn, 1000)</code> call will trigger its callback at exactly 1000ms[cite: 2], while ignoring active blocking calculations on the primary stack frame.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Remember timer configurations declare a minimum waiting threshold, not an absolute execution line[cite: 2]. Keep main stack tasks light to ensure accurate timings.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Real World — High-Scale Concurrency Pipelines</h2>
-      </div>
-      <p>Top-tier web systems manage asynchronous data pipelines systematically to lock down loading times and maintain fluid user experiences under heavy user traffic.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Netflix Video Streaming Core</div>
-          <div class="cell-desc">Netflix optimizes media buffer delivery tracks by running parallel promise configurations. Fetching video fragments and audio chunks concurrently via asynchronous layers eliminates buffer delays, ensuring smooth video playback.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Uber Live Vehicle Tracking</div>
-          <div class="cell-desc">Uber routes live vehicle coordinate updates through non-blocking asynchronous event drivers. Offloading telemetry API requests to background threads keeps ride-sharing dashboard maps completely smooth and interactive.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Stripe Gateway Checkouts</div>
-          <div class="cell-desc">Stripe designs sensitive checkout verification pipelines using async/await structures wrapped in comprehensive try/catch safety gates[cite: 2]. This architecture secures transaction verifications, preventing silent connection failures from disrupting user purchases.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In senior technical evaluations, asynchronous design patterns are evaluated by testing your understanding of event loop mechanics, queue priority limits, and error handling configurations[cite: 2].</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"Walk us through what occurs within the browser runtime engine when a script executes a mix of standard console logs, resolved promises, and setTimeout intervals concurrently. How does the event loop prioritize execution?"[cite: 2]</div>
-        <div class="pb-hud-answer"><strong>Strategic Engine Trace Formulation:</strong> "The V8 engine processes incoming tasks based on strict queue priority thresholds. First, synchronous operations (like a standard <code>console.log()</code> statement) execute directly on the primary single-threaded Call Stack. When the engine encounters an asynchronous timer like <code>setTimeout()</code>, it hands off the tracking task to background browser Web API threads, which queue the callback in the Macrotask Queue once the timer expires[cite: 2]. When a resolved Promise is encountered, its completion handlers are routed straight to the separate Microtask Queue. Once the main Call Stack empties completely, the Event Loop activates its priority verification sweep. It drains the Microtask Queue entirely first, executing all settled promise callbacks in order. Only after the microtask line is completely clear does the loop check the macrotask line, pulling the first pending timer callback onto the stack to ensure optimal task synchronization."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain the core runtime differences between running multiple asynchronous database lookups sequentially versus orchestrating them in parallel inside a Node.js API endpoint."[cite: 2]</div>
-        <div class="pb-hud-answer"><strong>Concurrency Resource Analysis:</strong> "Awaiting multiple independent database lookups sequentially using separate await statements forces the engine to halt execution at each line, waiting for the current promise to settle before firing the next request. This sequential approach stacks connection wait times, creating latency bottlenecks. Refactoring the operations to use parallel execution tools like <code>Promise.all()</code> fires all requests concurrently. The runtime handles the independent connections simultaneously, resolving the combined data payload in a single pass to slash API response times."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">Detail the operational role of the Event Loop inside modern single-threaded script runtimes.</div>
-            <div class="r-action-hint">Consider stack loops and background queue checks ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">The Event Loop coordinates non-blocking execution paths. It monitors the single-threaded Call Stack continuously, and as soon as the stack empties completely, it flushes out pending promise handlers from the Microtask Queue before pulling tasks from the Macrotask line[cite: 2].</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why do resolved Promise callbacks execute ahead of expired timer intervals inside runtime pipelines?[cite: 2]</div>
-            <div class="r-action-hint">Consider queue priority thresholds ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Resolved promise callbacks are categorized into the high-priority Microtask Queue. The event loop engine drains the microtask line entirely during every tick pass before checking the standard Macrotask Queue[cite: 2], giving promises execution priority over timers[cite: 2].</div>
-            <div class="r-action-hint">Tap to flip back ↗ </div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">What distinct task is handled by the browser Web API environment during async executions?[cite: 2]</div>
-            <div class="r-action-hint">Consider thread offloading and background tracking ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">The Web API environment acts as an external processing field. It handles multi-threaded operations like network request fetches or timer countdowns in the background, offloading the work to keep the primary JavaScript main thread free for user interactions[cite: 2].</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">How does the async/await syntax simplify asynchronous code flows without blocking layout threads?[cite: 2]</div>
-            <div class="r-action-hint">Consider promise abstractions and stack pauses[cite: 2] ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">The <code>async/await</code> syntax abstracts standard promise chains into a clean, linear layout[cite: 2]. The <code>await</code> token pauses function execution, registering the remaining steps as a microtask callback and freeing the main stack to handle other tasks smoothly[cite: 2].</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these asynchronous execution tasks to master event loop coordination and concurrency management. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Async Queue Execution using browser Performance panels (30 Min)</div>
-            <div class="row-desc">Open an active application dashboard view and launch browser DevTools (F12). Open the Performance panel, record a short capture session while running async data updates, and analyze the tracking logs to trace task queues.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a Parallel Network Request Orchestration Matrix (30 Min)</div>
-            <div class="row-desc">Create an isolated script testing sandbox locally. Build multiple mock API promise functions, and practice executing data fetches concurrently using parallel tools like <code>Promise.all()</code> to minimize connection latency.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Implement Robust Exception Handling across Async Pipelines[cite: 2] (30 Min)</div>
-            <div class="row-desc">Design a local asynchronous workflow function using async/await syntax[cite: 2]. Wrap your execution paths in comprehensive <code>try/catch</code> blocks to capture and handle network failures cleanly without crashing your scripts[cite: 2].</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Map Microtask vs Macrotask Execution Sequences (30 Min)</div>
-            <div class="row-desc">Construct a test script containing mixed console logs, resolved promises, and <code>setTimeout</code> calls[cite: 2]. Run the code in your terminal, and trace output logs to verify how the event loop coordinates queue priority layers.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── COMPREHENSIVE CONCURRENCY RECAP PANEL ── -->
-    <section class="section-card" id="recap-section">
-      <div class="comprehensive-recap-panel">
-        <h3 class="recap-title-hud">🎯 Asynchronous Concurrency Performance Recap</h3>
-        <div class="recap-grid-hud">
-          <div class="recap-item-node">
-            <div class="recap-item-title">Queue Priority Management</div>
-            <div class="recap-item-desc">Structure async operations to align with microtask queue priorities, ensuring settled promise callbacks process ahead of macro-tier actions.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Exception Defenses[cite: 2]</div>
-            <div class="recap-item-desc">Wrap async/await execution pipelines inside explicit try/catch blocks to capture and manage server connection failures cleanly[cite: 2].</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Parallel Optimization</div>
-            <div class="recap-item-desc">Orchestrate independent network data requests concurrently using parallel utilities to cut down connection latency bottlenecks.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Main Thread Protection</div>
-            <div class="recap-item-desc">Avoid executing heavy, blocking calculations directly on the primary call stack, offloading heavy tasks to protect browser responsiveness.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These asynchronous concurrency rules form the baseline operational requirement for high-performance frontend data layers. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Orchestrate async tasks via queues. Align script operations with microtask priority thresholds to process network data updates ahead of standard timers[cite: 2].</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Secure paths with try/catch blocks[cite: 2]. Use type-safe error blocks inside your async/await workflows to capture network failures cleanly[cite: 2].</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Run requests concurrently. Leverage parallel execution tools to fetch independent data streams simultaneously, cutting out network latency bottlenecks.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Event Loop Engine</div>
-          <div class="g-node-definition">The runtime check loop that monitors the Call Stack, flushing out pending microtasks and macrotasks once the primary stack empties[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Microtask Queue</div>
-          <div class="g-node-definition">The high-priority execution line that handles settled promise callbacks, running through the stack ahead of standard macro-tier actions.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Macrotask Queue[cite: 2]</div>
-          <div class="g-node-definition">The standard priority line that schedules macro-tier callbacks (like <code>setTimeout</code> or DOM click events)[cite: 2] for separate event loop ticks.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Web API Environment[cite: 2]</div>
-          <div class="g-node-definition">The browser concurrency framework that runs multi-threaded tasks like network requests or timers in the background, keeping the main thread free[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Promise Object Container[cite: 2]</div>
-          <div class="g-node-definition">A native language placeholder object that tracks the current state and eventual outcome of an asynchronous operation[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Pending State</div>
-          <div class="g-node-definition">The initial, unresolved state of a promise instance indicating that the associated background operation is still running in the background.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Fulfilled State</div>
-          <div class="g-node-definition">The successful settled state of a promise instance that automatically triggers and schedules attached <code>.then()</code> completion callbacks.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Rejected State[cite: 2]</div>
-          <div class="g-node-definition">The failed settled state of a promise instance that routes execution straight down to your attached <code>.catch()</code> error-handling blocks[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">async Modifier Keyword[cite: 2]</div>
-          <div class="g-node-definition">A statement modifier that transforms standard functions, ensuring they return a Promise automatically upon execution[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">await Token Operator[cite: 2]</div>
-          <div class="g-node-definition">An operator that pauses an async function block until a promise settles, scheduling the remaining steps as a microtask[cite: 2].</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Parallel Concurrency</div>
-          <div class="g-node-definition">The practice of firing independent asynchronous requests simultaneously using tools like <code>Promise.all()</code> to minimize connection latency.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Unhandled Rejection</div>
-          <div class="g-node-definition">A serious script error that happens when a promise reject trigger fires without an active catch handler block to receive the failure context[cite: 2].</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-3.8.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 3.8 - Fetch API: Making Network Requests & Parsing JSON Payloads</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-function toggleThemeHUD() {
-  const body = document.body;
-  const themeText = document.getElementById('theme-text');
-  
-  body.classList.toggle('light-theme');
-  
-  if (body.classList.contains('light-theme')) {
-    themeText.innerText = "Light Lab";
-  } else {
-    themeText.innerText = "Dark Cyber";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

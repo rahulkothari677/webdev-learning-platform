@@ -481,21 +481,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1579,8 +1564,916 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="phase-2">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-magenta"></div>
+    <div class="glow-orb orb-cyan"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
+  <div class="hero-eyebrow">essay 2.1 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  <h1 class="hero-title">
+    CSS Fundamentals:<br>
+    Selectors & <em>Specificity Rules</em>
+  </h1>
+  <p class="hero-subtitle">
+    Deep-diving into browser design calculations, internal style weighting hierarchies, the cascading rule engine, properties inheritance, and targeted document node selection strategies.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">2.1 — Presentation Kernels</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~45 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Phase 1 (HTML 1.1 - 1.3)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">Specificity Math · Cascade Lifecycles · Inherited Properties · Complex Compound Combinators</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; trace presentation matrices</div>
+</div>
+
+<!-- ═══════════════════════════════ PREMIUM CORE LAYOUT ═══════════════════════════════ -->
+<div class="premium-layout">
+
+  <!-- NEO GLOW SIDEBAR HUD -->
+  <aside class="sidebar-hud">
+    <div class="sidebar-label">Document Trees</div>
+    <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+    <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
+    <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
+    <a class="hud-nav-item" href="#s4"><span class="nav-num">04</span><span class="nav-text">The Visual</span></a>
+    <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
+    <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
+    <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
+    <a class="nav-item" href="#s8"><span class="nav-num">08</span><span class="nav-text">Real World</span></a>
+    <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
+    <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
+    <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
+    <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+  </aside>
+
+  <!-- GRAPHICS WRAPPED MAIN SECTION PANELS -->
+  <main>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many frontend engineering candidates treat Cascading Style Sheets (CSS) as a loose arrangement of visual properties adjusted by random guesswork until elements display correctly. <strong>This structural ignorance breaks application rendering pipelines under real production loads.</strong> When web platforms expand to support vast component systems across large teams, an unoptimized configuration of style selectors leads to style collisions, bloated stylesheets, and layout thrashing that impacts rendering speeds.</p>
+      <p>CSS is guided by a deterministic browser calculation model. Every selector sequence you write acts as an input instruction for the browser's style matching matching engine. This module explores how style rules cascade, how browsers evaluate specificity metrics, and how properties inherit down through complex document trees. Reaching structural clarity over these core mechanisms is essential for keeping high-traffic layouts clean, fast, and maintainable.</p>
+      
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The operational difference between an enterprise UI developer and a hobbyist is a deep mastery of specificity calculations. Writing maintainable scale layouts means structuring flat style rules intentionally, allowing the browser's pattern-matching matching systems to evaluate and compute elements across target interfaces with minimal computational complexity.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
+    <section class="section-card" id="s2">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">Where This Fits</h2>
+      </div>
+      <p>Now that you have configured your development machine, practiced advanced debugging workflows, and mastered semantic document layout parameters, we shift directly into engineering visual rules. CSS is the foundation of the web presentation layer.</p>
+      
+      <div class="phase-map">
+        <div class="phase-node done"><div class="phase-circle">1.1</div><div class="phase-label">HTML Struct</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node done"><div class="phase-circle">1.3</div><div class="phase-label">HTML5 Meta</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node current"><div class="phase-circle">2.1</div><div class="phase-label">CSS Found</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Layout</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Engine</div></div>
+        <div class="phase-arrow"></div>
+        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">System Scales</div></div>
+      </div>
+      
+      <p>Every dynamic presentation interface module, responsive design grid grid, and advanced component layout constructed in future tracking sections relies on this specificity engine layer. Mastering cascade evaluation rules allows you to build clean stylesheets, avoiding style conflicts before layering on layout rules or hardware-accelerated transitions.</p>
+
+      <div class="hud-callout hud-callout-tip">
+        <div class="hud-callout-label">Return Here Often</div>
+        <p>Keep these math rules close at hand. The first few times you face a stubborn layout bug or style collision in complex multi-tier application views, revisit this selector hierarchy map. After tracing this evaluation path a few times, writing clean styles will become second nature.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Supreme Court Priority Model</h3>
+      <p>Imagine a complex constitutional legal system processing thousands of competing municipal laws, state directives, and federal decrees simultaneously. When local ordinances clash with supreme constitutional amendments, judges do not guess which law wins out. They rely on an unbreakable, hierarchical priority chain.</p>
+      <p>**CSS style rule execution functions exactly like that legal priority chain.** Universal declarations operate like baseline municipal guidelines, class styles act like state laws, and ID selectors serve as high-priority federal rulings. The browser's cascade matching engine processes these constraints in order, using clear specificity scores to determine exactly which design instruction takes precedence on the user's screen.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When an element style refuses to apply as intended, replace frustration with a systematic debugging question: <strong>"This selector is locked behind an unresolved rule priority conflict. How can I map out the weight distribution metrics to locate the override source?"</strong> This analytical lens simplifies styling layout fixes.</p>
+      </div>
+
+      <h3>The Transparent Plastic Overlay Metaphor</h3>
+      <p>To write high-performance style rules, visualize cell sheets stacked together inside an architectural diagram pack. Each sheet applies target decorations—one shapes border outlines, another layers on text colors, and a third adds positioning grids. The final display is the combined result of all these overlapping style sheets. When multiple rules target the exact same element property, the highest-weight instruction punches through, determining the final screen layout.</p>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Visual — Specificity Evaluation Weights</h2>
+      </div>
+      <p>Tracing how style rules calculate value weights is critical for avoiding cascading priority bugs. Click through each sequential layout tier to see how selector tokens compound into explicit score maps.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>📊 &nbsp; CSS Specificity Score Calculation Hierarchy &nbsp;·&nbsp; Click steps to reveal priority weights.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Inline Attribute Style Configuration — Score [1, 0, 0, 0]</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>Styles attached directly to markup components (like <code>style="color: red;"</code>) bypass external sheet calculations entirely. They command maximum weight, instantly overriding competing configurations defined inside external stylesheet rules.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">ID Selector Token Constraints — Score [0, 1, 0, 0]</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>ID targets (such as <code>#dashboard-node</code>) are highly weighted selectors. A single ID rule carries enough weight to override any number of stacked class or element selectors, which is why enterprise guidelines recommend using them sparingly for styling styling.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Class, Attribute, & Pseudo-Class Rules — Score [0, 0, 1, 0]</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>This mid-tier priority level handles classes (<code>.item-card</code>), attribute rules (<code>[type="checkbox"]</code>), and pseudo-classes (<code>:hover</code>). Stacking these components allows you to design specific interaction styles while keeping your codebase maintainable.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">4</div>
+              <div class="wb-step-title">Element & Pseudo-Element Selectors — Score [0, 0, 0, 1]</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The lowest priority weight tier applies to raw tag types (<code>main</code>, <code>div</code>) and pseudo-elements (<code>::before</code>). These base selectors define wide global style defaults across your application layouts without overriding targeted component variations.</p>
+            </div>
+          </div>
+        </div>
+        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
+      </div>
+
+      <!-- PREMIUM INCLUDED INFOGRAPHIC SECTOR -->
+      <div class="infographic-wrapper">
+        <!-- Built using canvas-style vector styling to ensure high premium interface delivery -->
+        <svg class="infographic-graphic" viewBox="0 0 800 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="300" rx="12" fill="#090314"/>
+          <g opacity="0.2"><circle cx="400" cy="150" r="120" stroke="#9d4edd" stroke-width="2" stroke-dasharray="4 4"/></g>
+          <!-- Vector Map detailing Specificity Vector tracks -->
+          <rect x="50" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#ff007f" stroke-width="2"/>
+          <text x="120" y="130" fill="#ff007f" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Inline [1k]</text>
+          <rect x="230" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#00f5d4" stroke-width="2"/>
+          <text x="300" y="130" fill="#00f5d4" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">IDs [100]</text>
+          <rect x="410" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#9d4edd" stroke-width="2"/>
+          <text x="480" y="130" fill="#9d4edd" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Classes [10]</text>
+          <rect x="590" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#ffee32" stroke-width="2"/>
+          <text x="660" y="130" fill="#ffee32" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Elements [1]</text>
+          <path d="M 190 130 L 230 130" stroke="#9d8ec2" stroke-width="2" marker-end="url(#arrow)"/>
+          <path d="M 370 130 L 410 130" stroke="#9d8ec2" stroke-width="2"/>
+          <path d="M 550 130 L 590 130" stroke="#9d8ec2" stroke-width="2"/>
+        </svg>
+        <div class="infographic-caption">Vector Infographic 2.1: The Specificity Weight Matrix. Scores are evaluated left-to-right, meaning higher-tier weights instantly win out over lower-tier selections.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — The Mechanics of Specificity Vector Vectors</h3>
+      <p>Browser layout engines do not add selector specificity up using a simple base-10 math scale. Instead, they calculate values using a 4-part vector vector model: **(Inline, ID, Class, Element)**. This vector comparison system handles layout priorities in order, ensuring distinct style separations across the board.</p>
+      
+      <p>Let us analyze a direct mathematical calculation example comparing two competing selector rules:</p>
+      <p>Imagine these two rules target the exact same anchor element:</p>
+      <ol>
+        <li><code>#navigation-rail .menu-list a:hover</code></li>
+        <li><code>html body main div.page-wrapper ul li.menu-list a</code></li>
+      </ol>
+      
+      <p>Let us break down the vector values to see which rule wins out:</p>
+      <ul>
+        <li>**Selector 1 Metrics:** Contains 1 ID (<code>#navigation-rail</code>), 1 class (<code>.menu-list</code>), 1 pseudo-class (<code>:hover</code>), and 1 element tag (<code>a</code>). This maps to a final priority score vector of: **[0, 1, 2, 1]**.</li>
+        <li>**Selector 2 Metrics:** Contains 2 classes (<code>.page-wrapper</code>, <code>.menu-list</code>) and 6 explicit element elements (<code>html</code>, <code>body</code>, <code>main</code>, <code>div</code>, <code>ul</code>, <code>li</code>, <code>a</code>). This maps to a priority vector of: **[0, 0, 2, 6]**.</li>
+      </ul>
+      
+      <p>When the style matching matching engine compares these scores, it evaluates each vector position from left to right. Since Selector 1 matches an ID in the second vector slot ($1 > 0$), it instantly wins the priority calculation. The item's total count of base element elements becomes irrelevant; the higher-priority token locks in the final presentation values.</p>
+
+      <h3>Part B — Deep Cascading Lifecycles & Origin Priority Scales</h3>
+      <p>Before evaluating explicit specificity weights, the browser engine routes incoming styles through a macro-level priority evaluation map called the **Cascade Lifecycle**. This structural pipeline layers source files based on where rules are declared:</p>
+      
+      <ol>
+        <li><strong>User Agent Base Declarations:</strong> The browser's default internal layout styles (such as fallback margins or list padding configurations).</li>
+        <li><strong>User Settings Layer:</strong> Custom client configurations tailored by the user (such as accessibility font scale adjustments).</li>
+        <li><strong>Author Sheet Rules:</strong> The explicit styles built and deployed by platform web engineers.</li>
+        <li><strong>Author Sheet Modifications using !important:</strong> Overrides that inject maximum weight into rulesets.</li>
+        <li><strong>User Settings Overrides using !important:</strong> The ultimate system priority level, ensuring user accessibility configurations can't be blocked by developer styles.</li>
+      </ol>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">The Stacking Trace Secret</div>
+        <p>The use of <code>!important</code> declarations doesn't add weight to an existing specificity vector. Instead, it moves that target style rule into an entirely separate, high-priority tier within the cascade evaluation engine lifecycle. Overusing this flag breaks clean rule inheritance, often leading to unmanageable style conflicts as codebases expand.</p>
+      </div>
+
+      <h3>Part C — Property Inheritance Boundaries</h3>
+      <p>Not every style rule applied to a parent container automatically passes down to its child components. CSS cleanly divides properties based on inheritance behaviors:</p>
+      
+      <ul>
+        <li><strong>Inherited Properties:</strong> Typographical settings like <code>font-family</code>, <code>color</code>, <code>line-height</code>, and <code>letter-spacing</code> cascade down naturally through child containers, keeping text presentations clean and uniform.</li>
+        <li><strong>Non-Inherited Elements:</strong> Box structure properties like <code>margin</code>, <code>padding</code>, <code>border</code>, <code>width</code>, and <code>transform</code> are explicitly contained to the target wrapper node, preventing layout distortion downstream.</li>
+      </ul>
+      
+      <p>You can control these data flows programmatically using explicit keyword targets: <code>inherit</code> pulls value definitions down from parent nodes, <code>initial</code> resets properties to standard browser defaults, and <code>unset</code> automatically handles parameters based on whether they naturally inherit.</p>
+
+      <h3>Part D — High-Performance Combinator Target Selection</h3>
+      <p>Enterprise layout engineering requires choosing performant combinator rules to navigate DOM structures efficiently. Let us review the primary combinator tracks:</p>
+      
+      <h4>1. Descendant Selector Combinator (Space Token)</h4>
+      <p>Targets all matching child elements nested anywhere down the parent DOM branch (e.g., <code>.main-card span</code> matches all spans within that wrapper container).</p>
+      
+      <h4>2. Direct Child Selector Combinator (<code>&gt;</code> Symbol)</h4>
+      <p>Limits rule applications strictly to immediate children beneath the primary parent node, lowering calculation complexity by ignoring deeply nested sub-trees.</p>
+      
+      <h4>3. Adjacent Sibling Selector Combinator (<code>+</code> Symbol)</h4>
+      <p>Targets a matching element that immediately follows a specific sibling node at the same hierarchical tier level.</p>
+      
+      <h4>4. General Sibling Selector Combinator (<code>~</code> Symbol)</h4>
+      <p>Applies style modifications broadly to all matching sibling elements that follow a target node within the same level wrapper container.</p>
+    </section>
+
+    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Code Lab — Debugging Cascadings & Rule Scores</h2>
+      </div>
+      <p>Let us explore real layout priority anti-patterns and step-by-step refactor them to ensure predictable rendering matching loops.</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Specificity Collision Overrides</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Brittle ID Nesting Hacks</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Inheritance Pipeline Resets</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Combinator Scope Optimization</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Match Profiling</button>
+        </div>
+
+        <!-- Tab 1 -->
+        <div class="hud-tab-panel active-hud-panel" id="l1">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">collision-analysis.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Unintentional Priority Lockouts */</span>
+<span class="t-sel">main .content-frame ul.item-list li.active a</span> { <span class="t-prop">color</span>: <span class="t-val">#ff007f</span>; }
+<span class="token-comment">/* This lower-weight utility rule silently fails to apply changes */</span>
+<span class="t-sel">.alert-link</span> { <span class="t-prop">color</span>: <span class="t-val">#00f5d4</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Flatten rule structures to ensure predictable utility overrides */</span>
+<span class="t-sel">.item-link-node</span> { <span class="t-prop">color</span>: <span class="t-val">var(--text-muted)</span>; }
+<span class="t-sel">.item-link-node.is-alert</span> { <span class="t-prop">color</span>: <span class="t-val">var(--neon-cyan)</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">The long selector rule creates an overly heavy priority weight vector [0, 2, 1, 4], locking out the standalone [0, 0, 1, 0] class rule from changing property colors.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Keeping selector paths flat lowers global priority scores, allowing your utility modifier classes to override base element styles predictably.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div class="hud-tab-panel" id="l2">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">id-refactoring.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Brittle ID Specificity Nesting */</span>
+<span class="t-sel">#profile-card button.submit-btn</span> { <span class="t-prop">background</span>: <span class="t-val">blue</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Leverage modular, flat BEM design patterns */</span>
+<span class="t-sel">.c-profile-card__submit-trigger</span> { <span class="t-prop">background</span>: <span class="t-val">var(--neon-purple)</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Using raw ID tokens inside styling rules shoots weight metrics up sharply [0, 1, 1, 1], forcing developers to write increasingly heavy rules to override basic elements later.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Moving to decoupled component classes levels out priority weights, making the layout modular and easier to scale without style side effects.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div class="hud-tab-panel" id="l3">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">inheritance-reset.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Hardcoded Override Lists */</span>
+<span class="t-sel">.widget-box p, .widget-box span, .widget-box a</span> { <span class="t-prop">color</span>: <span class="t-val">#fff</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Utilize clean inheritance boundaries to control properties */</span>
+<span class="t-sel">.widget-box</span> { <span class="t-prop">color</span>: <span class="t-val">var(--text-primary)</span>; }
+<span class="t-sel">.widget-box-reset-node</span> { <span class="t-prop">color</span>: <span class="t-val">unset</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Manually declaring repetitive property values on individual child nodes inflates styles and breaks native global font cascading rules across sub-trees.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Applying styles to top-level wrappers lets values flow down naturally through child nodes, using <code>unset</code> to clean up parameters dynamically where needed.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div class="hud-tab-panel" id="l4">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">combinator-opt.css</span></div>
+            <pre><span class="token-comment">/* Anti-Pattern: Loose Descendant Performance Traps */</span>
+<span class="t-sel">.sidebar-shell div span item</span> { <span class="t-prop">border-bottom</span>: <span class="t-val">1px</span>; }</pre>
+            <div class="error-explanation">
+              <div class="error-label">Production Refactored Configuration</div>
+              <pre><span class="token-comment">/* Scope selection fields explicitly using direct combinators */</span>
+<span class="t-sel">.sidebar-shell &gt; .navigation-rail &gt; .rail-item</span> { <span class="t-prop">border-bottom</span>: <span class="t-val">1px</span>; }</pre>
+              <div class="error-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Root Problem Analysis</div>
+                  <div class="breakdown-val">Loose descendant rules force the browser's style engine to evaluate deep, multi-tier node matching chains across the DOM tree during layout changes.</div>
+                </div>
+                <div class="breakdown-item">
+                  <div class="breakdown-key">Refactored Result</div>
+                  <div class="breakdown-val">Enforcing explicit direct child bounds targets element matches in a single pass, saving compute cycles as app layouts grow.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div class="hud-tab-panel" id="l5">
+          <div class="premium-code-block">
+            <div class="p-code-header"><span class="p-code-filename">telemetry-metrics.js</span></div>
+            <pre><span class="token-comment">// Programmatic Verification of Computed Style Matches via Main Thread Runtime</span>
+<span class="token-kw">const</span> <span class="token-var">computedMetrics</span> = window.getComputedStyle(document.querySelector(<span class="token-str">'.alert-link'</span>));
+console.log(<span class="token-str">"[Cascade Selection Target Property]:"</span>, <span class="token-var">computedMetrics</span>.getPropertyValue(<span class="token-str">'color'</span>));</pre>
+            <div class="error-explanation">
+              <div class="error-label">Three Guidelines for Styling Pipeline Optimization</div>
+              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
+                <strong style="color:var(--neon-cyan);">1. Keep rule paths shallow.</strong> Aim for simple class targets whenever possible to optimize selector matching work within browser engines.<br><br>
+                <strong style="color:var(--neon-magenta);">2. Avoid inline style injections.</strong> Adding design overrides straight to markup components introduces high-priority rules that break standard external stylesheet definitions.<br><br>
+                <strong style="color:var(--neon-purple);">3. Leverage DevTools selector audits.</strong> Inspect applied styles within the Elements panel to identify overridden properties, tracing cascade priority changes step-by-step.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Review these common priority calculation mistakes found in candidate project submissions. Fixing style structure inefficiencies early ensures layouts scale cleanly across platforms.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Overusing !important to Patch Style Collisions</div>
+          <div class="pitfall-body">Injecting urgent <code>!important</code> flags across style overrides to bypass priority conflicts quickly. This bad habit breaks standard document cascading flows.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Remove important flags entirely and resolve the conflict cleanly by strengthening or restructuring your standard class selector patterns instead.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Using Raw ID Tokens as Style Selectors</div>
+          <div class="pitfall-body">Binding presentation rules straight to unique element IDs (like <code>#sidebar-toggle</code>). This design pattern elevates priority weights unnecessarily.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Target layouts using distinct, reusable element classes instead, keeping codebase priority scores balanced and easy to adjust.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Misunderstanding Universal Selector Priorities</div>
+          <div class="pitfall-body">Assuming global styles like <code>* { color: gray; }</code> override element styles inherited from parent containers due to wide selection rules.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Universal rules match elements directly with a score of zero, which naturally wins out over structural property values passed down via parent inheritance tracks.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Relying blindly on Source Ordering Files</div>
+          <div class="pitfall-body">Assuming stylesheet sequence paths resolve all layout overrides, while overlooking structural selector score weights defined within the codebase.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Source ordering only acts as a tie-breaker when selector scores match exactly. Prioritize managing explicit weight vector properties first.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 05</div>
+          <div class="pitfall-title">Unintentional Priority Chaining Bloat</div>
+          <div class="pitfall-body">Chaining class selectors heavily (such as <code>.main.card.item.active</code>) simply to win priority weight metrics over competing rulesets.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Refactor styles into simple, direct component selectors (like BEM models) to keep matching priorities clean and easy to maintain.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 06</div>
+          <div class="pitfall-title">Hardcoding Resets across Non-Inherited Properties</div>
+          <div class="pitfall-body">Declaring redundant spacing overrides like <code>margin: 0;</code> down through nested child rows, adding unneeded volume to style files.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Leverage native layout containers or clear utility classes to coordinate child spacing structures efficiently from top-level rules.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Real World — High-Scale Design Systems</h2>
+      </div>
+      <p>Top-tier technology organizations deploy specialized selector patterns and structural build pipelines to keep global platform styles fast and stable as codebases expand.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Meta Platform Architecture</div>
+          <div class="cell-desc">Meta engineered custom compilation tools like StyleX to minimize selector priority conflicts. The tool parses style declarations and compiles them into short, atomic class rules, ensuring predictable renders by flattening styling code.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">GitHub Theme Pipelines</div>
+          <div class="cell-desc">GitHub manages robust light and dark UI view shifts across massive development workspaces. Their design system leverages CSS custom variables mapped to uniform element class trees, avoiding messy priority conflicts during visual state updates.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Netflix UI Engine Scaling</div>
+          <div class="cell-desc">Netflix builds high-performance interface layers that stream across thousands of media device runtimes. Their engineering rules restrict selector paths to flat class architectures, optimizing parsing speeds on lower-powered devices.</div>
+        </div>
+      </div>
+
+      <h3>The Production Style Compilation Step</h3>
+      <p>Modern frontend deployment workflows process source style files through automated optimization passes before final platform deployment:</p>
+      <ol>
+        <li><strong>Lint Pass Quality Checks:</strong> Automated review hooks scan selectors to capture and block bad nesting rules or arbitrary ID paths early.</li>
+        <li><strong>Atomic Style Extraction:</strong> Build systems extract repeated styling properties, compiling code into optimized utility tokens that match single-pass browser rules.</li>
+        <li><strong>Dead-Code Selection Purging:</strong> Build routines match active templates against stylesheets to identify and drop unused selectors, shrinking payload sizes for faster network delivery.</li>
+      </ol>
+    </section>
+
+    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In mid-to-senior UI engineering evaluations, style knowledge is rarely tested with raw trivia questions. Instead, it is evaluated by analyzing your approach to code architecture, cascade management, and layout performance.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are integrated into an enterprise micro-frontend workspace architecture where independent development teams mount decoupled features into a shared view shell dynamically. Styles cross-collide constantly, breaking layout structures across features. How do you re-engineer this setup?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "To safely isolate style scopes and prevent cascading conflicts across sub-teams, I would introduce a multi-tiered defense strategy. First, I would implement strict prefix scoping rules via CSS Modules or build-time systems, appending unique hashes to each team's class tokens to keep selectors separated. Next, I would leverage native browser encapsulation by moving isolated widgets into their own Shadow DOM contexts, completely shielding internal nodes from parent document style bleeding. For base styles that must cross boundaries, I would organize properties using CSS Cascade Layers (<code>@layer base, components, overrides;</code>), which explicitly controls rule priority tiers regardless of selector weight scores. Finally, I would enforce BEM class naming conventions to keep style weights low and balanced across all micro-apps."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain what happens to the browser matching engine runtime loop when a developer applies a loose descendant rule path like .container div ul li span a directly across an expansive layout view containing thousands of nested DOM nodes."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Browsers match selector expressions from right to left, evaluating the target element token first. For the expression <code>.container div ul li span a</code>, the style engine finds *every single anchor element* across the entire document tree first. From there, it walks up the DOM parent branches sequentially to verify if the node sits within a span, nested in a list item, inside a list, and so on, up to the container root class. On views with large, deep DOM trees, this extensive element evaluation tree forces the matching engine to rerun heavy validation loops, blocking the main thread during dynamic content updates."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Architecture Rule Evaluation</div>
+        <div class="pb-q-title">"A candidate proposes a global style development guide that explicitly allows using element IDs for quick style overrides on dashboard applications. Critically evaluate this architecture selection."</div>
+        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enabling ID selectors within styling rules sets a problematic baseline for scale design codebases. An ID rule introduces a high specificity weight vector [0, 1, 0, 0] that single class rules can't match. This forces engineering teams to write increasingly heavy, complex selector chains just to override basic component variations later, leading to brittle stylesheets and style conflicts. Production architectures should keep style paths flat using reusable component classes, keeping priority weights low and easy to maintain."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Layout Positioning Assessment</div>
+        <div class="pb-q-title">"Trace how the browser style matching engine handles priority evaluations when two conflicting class rules defined within separate files target the exact same element property with matching specificity metrics."</div>
+        <div class="pb-hud-answer"><strong>Cascade Engine Trace:</strong> "When selector specificity metrics result in an exact tie vector, the engine moves down the cascade lifecycle to its structural tie-breaker step: **Source Ordering**. The matching engine processes styles in the order they are parsed by the browser, meaning the rule loaded last in the document head wins the tie-breaker and locks in its property values over earlier definitions."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">How does the browser matching engine calculate specificity metrics across style rules?</div>
+            <div class="r-action-hint">Recite the vector mapping format ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">Browsers calculate weight profiles using a four-tier vector system: (Inline, ID, Class, Element). The matching engine compares these columns from left to right, meaning an ID selector token instantly wins over any quantity of stacked class or element tags.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why is animating or modifying inline style properties using JavaScript a risky practice for complex interface systems?</div>
+            <div class="r-action-hint">Consider priority weighting distributions ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Modifying inline element styles applies a maximum priority weight vector [1, 0, 0, 0] directly onto the markup node. This high-priority setting locks out clean overrides from external stylesheets, forcing teams to rely on messy style rules to make adjustments later.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Explain the structural evaluation differences between the descendant combinator space token and the direct child combinator symbol.</div>
+            <div class="r-action-hint">Contrast wide sub-tree scans against immediate single-tier checks ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">The descendant combinator matches all target elements nested anywhere down the parent's structural tree. The direct child combinator (<code>&gt;</code>) limits style evaluations strictly to the immediate first tier beneath the parent node, lowering browser parsing work.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">What occurs along the presentation layer when a child element requests a property configuration using the inherit keyword token?</div>
+            <div class="r-action-hint">Trace property inheritance flows ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">The <code>inherit</code> keyword instructs the browser to pull computed property values straight from the element's immediate parent container, bypassing default layout initialization values for non-inherited properties like margins or borders.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 05</div>
+            <div class="r-question-text">How does source ordering act as a tie-breaker when processing selector style rules?</div>
+            <div class="r-action-hint">Consider exact priority score ties ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 05</div>
+            <div class="r-answer-text">When competing selectors score an exact tie weight vector, the browser engine relies on parsing sequence order as its tie-breaker. The selector declaration loaded last in the stylesheet payload wins the conflict and sets the final property values.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 06</div>
+            <div class="r-question-text">What distinct structural behavior separates inherited properties from non-inherited elements across the box model?</div>
+            <div class="r-action-hint">Contrast text presentation rules with layout container variables ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 06</div>
+            <div class="r-answer-text">Inherited properties (like <code>font-family</code> or <code>color</code>) flow down naturally through child DOM branches to ensure text uniformity. Non-inherited elements (like <code>padding</code> or <code>border</code>) apply strictly to the target container wrapper to keep layout boundaries stable.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">11</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these development tasks to solidify your understanding of style priority engineering. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Real-World Specificity Weights using DevTools Panels (30 Min)</div>
+            <div class="row-desc">Open an advanced web application layout view and open your browser's DevTools console. Navigate into the Elements panel, select a deep layout node, and inspect the styles sub-tab. Trace the overridden properties, calculating individual selector vector scores to see how the engine handles cascading rulesets.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build a Cascading Specificity Validation Testing Matrix (30 Min)</div>
+            <div class="row-desc">Create an isolated style sandbox page locally. Construct an element block targeted by four competing style rules with different specificity scores simultaneously. Practice adjusting class and tag balances to shift rule priority weights systematically without using important flags.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Refactor a Brittle ID-Heavy Stylesheet into BEM Code (30 Min)</div>
+            <div class="row-desc">Locate or write a sample style sheet that uses deep selector chains and hardcoded element IDs. Refactor the code into a flat class design system using clean BEM naming rules, ensuring selector weight metrics remain low and balanced across your components.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Audit Component Performance Footprints using Rendering Timelines (30 Min)</div>
+            <div class="row-desc">Open the Performance profiling tab within your browser's developer tools workspace. Capture a timeline snapshot during rapid page updates, and analyze the style calculation logs to ensure selector matching runs smoothly without blocking primary main thread loops.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-callout hud-callout-warning">
+        <div class="hud-callout-label">Don't Skip These Exercises</div>
+        <p>Reviewing style logic without writing real code is like analyzing database indexing strategies without running queries. Presentation priority habits become natural only through hands-on practice. Shifting style structures and managing specificity budgets locally builds the performance mindset required when engineering large full-stack architectures down the line.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">12</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These style architecture principles form the baseline requirement for engineering production-tier presentation layers. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Keep selector paths flat. Structure style rules using shallow class configurations to optimize pattern matching speeds within browser engines.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Avoid styling with unique IDs. Keep presentation layers flexible by organizing layouts through reusable element class systems instead of heavy ID flags.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Eliminate important declaration overrides. Manage layout priorities cleanly through clear style weight calculations instead of masking conflicts behind system overrides.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">The Cascade Engine</div>
+          <div class="g-node-definition">The browser pipeline stage that organizes competing style sheets based on source origins, declaration settings, and rule locations.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Specificity Weight Vector</div>
+          <div class="g-node-definition">The 4-part matrix score (Inline, ID, Class, Element) browser style calculations use to evaluate rule priority weights.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Property Inheritance</div>
+          <div class="g-node-definition">The native styling system where typography settings pass down through child DOM branches, while box model spacing properties remain contained.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Direct Child Combinator</div>
+          <div class="g-node-definition">An explicit selector symbol (<code>&gt;</code>) that limits style applications strictly to the first tier of elements directly beneath a parent node.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Descendant Selector</div>
+          <div class="g-node-definition">A loose styling match path (using spaces) that scans all matching child nodes nested anywhere down a target DOM branch.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">BEM Selector Logic</div>
+          <div class="g-node-definition">Block-Element-Modifier class naming principles engineered to produce shallow style rules and minimize layout conflicts.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">!important Declaration</div>
+          <div class="g-node-definition">An override token that pushes a style rule into a high-priority cascade tier, bypassing standard vector weight scores.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Source Ordering Rule</div>
+          <div class="g-node-definition">The browser's style tie-breaker process where the rule parsed last in the stylesheet payload wins out when specificity vectors match exactly.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">User Agent Style Sheet</div>
+          <div class="g-node-definition">The browser's default baseline styling configurations that apply standard presentation rules to unstyled document layouts.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Pseudo-Class Token</div>
+          <div class="g-node-definition">A specialized structural keyword (like <code>:hover</code>) used to target element styles during dynamic user interactions.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Pseudo-Element Token</div>
+          <div class="g-node-definition">A markup keyword descriptor (like <code>::before</code>) used to generate and style virtual decoration blocks within parent containers.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Style matching Engine</div>
+          <div class="g-node-definition">The internal browser component that evaluates document nodes against selector rules to assemble the active CSSOM tree.</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-2.2.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 2.2 - Flexbox Layouts: Linear Space Alignment Rules</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2016,90 +2909,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3236,943 +4045,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="phase-2"               >
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-<!-- ═══════════════════════════════ VIBRANT HERO RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-magenta"></div>
-    <div class="glow-orb orb-cyan"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 2 — Cascading Presentation Architecture</div>
-  <div class="hero-eyebrow">essay 2.1 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  <h1 class="hero-title">
-    CSS Fundamentals:<br>
-    Selectors & <em>Specificity Rules</em>
-  </h1>
-  <p class="hero-subtitle">
-    Deep-diving into browser design calculations, internal style weighting hierarchies, the cascading rule engine, properties inheritance, and targeted document node selection strategies.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">2.1 — Presentation Kernels</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~45 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Phase 1 (HTML 1.1 - 1.3)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">Specificity Math · Cascade Lifecycles · Inherited Properties · Complex Compound Combinators</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; trace presentation matrices</div>
-</div>
-
-<!-- ═══════════════════════════════ PREMIUM CORE LAYOUT ═══════════════════════════════ -->
-<div class="premium-layout">
-
-  <!-- NEO GLOW SIDEBAR HUD -->
-  <aside class="sidebar-hud">
-    <div class="sidebar-label">Document Trees</div>
-    <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-    <a class="hud-nav-item" href="#s2"><span class="nav-hud-num">02</span><span class="nav-hud-text">Where This Fits</span></a>
-    <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Intuition</span></a>
-    <a class="hud-nav-item" href="#s4"><span class="nav-num">04</span><span class="nav-text">The Visual</span></a>
-    <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">05</span><span class="nav-hud-text">The Depth</span></a>
-    <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">06</span><span class="nav-hud-text">Code Lab</span></a>
-    <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">07</span><span class="nav-hud-text">Common Mistakes</span></a>
-    <a class="nav-item" href="#s8"><span class="nav-num">08</span><span class="nav-text">Real World</span></a>
-    <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">09</span><span class="nav-hud-text">Interview Angle</span></a>
-    <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">10</span><span class="nav-hud-text">Explain It Test</span></a>
-    <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">11</span><span class="nav-hud-text">Do This Today</span></a>
-    <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">12</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-  </aside>
-
-  <!-- GRAPHICS WRAPPED MAIN SECTION PANELS -->
-  <main>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many frontend engineering candidates treat Cascading Style Sheets (CSS) as a loose arrangement of visual properties adjusted by random guesswork until elements display correctly. <strong>This structural ignorance breaks application rendering pipelines under real production loads.</strong> When web platforms expand to support vast component systems across large teams, an unoptimized configuration of style selectors leads to style collisions, bloated stylesheets, and layout thrashing that impacts rendering speeds.</p>
-      <p>CSS is guided by a deterministic browser calculation model. Every selector sequence you write acts as an input instruction for the browser's style matching matching engine. This module explores how style rules cascade, how browsers evaluate specificity metrics, and how properties inherit down through complex document trees. Reaching structural clarity over these core mechanisms is essential for keeping high-traffic layouts clean, fast, and maintainable.</p>
-      
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>The operational difference between an enterprise UI developer and a hobbyist is a deep mastery of specificity calculations. Writing maintainable scale layouts means structuring flat style rules intentionally, allowing the browser's pattern-matching matching systems to evaluate and compute elements across target interfaces with minimal computational complexity.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: WHERE THIS FITS ══════════ -->
-    <section class="section-card" id="s2">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">Where This Fits</h2>
-      </div>
-      <p>Now that you have configured your development machine, practiced advanced debugging workflows, and mastered semantic document layout parameters, we shift directly into engineering visual rules. CSS is the foundation of the web presentation layer.</p>
-      
-      <div class="phase-map">
-        <div class="phase-node done"><div class="phase-circle">1.1</div><div class="phase-label">HTML Struct</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node done"><div class="phase-circle">1.3</div><div class="phase-label">HTML5 Meta</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node current"><div class="phase-circle">2.1</div><div class="phase-label">CSS Found</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">2.2</div><div class="phase-label">Flexbox Layout</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">3.1</div><div class="phase-label">JS Engine</div></div>
-        <div class="phase-arrow"></div>
-        <div class="phase-node upcoming"><div class="phase-circle">···</div><div class="phase-label">System Scales</div></div>
-      </div>
-      
-      <p>Every dynamic presentation interface module, responsive design grid grid, and advanced component layout constructed in future tracking sections relies on this specificity engine layer. Mastering cascade evaluation rules allows you to build clean stylesheets, avoiding style conflicts before layering on layout rules or hardware-accelerated transitions.</p>
-
-      <div class="hud-callout hud-callout-tip">
-        <div class="hud-callout-label">Return Here Often</div>
-        <p>Keep these math rules close at hand. The first few times you face a stubborn layout bug or style collision in complex multi-tier application views, revisit this selector hierarchy map. After tracing this evaluation path a few times, writing clean styles will become second nature.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 3: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Supreme Court Priority Model</h3>
-      <p>Imagine a complex constitutional legal system processing thousands of competing municipal laws, state directives, and federal decrees simultaneously. When local ordinances clash with supreme constitutional amendments, judges do not guess which law wins out. They rely on an unbreakable, hierarchical priority chain.</p>
-      <p>**CSS style rule execution functions exactly like that legal priority chain.** Universal declarations operate like baseline municipal guidelines, class styles act like state laws, and ID selectors serve as high-priority federal rulings. The browser's cascade matching engine processes these constraints in order, using clear specificity scores to determine exactly which design instruction takes precedence on the user's screen.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When an element style refuses to apply as intended, replace frustration with a systematic debugging question: <strong>"This selector is locked behind an unresolved rule priority conflict. How can I map out the weight distribution metrics to locate the override source?"</strong> This analytical lens simplifies styling layout fixes.</p>
-      </div>
-
-      <h3>The Transparent Plastic Overlay Metaphor</h3>
-      <p>To write high-performance style rules, visualize cell sheets stacked together inside an architectural diagram pack. Each sheet applies target decorations—one shapes border outlines, another layers on text colors, and a third adds positioning grids. The final display is the combined result of all these overlapping style sheets. When multiple rules target the exact same element property, the highest-weight instruction punches through, determining the final screen layout.</p>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Visual — Specificity Evaluation Weights</h2>
-      </div>
-      <p>Tracing how style rules calculate value weights is critical for avoiding cascading priority bugs. Click through each sequential layout tier to see how selector tokens compound into explicit score maps.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>📊 &nbsp; CSS Specificity Score Calculation Hierarchy &nbsp;·&nbsp; Click steps to reveal priority weights.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Inline Attribute Style Configuration — Score [1, 0, 0, 0]</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>Styles attached directly to markup components (like <code>style="color: red;"</code>) bypass external sheet calculations entirely. They command maximum weight, instantly overriding competing configurations defined inside external stylesheet rules.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">ID Selector Token Constraints — Score [0, 1, 0, 0]</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>ID targets (such as <code>#dashboard-node</code>) are highly weighted selectors. A single ID rule carries enough weight to override any number of stacked class or element selectors, which is why enterprise guidelines recommend using them sparingly for styling styling.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Class, Attribute, & Pseudo-Class Rules — Score [0, 0, 1, 0]</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>This mid-tier priority level handles classes (<code>.item-card</code>), attribute rules (<code>[type="checkbox"]</code>), and pseudo-classes (<code>:hover</code>). Stacking these components allows you to design specific interaction styles while keeping your codebase maintainable.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">4</div>
-              <div class="wb-step-title">Element & Pseudo-Element Selectors — Score [0, 0, 0, 1]</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The lowest priority weight tier applies to raw tag types (<code>main</code>, <code>div</code>) and pseudo-elements (<code>::before</code>). These base selectors define wide global style defaults across your application layouts without overriding targeted component variations.</p>
-            </div>
-          </div>
-        </div>
-        <button class="flow-start-btn" onclick="resetNodes()">↺ Reset Metric Tree</button>
-      </div>
-
-      <!-- PREMIUM INCLUDED INFOGRAPHIC SECTOR -->
-      <div class="infographic-wrapper">
-        <!-- Built using canvas-style vector styling to ensure high premium interface delivery -->
-        <svg class="infographic-graphic" viewBox="0 0 800 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="300" rx="12" fill="#090314"/>
-          <g opacity="0.2"><circle cx="400" cy="150" r="120" stroke="#9d4edd" stroke-width="2" stroke-dasharray="4 4"/></g>
-          <!-- Vector Map detailing Specificity Vector tracks -->
-          <rect x="50" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#ff007f" stroke-width="2"/>
-          <text x="120" y="130" fill="#ff007f" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Inline [1k]</text>
-          <rect x="230" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#00f5d4" stroke-width="2"/>
-          <text x="300" y="130" fill="#00f5d4" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">IDs [100]</text>
-          <rect x="410" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#9d4edd" stroke-width="2"/>
-          <text x="480" y="130" fill="#9d4edd" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Classes [10]</text>
-          <rect x="590" y="80" width="140" height="100" rx="8" fill="#1c0d40" stroke="#ffee32" stroke-width="2"/>
-          <text x="660" y="130" fill="#ffee32" font-family="Fira Code" font-size="16" text-anchor="middle" font-weight="bold">Elements [1]</text>
-          <path d="M 190 130 L 230 130" stroke="#9d8ec2" stroke-width="2" marker-end="url(#arrow)"/>
-          <path d="M 370 130 L 410 130" stroke="#9d8ec2" stroke-width="2"/>
-          <path d="M 550 130 L 590 130" stroke="#9d8ec2" stroke-width="2"/>
-        </svg>
-        <div class="infographic-caption">Vector Infographic 2.1: The Specificity Weight Matrix. Scores are evaluated left-to-right, meaning higher-tier weights instantly win out over lower-tier selections.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 5: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — The Mechanics of Specificity Vector Vectors</h3>
-      <p>Browser layout engines do not add selector specificity up using a simple base-10 math scale. Instead, they calculate values using a 4-part vector vector model: **(Inline, ID, Class, Element)**. This vector comparison system handles layout priorities in order, ensuring distinct style separations across the board.</p>
-      
-      <p>Let us analyze a direct mathematical calculation example comparing two competing selector rules:</p>
-      <p>Imagine these two rules target the exact same anchor element:</p>
-      <ol>
-        <li><code>#navigation-rail .menu-list a:hover</code></li>
-        <li><code>html body main div.page-wrapper ul li.menu-list a</code></li>
-      </ol>
-      
-      <p>Let us break down the vector values to see which rule wins out:</p>
-      <ul>
-        <li>**Selector 1 Metrics:** Contains 1 ID (<code>#navigation-rail</code>), 1 class (<code>.menu-list</code>), 1 pseudo-class (<code>:hover</code>), and 1 element tag (<code>a</code>). This maps to a final priority score vector of: **[0, 1, 2, 1]**.</li>
-        <li>**Selector 2 Metrics:** Contains 2 classes (<code>.page-wrapper</code>, <code>.menu-list</code>) and 6 explicit element elements (<code>html</code>, <code>body</code>, <code>main</code>, <code>div</code>, <code>ul</code>, <code>li</code>, <code>a</code>). This maps to a priority vector of: **[0, 0, 2, 6]**.</li>
-      </ul>
-      
-      <p>When the style matching matching engine compares these scores, it evaluates each vector position from left to right. Since Selector 1 matches an ID in the second vector slot ($1 > 0$), it instantly wins the priority calculation. The item's total count of base element elements becomes irrelevant; the higher-priority token locks in the final presentation values.</p>
-
-      <h3>Part B — Deep Cascading Lifecycles & Origin Priority Scales</h3>
-      <p>Before evaluating explicit specificity weights, the browser engine routes incoming styles through a macro-level priority evaluation map called the **Cascade Lifecycle**. This structural pipeline layers source files based on where rules are declared:</p>
-      
-      <ol>
-        <li><strong>User Agent Base Declarations:</strong> The browser's default internal layout styles (such as fallback margins or list padding configurations).</li>
-        <li><strong>User Settings Layer:</strong> Custom client configurations tailored by the user (such as accessibility font scale adjustments).</li>
-        <li><strong>Author Sheet Rules:</strong> The explicit styles built and deployed by platform web engineers.</li>
-        <li><strong>Author Sheet Modifications using !important:</strong> Overrides that inject maximum weight into rulesets.</li>
-        <li><strong>User Settings Overrides using !important:</strong> The ultimate system priority level, ensuring user accessibility configurations can't be blocked by developer styles.</li>
-      </ol>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">The Stacking Trace Secret</div>
-        <p>The use of <code>!important</code> declarations doesn't add weight to an existing specificity vector. Instead, it moves that target style rule into an entirely separate, high-priority tier within the cascade evaluation engine lifecycle. Overusing this flag breaks clean rule inheritance, often leading to unmanageable style conflicts as codebases expand.</p>
-      </div>
-
-      <h3>Part C — Property Inheritance Boundaries</h3>
-      <p>Not every style rule applied to a parent container automatically passes down to its child components. CSS cleanly divides properties based on inheritance behaviors:</p>
-      
-      <ul>
-        <li><strong>Inherited Properties:</strong> Typographical settings like <code>font-family</code>, <code>color</code>, <code>line-height</code>, and <code>letter-spacing</code> cascade down naturally through child containers, keeping text presentations clean and uniform.</li>
-        <li><strong>Non-Inherited Elements:</strong> Box structure properties like <code>margin</code>, <code>padding</code>, <code>border</code>, <code>width</code>, and <code>transform</code> are explicitly contained to the target wrapper node, preventing layout distortion downstream.</li>
-      </ul>
-      
-      <p>You can control these data flows programmatically using explicit keyword targets: <code>inherit</code> pulls value definitions down from parent nodes, <code>initial</code> resets properties to standard browser defaults, and <code>unset</code> automatically handles parameters based on whether they naturally inherit.</p>
-
-      <h3>Part D — High-Performance Combinator Target Selection</h3>
-      <p>Enterprise layout engineering requires choosing performant combinator rules to navigate DOM structures efficiently. Let us review the primary combinator tracks:</p>
-      
-      <h4>1. Descendant Selector Combinator (Space Token)</h4>
-      <p>Targets all matching child elements nested anywhere down the parent DOM branch (e.g., <code>.main-card span</code> matches all spans within that wrapper container).</p>
-      
-      <h4>2. Direct Child Selector Combinator (<code>&gt;</code> Symbol)</h4>
-      <p>Limits rule applications strictly to immediate children beneath the primary parent node, lowering calculation complexity by ignoring deeply nested sub-trees.</p>
-      
-      <h4>3. Adjacent Sibling Selector Combinator (<code>+</code> Symbol)</h4>
-      <p>Targets a matching element that immediately follows a specific sibling node at the same hierarchical tier level.</p>
-      
-      <h4>4. General Sibling Selector Combinator (<code>~</code> Symbol)</h4>
-      <p>Applies style modifications broadly to all matching sibling elements that follow a target node within the same level wrapper container.</p>
-    </section>
-
-    <!-- ══════════ SECTION 6: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Code Lab — Debugging Cascadings & Rule Scores</h2>
-      </div>
-      <p>Let us explore real layout priority anti-patterns and step-by-step refactor them to ensure predictable rendering matching loops.</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 'l1')">Specificity Collision Overrides</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l2')">Brittle ID Nesting Hacks</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l3')">Inheritance Pipeline Resets</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l4')">Combinator Scope Optimization</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 'l5')">Telemetry Match Profiling</button>
-        </div>
-
-        <!-- Tab 1 -->
-        <div class="hud-tab-panel active-hud-panel" id="l1">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">collision-analysis.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Unintentional Priority Lockouts */</span>
-<span class="t-sel">main .content-frame ul.item-list li.active a</span> { <span class="t-prop">color</span>: <span class="t-val">#ff007f</span>; }
-<span class="token-comment">/* This lower-weight utility rule silently fails to apply changes */</span>
-<span class="t-sel">.alert-link</span> { <span class="t-prop">color</span>: <span class="t-val">#00f5d4</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Flatten rule structures to ensure predictable utility overrides */</span>
-<span class="t-sel">.item-link-node</span> { <span class="t-prop">color</span>: <span class="t-val">var(--text-muted)</span>; }
-<span class="t-sel">.item-link-node.is-alert</span> { <span class="t-prop">color</span>: <span class="t-val">var(--neon-cyan)</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">The long selector rule creates an overly heavy priority weight vector [0, 2, 1, 4], locking out the standalone [0, 0, 1, 0] class rule from changing property colors.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Keeping selector paths flat lowers global priority scores, allowing your utility modifier classes to override base element styles predictably.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 2 -->
-        <div class="hud-tab-panel" id="l2">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">id-refactoring.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Brittle ID Specificity Nesting */</span>
-<span class="t-sel">#profile-card button.submit-btn</span> { <span class="t-prop">background</span>: <span class="t-val">blue</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Leverage modular, flat BEM design patterns */</span>
-<span class="t-sel">.c-profile-card__submit-trigger</span> { <span class="t-prop">background</span>: <span class="t-val">var(--neon-purple)</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Using raw ID tokens inside styling rules shoots weight metrics up sharply [0, 1, 1, 1], forcing developers to write increasingly heavy rules to override basic elements later.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Moving to decoupled component classes levels out priority weights, making the layout modular and easier to scale without style side effects.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3 -->
-        <div class="hud-tab-panel" id="l3">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">inheritance-reset.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Hardcoded Override Lists */</span>
-<span class="t-sel">.widget-box p, .widget-box span, .widget-box a</span> { <span class="t-prop">color</span>: <span class="t-val">#fff</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Utilize clean inheritance boundaries to control properties */</span>
-<span class="t-sel">.widget-box</span> { <span class="t-prop">color</span>: <span class="t-val">var(--text-primary)</span>; }
-<span class="t-sel">.widget-box-reset-node</span> { <span class="t-prop">color</span>: <span class="t-val">unset</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Manually declaring repetitive property values on individual child nodes inflates styles and breaks native global font cascading rules across sub-trees.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Applying styles to top-level wrappers lets values flow down naturally through child nodes, using <code>unset</code> to clean up parameters dynamically where needed.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 4 -->
-        <div class="hud-tab-panel" id="l4">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">combinator-opt.css</span></div>
-            <pre><span class="token-comment">/* Anti-Pattern: Loose Descendant Performance Traps */</span>
-<span class="t-sel">.sidebar-shell div span item</span> { <span class="t-prop">border-bottom</span>: <span class="t-val">1px</span>; }</pre>
-            <div class="error-explanation">
-              <div class="error-label">Production Refactored Configuration</div>
-              <pre><span class="token-comment">/* Scope selection fields explicitly using direct combinators */</span>
-<span class="t-sel">.sidebar-shell &gt; .navigation-rail &gt; .rail-item</span> { <span class="t-prop">border-bottom</span>: <span class="t-val">1px</span>; }</pre>
-              <div class="error-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Root Problem Analysis</div>
-                  <div class="breakdown-val">Loose descendant rules force the browser's style engine to evaluate deep, multi-tier node matching chains across the DOM tree during layout changes.</div>
-                </div>
-                <div class="breakdown-item">
-                  <div class="breakdown-key">Refactored Result</div>
-                  <div class="breakdown-val">Enforcing explicit direct child bounds targets element matches in a single pass, saving compute cycles as app layouts grow.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 5 -->
-        <div class="hud-tab-panel" id="l5">
-          <div class="premium-code-block">
-            <div class="p-code-header"><span class="p-code-filename">telemetry-metrics.js</span></div>
-            <pre><span class="token-comment">// Programmatic Verification of Computed Style Matches via Main Thread Runtime</span>
-<span class="token-kw">const</span> <span class="token-var">computedMetrics</span> = window.getComputedStyle(document.querySelector(<span class="token-str">'.alert-link'</span>));
-console.log(<span class="token-str">"[Cascade Selection Target Property]:"</span>, <span class="token-var">computedMetrics</span>.getPropertyValue(<span class="token-str">'color'</span>));</pre>
-            <div class="error-explanation">
-              <div class="error-label">Three Guidelines for Styling Pipeline Optimization</div>
-              <p style="font-size:0.92rem; color:var(--text-muted); margin:0 0 12px;">
-                <strong style="color:var(--neon-cyan);">1. Keep rule paths shallow.</strong> Aim for simple class targets whenever possible to optimize selector matching work within browser engines.<br><br>
-                <strong style="color:var(--neon-magenta);">2. Avoid inline style injections.</strong> Adding design overrides straight to markup components introduces high-priority rules that break standard external stylesheet definitions.<br><br>
-                <strong style="color:var(--neon-purple);">3. Leverage DevTools selector audits.</strong> Inspect applied styles within the Elements panel to identify overridden properties, tracing cascade priority changes step-by-step.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Review these common priority calculation mistakes found in candidate project submissions. Fixing style structure inefficiencies early ensures layouts scale cleanly across platforms.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Overusing !important to Patch Style Collisions</div>
-          <div class="pitfall-body">Injecting urgent <code>!important</code> flags across style overrides to bypass priority conflicts quickly. This bad habit breaks standard document cascading flows.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Remove important flags entirely and resolve the conflict cleanly by strengthening or restructuring your standard class selector patterns instead.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Using Raw ID Tokens as Style Selectors</div>
-          <div class="pitfall-body">Binding presentation rules straight to unique element IDs (like <code>#sidebar-toggle</code>). This design pattern elevates priority weights unnecessarily.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Target layouts using distinct, reusable element classes instead, keeping codebase priority scores balanced and easy to adjust.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Misunderstanding Universal Selector Priorities</div>
-          <div class="pitfall-body">Assuming global styles like <code>* { color: gray; }</code> override element styles inherited from parent containers due to wide selection rules.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Universal rules match elements directly with a score of zero, which naturally wins out over structural property values passed down via parent inheritance tracks.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Relying blindly on Source Ordering Files</div>
-          <div class="pitfall-body">Assuming stylesheet sequence paths resolve all layout overrides, while overlooking structural selector score weights defined within the codebase.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Source ordering only acts as a tie-breaker when selector scores match exactly. Prioritize managing explicit weight vector properties first.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 05</div>
-          <div class="pitfall-title">Unintentional Priority Chaining Bloat</div>
-          <div class="pitfall-body">Chaining class selectors heavily (such as <code>.main.card.item.active</code>) simply to win priority weight metrics over competing rulesets.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Refactor styles into simple, direct component selectors (like BEM models) to keep matching priorities clean and easy to maintain.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 06</div>
-          <div class="pitfall-title">Hardcoding Resets across Non-Inherited Properties</div>
-          <div class="pitfall-body">Declaring redundant spacing overrides like <code>margin: 0;</code> down through nested child rows, adding unneeded volume to style files.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Leverage native layout containers or clear utility classes to coordinate child spacing structures efficiently from top-level rules.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 8: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Real World — High-Scale Design Systems</h2>
-      </div>
-      <p>Top-tier technology organizations deploy specialized selector patterns and structural build pipelines to keep global platform styles fast and stable as codebases expand.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Meta Platform Architecture</div>
-          <div class="cell-desc">Meta engineered custom compilation tools like StyleX to minimize selector priority conflicts. The tool parses style declarations and compiles them into short, atomic class rules, ensuring predictable renders by flattening styling code.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">GitHub Theme Pipelines</div>
-          <div class="cell-desc">GitHub manages robust light and dark UI view shifts across massive development workspaces. Their design system leverages CSS custom variables mapped to uniform element class trees, avoiding messy priority conflicts during visual state updates.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Netflix UI Engine Scaling</div>
-          <div class="cell-desc">Netflix builds high-performance interface layers that stream across thousands of media device runtimes. Their engineering rules restrict selector paths to flat class architectures, optimizing parsing speeds on lower-powered devices.</div>
-        </div>
-      </div>
-
-      <h3>The Production Style Compilation Step</h3>
-      <p>Modern frontend deployment workflows process source style files through automated optimization passes before final platform deployment:</p>
-      <ol>
-        <li><strong>Lint Pass Quality Checks:</strong> Automated review hooks scan selectors to capture and block bad nesting rules or arbitrary ID paths early.</li>
-        <li><strong>Atomic Style Extraction:</strong> Build systems extract repeated styling properties, compiling code into optimized utility tokens that match single-pass browser rules.</li>
-        <li><strong>Dead-Code Selection Purging:</strong> Build routines match active templates against stylesheets to identify and drop unused selectors, shrinking payload sizes for faster network delivery.</li>
-      </ol>
-    </section>
-
-    <!-- ══════════ SECTION 9: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In mid-to-senior UI engineering evaluations, style knowledge is rarely tested with raw trivia questions. Instead, it is evaluated by analyzing your approach to code architecture, cascade management, and layout performance.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are integrated into an enterprise micro-frontend workspace architecture where independent development teams mount decoupled features into a shared view shell dynamically. Styles cross-collide constantly, breaking layout structures across features. How do you re-engineer this setup?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "To safely isolate style scopes and prevent cascading conflicts across sub-teams, I would introduce a multi-tiered defense strategy. First, I would implement strict prefix scoping rules via CSS Modules or build-time systems, appending unique hashes to each team's class tokens to keep selectors separated. Next, I would leverage native browser encapsulation by moving isolated widgets into their own Shadow DOM contexts, completely shielding internal nodes from parent document style bleeding. For base styles that must cross boundaries, I would organize properties using CSS Cascade Layers (<code>@layer base, components, overrides;</code>), which explicitly controls rule priority tiers regardless of selector weight scores. Finally, I would enforce BEM class naming conventions to keep style weights low and balanced across all micro-apps."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain what happens to the browser matching engine runtime loop when a developer applies a loose descendant rule path like .container div ul li span a directly across an expansive layout view containing thousands of nested DOM nodes."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Browsers match selector expressions from right to left, evaluating the target element token first. For the expression <code>.container div ul li span a</code>, the style engine finds *every single anchor element* across the entire document tree first. From there, it walks up the DOM parent branches sequentially to verify if the node sits within a span, nested in a list item, inside a list, and so on, up to the container root class. On views with large, deep DOM trees, this extensive element evaluation tree forces the matching engine to rerun heavy validation loops, blocking the main thread during dynamic content updates."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Architecture Rule Evaluation</div>
-        <div class="pb-q-title">"A candidate proposes a global style development guide that explicitly allows using element IDs for quick style overrides on dashboard applications. Critically evaluate this architecture selection."</div>
-        <div class="pb-hud-answer"><strong>System Architecture Critique:</strong> "Enabling ID selectors within styling rules sets a problematic baseline for scale design codebases. An ID rule introduces a high specificity weight vector [0, 1, 0, 0] that single class rules can't match. This forces engineering teams to write increasingly heavy, complex selector chains just to override basic component variations later, leading to brittle stylesheets and style conflicts. Production architectures should keep style paths flat using reusable component classes, keeping priority weights low and easy to maintain."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Layout Positioning Assessment</div>
-        <div class="pb-q-title">"Trace how the browser style matching engine handles priority evaluations when two conflicting class rules defined within separate files target the exact same element property with matching specificity metrics."</div>
-        <div class="pb-hud-answer"><strong>Cascade Engine Trace:</strong> "When selector specificity metrics result in an exact tie vector, the engine moves down the cascade lifecycle to its structural tie-breaker step: **Source Ordering**. The matching engine processes styles in the order they are parsed by the browser, meaning the rule loaded last in the document head wins the tie-breaker and locks in its property values over earlier definitions."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">How does the browser matching engine calculate specificity metrics across style rules?</div>
-            <div class="r-action-hint">Recite the vector mapping format ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">Browsers calculate weight profiles using a four-tier vector system: (Inline, ID, Class, Element). The matching engine compares these columns from left to right, meaning an ID selector token instantly wins over any quantity of stacked class or element tags.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why is animating or modifying inline style properties using JavaScript a risky practice for complex interface systems?</div>
-            <div class="r-action-hint">Consider priority weighting distributions ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Modifying inline element styles applies a maximum priority weight vector [1, 0, 0, 0] directly onto the markup node. This high-priority setting locks out clean overrides from external stylesheets, forcing teams to rely on messy style rules to make adjustments later.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Explain the structural evaluation differences between the descendant combinator space token and the direct child combinator symbol.</div>
-            <div class="r-action-hint">Contrast wide sub-tree scans against immediate single-tier checks ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">The descendant combinator matches all target elements nested anywhere down the parent's structural tree. The direct child combinator (<code>&gt;</code>) limits style evaluations strictly to the immediate first tier beneath the parent node, lowering browser parsing work.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">What occurs along the presentation layer when a child element requests a property configuration using the inherit keyword token?</div>
-            <div class="r-action-hint">Trace property inheritance flows ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">The <code>inherit</code> keyword instructs the browser to pull computed property values straight from the element's immediate parent container, bypassing default layout initialization values for non-inherited properties like margins or borders.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 05</div>
-            <div class="r-question-text">How does source ordering act as a tie-breaker when processing selector style rules?</div>
-            <div class="r-action-hint">Consider exact priority score ties ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 05</div>
-            <div class="r-answer-text">When competing selectors score an exact tie weight vector, the browser engine relies on parsing sequence order as its tie-breaker. The selector declaration loaded last in the stylesheet payload wins the conflict and sets the final property values.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 06</div>
-            <div class="r-question-text">What distinct structural behavior separates inherited properties from non-inherited elements across the box model?</div>
-            <div class="r-action-hint">Contrast text presentation rules with layout container variables ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 06</div>
-            <div class="r-answer-text">Inherited properties (like <code>font-family</code> or <code>color</code>) flow down naturally through child DOM branches to ensure text uniformity. Non-inherited elements (like <code>padding</code> or <code>border</code>) apply strictly to the target container wrapper to keep layout boundaries stable.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">11</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these development tasks to solidify your understanding of style priority engineering. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Real-World Specificity Weights using DevTools Panels (30 Min)</div>
-            <div class="row-desc">Open an advanced web application layout view and open your browser's DevTools console. Navigate into the Elements panel, select a deep layout node, and inspect the styles sub-tab. Trace the overridden properties, calculating individual selector vector scores to see how the engine handles cascading rulesets.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build a Cascading Specificity Validation Testing Matrix (30 Min)</div>
-            <div class="row-desc">Create an isolated style sandbox page locally. Construct an element block targeted by four competing style rules with different specificity scores simultaneously. Practice adjusting class and tag balances to shift rule priority weights systematically without using important flags.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Refactor a Brittle ID-Heavy Stylesheet into BEM Code (30 Min)</div>
-            <div class="row-desc">Locate or write a sample style sheet that uses deep selector chains and hardcoded element IDs. Refactor the code into a flat class design system using clean BEM naming rules, ensuring selector weight metrics remain low and balanced across your components.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Audit Component Performance Footprints using Rendering Timelines (30 Min)</div>
-            <div class="row-desc">Open the Performance profiling tab within your browser's developer tools workspace. Capture a timeline snapshot during rapid page updates, and analyze the style calculation logs to ensure selector matching runs smoothly without blocking primary main thread loops.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hud-callout hud-callout-warning">
-        <div class="hud-callout-label">Don't Skip These Exercises</div>
-        <p>Reviewing style logic without writing real code is like analyzing database indexing strategies without running queries. Presentation priority habits become natural only through hands-on practice. Shifting style structures and managing specificity budgets locally builds the performance mindset required when engineering large full-stack architectures down the line.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 12: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">12</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These style architecture principles form the baseline requirement for engineering production-tier presentation layers. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Keep selector paths flat. Structure style rules using shallow class configurations to optimize pattern matching speeds within browser engines.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Avoid styling with unique IDs. Keep presentation layers flexible by organizing layouts through reusable element class systems instead of heavy ID flags.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Eliminate important declaration overrides. Manage layout priorities cleanly through clear style weight calculations instead of masking conflicts behind system overrides.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">The Cascade Engine</div>
-          <div class="g-node-definition">The browser pipeline stage that organizes competing style sheets based on source origins, declaration settings, and rule locations.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Specificity Weight Vector</div>
-          <div class="g-node-definition">The 4-part matrix score (Inline, ID, Class, Element) browser style calculations use to evaluate rule priority weights.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Property Inheritance</div>
-          <div class="g-node-definition">The native styling system where typography settings pass down through child DOM branches, while box model spacing properties remain contained.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Direct Child Combinator</div>
-          <div class="g-node-definition">An explicit selector symbol (<code>&gt;</code>) that limits style applications strictly to the first tier of elements directly beneath a parent node.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Descendant Selector</div>
-          <div class="g-node-definition">A loose styling match path (using spaces) that scans all matching child nodes nested anywhere down a target DOM branch.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">BEM Selector Logic</div>
-          <div class="g-node-definition">Block-Element-Modifier class naming principles engineered to produce shallow style rules and minimize layout conflicts.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">!important Declaration</div>
-          <div class="g-node-definition">An override token that pushes a style rule into a high-priority cascade tier, bypassing standard vector weight scores.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Source Ordering Rule</div>
-          <div class="g-node-definition">The browser's style tie-breaker process where the rule parsed last in the stylesheet payload wins out when specificity vectors match exactly.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">User Agent Style Sheet</div>
-          <div class="g-node-definition">The browser's default baseline styling configurations that apply standard presentation rules to unstyled document layouts.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Pseudo-Class Token</div>
-          <div class="g-node-definition">A specialized structural keyword (like <code>:hover</code>) used to target element styles during dynamic user interactions.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Pseudo-Element Token</div>
-          <div class="g-node-definition">A markup keyword descriptor (like <code>::before</code>) used to generate and style virtual decoration blocks within parent containers.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Style matching Engine</div>
-          <div class="g-node-definition">The internal browser component that evaluates document nodes against selector rules to assemble the active CSSOM tree.</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-2.2.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 2.2 - Flexbox Layouts: Linear Space Alignment Rules</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->

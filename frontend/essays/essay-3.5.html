@@ -527,21 +527,6 @@ p code, li code {
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1625,8 +1610,813 @@ body.light-theme .auth-input {
   100% { opacity: 0.3; }
 }
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
+</style>
+</head>
+<body class="sidebar-open phase-3">
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
+<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
+  <span class="toggle-icon">&#10005;</span>
+  <span id="sidebar-toggle-text-left">Collapse Map</span>
+</button>
+<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
+<!-- === INJECTED PREMIUM HUD RACK START === -->
+<div class="controller-rack-hud">
+  <a class="hud-btn" href="../index.html">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Dashboard</span>
+  </a>
+  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    <span id="focus-text">Focus Off</span>
+  </button>
+  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
+    <span id="theme-text">Dark Cyber</span>
+  </button>
+  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>AI Tutor</span>
+  </button>
+  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    <span id="audio-text">Audio Reader</span>
+  </button>
+</div>
 
-# === INJECTED PREMIUM JS CODE ===
+<!-- Audio Reader Settings Overlay Panel -->
+<div id="audio-control-panel">
+  <div class="audio-panel-header">
+    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
+    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
+    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Speed Selector</label>
+    <div class="audio-slider-container">
+      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
+      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
+    </div>
+  </div>
+  
+  <div class="audio-control-group">
+    <label class="audio-control-label">Reading Mode</label>
+    <div class="audio-mode-selector">
+      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
+      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
+    </div>
+  </div>
+  
+  <div class="audio-playback-controls">
+    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
+    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
+    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
+    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
+  </div>
+  
+  <!-- Real-time Equalizer -->
+  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
+    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
+    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
+    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
+  </div>
+
+  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
+    Status: Ready to play
+  </div>
+  
+  <div class="audio-accent-notice" id="audio-accent-notice">
+    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
+  </div>
+</div>
+<!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+
+
+<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD RAIL ═══════════════════════════════ -->
+<aside class="sidebar-hud open" id="sidebarNode">
+  <div class="sidebar-label">DOM Logic Matrix</div>
+  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
+  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
+  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
+  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
+  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
+  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
+  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
+  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
+  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
+  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
+  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
+</aside>
+
+<!-- ═══════════════════════════════ HIGH-ENERGY HERO ENGINE RADAR ═══════════════════════════════ -->
+<div class="hero-radar">
+  <div class="hero-bg-animations">
+    <div class="glow-orb orb-green"></div>
+    <div class="glow-orb orb-cyan"></div>
+  </div>
+  <div class="matrix-grid-overlay"></div>
+  
+  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes</div>
+  <div class="hero-eyebrow">essay 3.5 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
+  
+  <h1 class="hero-title">
+    DOM Manipulation:<br>
+    Scribing Element Nodes & <em>Core Layout Integrity</em>
+  </h1>
+  <p class="hero-subtitle">
+    Mastering high-performance Document Object Model modifications, programmatic node creation, tokenized class manipulations, reflow prevention strategies, and lightweight fragment batching trees.
+  </p>
+  
+  <div class="hero-meta-hud">
+    <div class="hud-item">
+      <span class="hud-label">Sub-Phase</span>
+      <span class="hud-value">3.5 — DOM Orchestrations</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Read Time</span>
+      <span class="hud-value">~55 minutes</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Prerequisites</span>
+      <span class="hud-value">Essay 3.4 (Objects & Structural Operators)</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Core Targets</span>
+      <span class="hud-value">querySelector Logic · createElement Pass · Fragment Batching · Tokenized ClassLists</span>
+    </div>
+  </div>
+  
+  <div class="hero-scroll-indicator">↓ &nbsp; navigate document fragment pipelines</div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN VIEW WORKSPACE ═══════════════════════════════ -->
+<div class="layout-main-frame">
+  <main>
+
+    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
+    <div class="executive-summary-panel">
+      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
+      <div class="summary-text-hud">
+        The Document Object Model (DOM) connects raw runtime logic with the browser rendering engine. Modifying dynamic layout elements carelessly can lock the primary main thread and trigger expensive layout recalculation loops. This masterclass module maps out optimized target selections, isolated fragment node assembly, tokenized style operations, and batched DOM mutations to safeguard client rendering budgets.
+      </div>
+    </div>
+
+    <!-- ── SYSTEM PRESENTATION PROGRESS MATRIX MAP ── -->
+    <div class="interactive-framework-sector">
+      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
+      <div class="framework-flex-track">
+        <div class="frame-node-box done-node-box">Arrays 3.3</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box done-node-box">Objects 3.4</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box active-node-box">DOM Logic 3.5</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Events 3.6</div>
+        <span class="frame-arrow-link">➔</span>
+        <div class="frame-node-box">Async Apps 3.7</div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
+    <section class="section-card" id="s1">
+      <div class="card-header-hud">
+        <span class="card-hud-num">01</span>
+        <h2 class="card-hud-title">The Big Idea</h2>
+      </div>
+      <p>Many web software developers treat DOM updates as a trivial task done by string injections using properties like <code>innerHTML</code>. **At corporate scale, this unstructured approach introduces massive security and runtime overhead into full-stack systems.** Forcing browsers to re-parse text strings repeatedly triggers expensive geometry invalidations, compromises applications via Cross-Site Scripting (XSS) channels, and bogs down user scrolling paths.</p>
+      <p>High-performance UI engineering targets programmatic node orchestration. By assembling element structures using native methods like <code>querySelector</code>, <code>createElement</code>, and tokenized <code>classList</code> flags, developers can modify layout nodes with pinpoint accuracy. Combined with non-rendered batching containers like <code>DocumentFragment</code>, you can mount complex interface nodes onto live trees in a single step, ensuring smooth visual performance across all target client viewports.</p>
+      
+      <div class="design-compute-hud">
+        <div class="compute-title">⚡ High-Performance DOM Mutation Metric Equation:</div>
+        <div class="compute-value">Rendering Latency = (Quantity of Nodes Attached &times; Parent Reflow Weight) / Batched Pipeline Blocks</div>
+      </div>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Core Insight</div>
+        <p>The clear distinction between a senior frontend engineer and an entry-level developer lies in how they batch layout adjustments. Juniors write immediate updates directly to live views, causing page performance to stutter. Masters build and organize component structures within decoupled, off-screen fragment trees, minimizing live browser reflow passes to protect client frame budgets.</p>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
+    <section class="section-card" id="s3">
+      <div class="card-header-hud">
+        <span class="card-hud-num">02</span>
+        <h2 class="card-hud-title">The Intuition</h2>
+      </div>
+      <h3>The Skyscraper Modular Crane Model</h3>
+      <p>Imagine constructing a modern downtown skyscraper tower. You could choose to hoist individual building tiles, single glass panels, and raw concrete buckets up to the top floor one-by-one with a crane, forcing your construction crew to halt structural work and recalculate balance loads after every tiny addition.</p>
+      <p>Alternatively, you can assemble **complete structural rooms, fitted wall setups, and entire utility matrices inside an off-site warehouse facility first.** When complete, the transport crane lifts the full pre-fabricated segment into place on the tower in a single pass. Document Fragments operate exactly like those pre-fabricated building modules, allowing you to organize element branches off-screen and append them to the live DOM tree in one clean step to bypass rendering delays.</p>
+
+      <div class="hud-callout hud-callout-idea">
+        <div class="hud-callout-label">The Three-Second Reframe</div>
+        <p>When element layout updates stutter or lock up browser interactions during heavy data loads, drop temporary code fixes. Ask an analytical question: <strong>"This DOM mutation track is pushing unbatched updates directly to the live viewport. How can I isolate these elements in a temporary document fragment container to optimize our rendering pipeline?"</strong> This framing guides performance fixes.</p>
+      </div>
+
+      <h3>The Storefront Mannequin Wardrobe Metaphor</h3>
+      <p>To master advanced DOM operations, visualize a luxury apparel retail display window. A decorator doesn't sew new fabric directly onto a mannequin standing inside the live display box piece-by-piece under bright showroom lights. They wheel the mannequin into a backstage dressing room, snap pre-tailored outfits and accessories onto its frame in one pass, and return the finished display to the front window. Utilizing tokenized class lists and fragments mimics this layout workflow, altering element states backstage cleanly before displaying them to users.</p>
+    </section>
+
+    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
+    <section class="section-card" id="s4">
+      <div class="card-header-hud">
+        <span class="card-hud-num">03</span>
+        <h2 class="card-hud-title">The Visual — Fragment Batching Pipelines</h2>
+      </div>
+      <p>Understanding how the rendering engine handles off-screen node compilation and processes changes along critical loading paths is vital for preventing layout lag. Click through each sequential step to trace element integration paths.</p>
+
+      <div class="workboard-matrix">
+        <div class="flowchart-intro">
+          <p>🖥️ &nbsp; Browser DOM Fragment Compilation & Batching Lifecycles &nbsp;·&nbsp; Click steps to trace data states.</p>
+        </div>
+        <div class="workboard-steps">
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">1</div>
+              <div class="wb-step-title">Decoupled Fragment Allocation Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The runtime engine instantiates a lightweight, virtual parent wrapper node known as a <code>DocumentFragment</code>. This non-rendered shell exists purely inside Heap memory storage, completely separated from the browser's active visual display tree.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">2</div>
+              <div class="wb-step-title">Off-Screen Subtree Construction Loop</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The application script creates children via <code>document.createElement</code>, configuring explicit class identifiers and text attributes before appending them to the virtual fragment tree. Because this work occurs off-screen, it triggers zero live reflow passes.</p>
+            </div>
+          </div>
+          <div class="wb-connector">↓</div>
+          <div class="wb-step" onclick="revealNode(this)">
+            <div class="wb-step-header">
+              <div class="wb-step-indicator">3</div>
+              <div class="wb-step-title">Batched DOM Injection & Layout Paint Pass</div>
+              <div class="wb-step-expand">+</div>
+            </div>
+            <div class="wb-step-body">
+              <p>The populated fragment tree is injected into the live DOM tree in a single operation. The browser's rendering layout engine handles all appended components in one pass, optimizing its reflow and repaint workflows to keep page performance completely fluid.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-action-row">
+          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Variable Lifecycle</button>
+        </div>
+      </div>
+
+      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
+      <div class="infographic-wrapper">
+        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="800" height="320" rx="6" fill="#030308"/>
+          <g opacity="0.15">
+            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#39ff14" stroke-width="1"/>
+            <path d="M 390 40 L 390 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
+          </g>
+          
+          <text x="60" y="35" fill="#94a3b8" font-family="Space Mono" font-size="12" font-weight="bold">Live DOM Viewport (Single Appended Pass)</text>
+          <text x="410" y="35" fill="#00f5d4" font-family="Space Mono" font-size="12" font-weight="bold">Virtual Heap Memory Fragment (Off-Screen Build)</text>
+          
+          <!-- Live View Box Representation -->
+          <rect x="60" y="100" width="280" height="130" rx="4" fill="#0a0c1c" stroke="var(--border-neon-vivid)" stroke-width="2"/>
+          <text x="200" y="140" fill="#f8fafc" font-family="Space Mono" font-size="13" text-anchor="middle">div.dashboard-container</text>
+          <path d="M 410 160 L 350 160" stroke="#39ff14" stroke-width="2" stroke-dasharray="4 4"/>
+          <polygon points="342,160 354,154 354,166" fill="#39ff14"/>
+
+          <!-- Document Fragment Off-Screen Construction -->
+          <rect x="420" y="100" width="330" height="130" rx="4" fill="#0a0c1c" stroke="#00f5d4" stroke-width="2"/>
+          <text x="585" y="135" fill="#00f5d4" font-family="Space Mono" font-size="13" text-anchor="middle">DocumentFragment</text>
+          <text x="585" y="170" fill="#94a3b8" font-family="Space Mono" font-size="11" text-anchor="middle">[ li.item-1, li.item-2, li.item-3 ]</text>
+        </svg>
+        <div class="infographic-caption">Vector Diagram 3.5: Document Fragment Batch Ingestion. Building structural component child branches off-screen within virtual fragment shells shields client browsers from unneeded layout recalculations.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
+    <section class="section-card" id="s5">
+      <div class="card-header-hud">
+        <span class="card-hud-num">04</span>
+        <h2 class="card-hud-title">The Depth</h2>
+      </div>
+      <h3>Part A — Core DOM Queries & Node Target Selection</h3>
+      <p>Modern frontend engineering relies on precise element node targeting selectors. Let us inspect the programmatic structure of high-performance layout target calls:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">dom-orchestration.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">// 1. Query target single node via type-safe CSS selector mappings</span>
+<span class="t-kw">const</span> operationalDashboardGrid = document.querySelector(<span class="t-str">"#dashboard-grid"</span>);
+
+<span class="t-comment">// 2. Query structural array matrices via class criteria matching matches</span>
+<span class="t-kw">const</span> activeTelemetryCardList = document.querySelectorAll(<span class="t-str">".matrix-card.is-active"</span>);
+
+<span class="t-comment">// 3. High-Performance node verification loop tracking</span>
+activeTelemetryCardList.forEach((cardNode) => {
+  cardNode.classList.add(<span class="t-str">"border-accelerated"</span>);
+});</pre>
+      </div>
+
+      <p>The <code>querySelector</code> and <code>querySelectorAll</code> methods locate elements using standard W3C CSS selector patterns. While legacy properties like <code>getElementsByClassName</code> return live HTMLCollections that re-evaluate automatically as the document changes, modern selection engines return a static **NodeList** matrix snapshot, lowering processing overhead as layout trees scale.</p>
+
+      <h3>Part B — Programmatic Node Assembly vs. Text Injections</h3>
+      <p>Relying on raw string assignments via <code>innerHTML</code> introduces security vulnerabilities and performance bottlenecks into enterprise systems. Let us contrast text injections with programmatic node creation workflows:</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">node-generation-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
+        <pre><span class="t-comment">// ❌ Dangerous text injection vulnerability target pass</span>
+<span class="t-sel">nodeContainer.innerHTML = `&lt;div class="card"&gt;${unverifiedUserData}&lt;/div&gt;`;</span>
+
+<span class="t-comment">// ✅ Safe, programmatic element node assembly architecture</span>
+<span class="t-kw">const</span> structuralCardElement = document.createElement(<span class="t-str">"div"</span>);
+structuralCardElement.classList.add(<span class="t-str">"matrix-card-component"</span>);
+structuralCardElement.textContent = <span class="t-val">"Type-Safe Telemetry Parameters"</span>;
+<span class="t-sel">nodeContainer.appendChild(structuralCardElement);</span></pre>
+      </div>
+
+      <p>Using <code>innerHTML</code> assignments forces browser rendering engines to halt active script executions, drop existing node paths, and completely re-tokenize raw incoming strings. This process exposes systems to **Cross-Site Scripting (XSS)** exploits if inputs contain malicious strings. Alternatively, assembling nodes via <code>createElement</code> injects text characters safely using built-in escape filters, keeping your data workflows highly secure.</p>
+
+      <h3>Part C — Tokenized Style Tracking via classList APIs</h3>
+      <p>Modifying inline element styles directly via script instructions (e.g., <code>element.style.color = "blue";</code>) forces real-time style recalculations and breaks clean separation of concerns. Production-grade systems manage element states via tokenized class list APIs:</p>
+      <p><code>element.classList.toggle("is-accelerated-layer", conditionVariable);</code></p>
+      <p>The <code>classList</code> interface exposes clean array-style methods (<code>add</code>, <code>remove</code>, <code>toggle</code>, <code>contains</code>) to manage element state flags predictably. This approach keeps your visual presentations decoupled from core application logic, relying on centralized stylesheets to handle presentation changes efficiently.</p>
+
+      <h3>Part D — High-Performance DOM Directives Comparison</h3>
+      <p>Enterprise data engineering requires selecting tree modification methods deliberately to protect layout calculations. Let us contrast the behavior profiles of your core DOM tools:</p>
+
+      <div class="matrix-tabs">
+        <div class="tab-trigger-rack">
+          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Programmatic Nodes</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Document Fragments</button>
+          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">ClassList Tokenization</button>
+        </div>
+        
+        <div class="hud-tab-panel active-hud-panel" id="t1">
+          <p>Assembling elements programmatically via native methods avoids text-parsing bottlenecks. It ensures input data characters are safely escaped, keeping user interface interactions fast and highly secure against injection exploits.</p>
+        </div>
+        <div class="hud-tab-panel" id="t2">
+          <p>Document Fragments operate as virtual, off-screen drawing boards. Building new element components inside a fragment shell lets you insert large node subtrees onto page trees in one step, avoiding repetitive browser reflow passes.</p>
+        </div>
+        <div class="hud-tab-panel" id="t3">
+          <p>The classList interface provides a type-safe way to manage state flags on elements. It keeps your style presentations separate from core program logic, ensuring layouts update smoothly during state shifts.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
+    <section class="section-card" id="s6">
+      <div class="card-header-hud">
+        <span class="card-hud-num">05</span>
+        <h2 class="card-hud-title">Code Lab — Refactoring Unbatched DOM Append Loops</h2>
+      </div>
+      <p>Let us analyze real production layout errors, refactoring unbatched loop mutations into clean, high-performance fragment pipelines.</p>
+
+      <div class="premium-code-block">
+        <div class="p-code-header"><span class="p-code-filename">loop-mutation-refactor.js</span></div>
+        <pre><span class="t-comment">// Anti-Pattern: Loop pushes nodes directly to views, causing repetitive reflow lag</span>
+<span class="t-kw">const</span> targetRootContainer = document.querySelector(<span class="t-str">"#metrics-list"</span>);
+<span class="t-kw">const</span> dataCollectionPayload = [<span class="t-val">"Alpha"</span>, <span class="t-val">"Beta"</span>, <span class="t-val">"Gamma"</span>];
+
+dataCollectionPayload.forEach((itemText) => {
+  <span class="t-kw">const</span> rawListItem = document.createElement(<span class="t-str">"li"</span>);
+  rawListItem.textContent = itemText;
+  targetRootContainer.appendChild(rawListItem); <span class="t-comment">// 💥 Triggers immediate Reflow loops</span>
+});</pre>
+        <div class="error-explanation">
+          <div class="error-label">Production Refactored Configuration</div>
+          <pre><span class="t-comment">// Batch updates cleanly off-screen using an isolated DocumentFragment container</span>
+<span class="t-kw">const</span> targetRootContainer = document.querySelector(<span class="t-str">"#metrics-list"</span>);
+<span class="t-kw">const</span> dataCollectionPayload = [<span class="t-val">"Alpha"</span>, <span class="t-val">"Beta"</span>, <span class="t-val">"Gamma"</span>];
+
+<span class="t-kw">const</span> dynamicVirtualFragment = document.createDocumentFragment();
+
+dataCollectionPayload.forEach((itemText) => {
+  <span class="t-kw">const</span> secureListItem = document.createElement(<span class="t-str">"li"</span>);
+  secureListItem.textContent = itemText;
+  dynamicVirtualFragment.appendChild(secureListItem); <span class="t-comment">// Inserts off-screen smoothly</span>
+});
+
+targetRootContainer.appendChild(dynamicVirtualFragment);
+<span class="t-comment">// Updates the live DOM view tree in a single pass, cutting out layout thrashing</span></pre>
+          <div class="error-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-key">Root Problem Analysis</div>
+              <div class="breakdown-val">Appending child nodes straight to live page containers inside tight loop passes forces the browser layout engine to rerun expensive geometry calculations on every item, creating interaction stutter.</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-key">Refactored Result</div>
+              <div class="breakdown-val">Assembling element branches inside a virtual <code>DocumentFragment</code> batches changes completely off-screen, merging nodes onto the page in a single pass to preserve rendering budgets.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
+    <section class="section-card" id="s7">
+      <div class="card-header-hud">
+        <span class="card-hud-num">06</span>
+        <h2 class="card-hud-title">Common Mistakes</h2>
+      </div>
+      <p>Avoid these common tree layout mutation pitfalls during technical interview assessments. Keeping element updates batched prevents layout thrashing as complex applications scale.</p>
+
+      <div class="pitfall-matrix">
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 01</div>
+          <div class="pitfall-title">Deploying innerHTML for Continuous State Modifications</div>
+          <div class="pitfall-body">Using raw string rewrites (like <code>innerHTML += ...</code>) to append new data logs. This choice forces full element tree rebuilds and opens up security vectors.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Assemble node branches programmatically using <code>createElement</code> and attach elements safely with structural methods like <code>appendChild</code> instead.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 02</div>
+          <div class="pitfall-title">Forgetting Live Collection Loops Calculation Costs</div>
+          <div class="pitfall-body">Iterating loops across live, auto-updating elements collections (like <code>getElementsByClassName</code>), causing slow, repetitive DOM scanning loops.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Target page elements with modern query methods like <code>querySelectorAll</code> to operate across a stable, static NodeList snapshot.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 03</div>
+          <div class="pitfall-title">Modifying Inline Box Spacings directly via Scripts</div>
+          <div class="pitfall-body">Injecting geometry sizing definitions directly via style strings (such as <code>el.style.width = "200px"</code>), which triggers real-time layout recalculations.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Toggle clean presentation modifier classes via the <code>classList</code> interface, allowing stylesheets to handle layout transitions efficiently.</div>
+        </div>
+
+        <div class="pitfall-node">
+          <div class="pitfall-id">PITFALL 04</div>
+          <div class="pitfall-title">Interleaving Layout Geometry Queries with Mutations</div>
+          <div class="pitfall-body">Alternating between reading box sizes (<code>offsetHeight</code>) and applying style updates inside tight loops, forcing layout thrashing.</div>
+          <div class="remedy-badge">✓ The Remedy</div>
+          <div class="pitfall-desc">Batch your operations strictly: execute all layout size reads upfront, then apply all design state updates in a separate pass.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
+    <section class="section-card" id="s8">
+      <div class="card-header-hud">
+        <span class="card-hud-num">07</span>
+        <h2 class="card-hud-title">Real World — Scaled Layout Performance Architectures</h2>
+      </div>
+      <p>Top-tier web systems manage document tree transformations with strict care to avoid main-thread processing delays and maintain lightning-fast interaction rendering speeds.</p>
+
+      <div class="enterprise-radar">
+        <div class="radar-cell">
+          <div class="cell-tag">Virtual DOM Engines</div>
+          <div class="cell-desc">Enterprise presentation frameworks like React minimize expensive direct layout writes. They track changes inside a lightweight Virtual DOM tree in script memory first, batching final page modifications into minimal, combined updates.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Twitter Timeline Feeds</div>
+          <div class="cell-desc">Twitter web engineers stabilize busy multi-post feeds using off-screen fragment containers. As fresh message streams load, element cards mount into virtual trees completely, merging views into view frames to eliminate scrolling lag.</div>
+        </div>
+        <div class="radar-cell">
+          <div class="cell-tag">Figma Vector Workspaces</div>
+          <div class="cell-desc">Figma's dense web collaborative canvas tools bypass standard HTML tree rendering entirely for complex paths, running layout calculations inside an absolute WebGL context layer to secure fluid interactions at scale.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
+    <section class="section-card" id="s9">
+      <div class="card-header-hud">
+        <span class="card-hud-num">08</span>
+        <h2 class="card-hud-title">Interview Angle</h2>
+      </div>
+      <p>In mid-to-senior technical evaluations, document tree concepts are evaluated by analyzing your approach to layout preservation, rendering optimizations, and data safety constraints.</p>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">Technical Challenge Scenario</div>
+        <div class="pb-q-title">"We are designing an enterprise activity telemetry log portal that appends thousands of real-time server records onto a dashboard list every second. The current loop implementation locks the browser main thread, triggering interaction lag. How do you re-engineer this setup?"</div>
+        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The interaction lag stems from layout thrashing caused by pushing multiple unbatched DOM updates directly to live views inside tight loop paths. This practice forces the browser's layout engine to rerun expensive geometry calculations (Reflow) on every item, blocking user interactions. To eliminate this rendering bottleneck, I would implement an off-screen batching pipeline using a <code>DocumentFragment</code> container. Instead of writing updates directly to the live container, each incoming record element is assembled programmatically using <code>document.createElement()</code>, and its text fields are set safely via <code>textContent</code> to prevent cross-site scripting vulnerabilities. The items append into the non-rendered fragment shell in memory first. Once the loop batch finishes, injecting the populated fragment tree into the live DOM view updates the user interface in a single operation, cutting down layout recalculation costs to keep performance completely fluid."</div>
+      </div>
+
+      <div class="playbook-card">
+        <div class="pb-hud-label">System Performance Assessment</div>
+        <div class="pb-q-title">"Explain what layout thrashing means inside the browser rendering engine, and trace how interleaving node size queries with style modifications triggers this problem."</div>
+        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Layout thrashing happens when a script forces the browser to run alternating write and read actions sequentially inside tight loops. When code edits a style property, the engine flags current geometry layouts as dirty. If the next line immediately requests a layout size (like <code>element.offsetHeight</code>), the engine can't wait; it must halt script execution to compute current dimensions upfront. Alternating these actions inside a loop forces the browser to rerun full reflow and repaint calculations on every single iteration, locking up main thread resources."</div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
+    <section class="section-card" id="s10">
+      <div class="card-header-hud">
+        <span class="card-hud-num">09</span>
+        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
+      </div>
+      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
+
+      <div class="retrieval-grid">
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 01</div>
+            <div class="r-question-text">What is a DocumentFragment and how does it prevent layout thrashing during DOM mutations?</div>
+            <div class="r-action-hint">Consider virtual off-screen element compilation ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 01</div>
+            <div class="r-answer-text">A DocumentFragment is a lightweight virtual container wrapper that exists purely in script memory storage off-screen. Assembling sub-components inside a fragment shell lets you inject large node structures into active trees in a single pass, avoiding repetitive browser reflow loops.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 02</div>
+            <div class="r-question-text">Why does deploying the innerHTML property to insert dynamic user-submitted text data create severe system vulnerabilities?</div>
+            <div class="r-action-hint">Consider Cross-Site Scripting (XSS) injection paths ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 02</div>
+            <div class="r-answer-text">Using <code>innerHTML</code> forces browser engines to parse incoming text strings raw. If inputs contain unverified scripts, the browser executes them automatically, opening up Cross-Site Scripting (XSS) vectors. Use <code>textContent</code> instead to safely escape characters.</div>
+            <div class="r-action-hint">Tap to flip back ↗ </div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 03</div>
+            <div class="r-question-text">Contrast the behavior profiles of live HTMLCollections against static NodeList snapshots.</div>
+            <div class="r-action-hint">Consider tree changes and lookup overhead costs ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 03</div>
+            <div class="r-answer-text">Live HTMLCollections (returned by legacy queries) re-evaluate and scan the full DOM tree automatically whenever document elements change. Modern <code>querySelectorAll</code> engines return a static NodeList snapshot in memory, avoiding background scanning work.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+
+        <div class="retrieval-node" onclick="flipHUDNode(this)">
+          <div class="r-front">
+            <div class="r-meta">Question 04</div>
+            <div class="r-question-text">What distinct browser processing bottleneck occurs when code updates inline sizes directly via element.style paths?</div>
+            <div class="r-action-hint">Consider style decoupling and geometry invalidation passes ↗</div>
+          </div>
+          <div class="r-back">
+            <div class="r-meta">Answer 04</div>
+            <div class="r-answer-text">Modifying sizes directly via style strings forces instant geometry recalculation passes. Managing element visibility and state flags through tokenized <code>classList</code> references keeps presentation styles decoupled, allowing sheets to handle modifications efficiently.</div>
+            <div class="r-action-hint">Tap to flip back ↗</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
+    <section class="section-card" id="s11">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
+      </div>
+      <p>Complete these document tree orchestration tasks to master batched node mutations. Click each milestone row to track your progress.</p>
+
+      <div class="milestone-hud-list">
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 1 — Profile Layout Reflow Passes via browser DevTools Panels (30 Min)</div>
+            <div class="row-desc">Open a dynamic application view window and launch your browser's developer console. Open the Performance profiling panel, record a short capture session while running element additions, and analyze the calculation logs to trace reflow passes.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 2 — Build an Isolated Off-Screen Component DocumentFragment Tree (30 Min)</div>
+            <div class="row-desc">Create an isolated markup page template locally. Build an array-driven loop that generates list subtrees, assembling nodes off-screen inside a virtual <code>DocumentFragment</code> shell before appending them to the live page in one step.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 3 — Refactor Direct Inline Style Scripts into ClassList Token Flags (30 Min)</div>
+            <div class="row-desc">Locate or write a script that updates element box positions and border sizes by direct style injections. Refactor the implementation using tokenized class switches, managing visual state changes via clean external stylesheets.</div>
+          </div>
+        </div>
+
+        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
+          <div class="row-checkbox">✓</div>
+          <div class="row-body">
+            <div class="row-title">Task 4 — Audit Page Layout Integrity during Active Content Insertions (30 Min)</div>
+            <div class="row-desc">Incorporate large text arrays into your page layout view blocks, testing execution limits under rapid updates. Leverage DevTools 'Rendering' options to highlight repaint regions, ensuring your element updates stay batched and performant.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COMPREHENSIVE RECAP PANEL ── -->
+    <section class="section-card" id="recap-section">
+      <div class="comprehensive-recap-panel">
+        <h3 class="recap-title-hud">🎯 Document Tree Manipulation Performance Recap</h3>
+        <div class="recap-grid-hud">
+          <div class="recap-item-node">
+            <div class="recap-item-title">Node Integration Rules</div>
+            <div class="recap-item-desc">Assemble sub-component elements programmatically off-screen within virtual fragment shells, updating live views in a single pass to save compute resources.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Data Safety Overlays</div>
+            <div class="recap-item-desc">Enforce clean text insertions using textContent APIs exclusively, escaping incoming data characters completely to neutralize cross-site scripting vulnerabilities.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Query Metric Boundaries</div>
+            <div class="recap-item-desc">Target page element modules via modern query methods to operate across static NodeList snapshots, avoiding the overhead of live collections.</div>
+          </div>
+          <div class="recap-item-node">
+            <div class="recap-item-title">Style Variation Controls</div>
+            <div class="recap-item-desc">Organize element state transitions through tokenized classList variations, keeping presentation layouts decoupled from your core runtime script fields.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
+    <section class="section-card" id="s12">
+      <div class="card-header-hud">
+        <span class="card-hud-num">10</span>
+        <h2 class="card-hud-title">Takeaways & Terms</h2>
+      </div>
+      <p>These tree manipulation rules form the baseline operational requirement for high-performance frontend interaction systems. Review them frequently to guide your development work.</p>
+
+      <div class="summary-hud-grid">
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">1</div>
+          <div class="summary-hud-text">Batch all DOM updates. Leverage DocumentFragment shells to assemble node branches off-screen, minimizing live browser reflow passes to protect frame rates.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">2</div>
+          <div class="summary-hud-text">Escape data text characters. Deploy textContent properties exclusively for data injections, shielding script execution pipelines from security threats.</div>
+        </div>
+        <div class="summary-hud-cell">
+          <div class="summary-hud-metric">3</div>
+          <div class="summary-hud-text">Toggle state tokens cleanly. Manage interface variations through classList APIs, allowing stylesheets to handle layout transitions efficiently.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Terms to Know</h3>
+
+      /* FIX: Standardized high-contrast grid boxes clear of muddy brown accents to guarantee word visibility */
+      <div class="glossary-matrix-grid">
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Document Object Model</div>
+          <div class="g-node-definition">The active node tree graph compiled by browser layout engines, mapping page markup elements into addressable script objects.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">DocumentFragment</div>
+          <div class="g-node-definition">A lightweight virtual wrapper container that exists purely in script memory storage off-screen, used to batch node mutations efficiently.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Layout Reflow Pass</div>
+          <div class="g-node-definition">The browser pipeline stage where the engine computes exact spatial positions, boundary coordinates, and dimensions down the element tree.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Screen Repaint Pass</div>
+          <div class="g-node-definition">The rendering phase where the engine rasterizes updated pixel properties, drawing updated background colors or borders to the viewport.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Layout Thrashing</div>
+          <div class="g-node-definition">A performance bottleneck caused by forcing the browser to alternate between write and read actions sequentially inside tight loops.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Cross-Site Scripting</div>
+          <div class="g-node-definition">An injection vulnerability vector (XSS) where a platform execution script inadvertently parses and runs malicious user input strings.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Static NodeList</div>
+          <div class="g-node-definition">A non-reactive snapshot collection of elements in memory that remains unchanged even when downstream DOM modifications alter the tree.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Live HTMLCollection</div>
+          <div class="g-node-definition">An active element collection that scans and re-evaluates document trees automatically upon every modification pass, adding processing overhead.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">classList Interface</div>
+          <div class="g-node-definition">A clean programmatic API used to add, remove, or toggle token class identifiers on elements without modifying styles directly.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">textContent API</div>
+          <div class="g-node-definition">A safe property selector that injects text strings into nodes with automatic character escaping, mitigating script injection exploits.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Virtual DOM Tree</div>
+          <div class="g-node-definition">A lightweight copy of the page tree used by modern frameworks to compute layout adjustments before updating the physical screen.</div>
+        </div>
+        <div class="glossary-cell-node">
+          <div class="g-node-term">Lookahead Tokenizer</div>
+          <div class="g-node-definition">The browser compilation component that parses raw text characters into valid language tags before building document layout structures.</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="matrix-footer">
+        <a class="matrix-next-btn" href="essay-3.6.html">
+            <div>
+              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
+              <div class="footer-btn-title">Essay 3.6 - Event Architecture: Listeners, Bubbling, & Delegation Pipelines</div>
+            </div>
+            <div class="footer-btn-arrow">&#8594;</div>
+          </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = progress + '%';
+});
+
+const sections = document.querySelectorAll('.section-card');
+const navItems = document.querySelectorAll('.hud-nav-item');
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
+
+sections.forEach(s => {
+  revealObserver.observe(s);
+  navObserver.observe(s);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top < window.innerHeight) s.classList.add('visible');
+  });
+});
+
+function revealNode(el) { el.classList.toggle('active-node'); }
+function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
+
+function toggleHUDTab(btn, panelId) {
+  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
+  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
+  btn.classList.add('active-hud-tab');
+  document.getElementById(panelId).classList.add('active-hud-panel');
+}
+
+function flipHUDNode(el) { el.classList.toggle('flipped'); }
+function completeHUDNode(el) { el.classList.toggle('completed-node'); }
+
+function toggleSidebarHUD() {
+  const body = document.body;
+  const sidebar = document.getElementById('sidebarNode');
+  const toggleText = document.getElementById('toggle-text');
+  
+  body.classList.toggle('sidebar-open');
+  sidebar.classList.toggle('open');
+  
+  if (sidebar.classList.contains('open')) {
+    toggleText.innerText = "Collapse Map";
+  } else {
+    toggleText.innerText = "Expand Map";
+  }
+}
+
+function toggleThemeHUD() {
+  const body = document.body;
+  const themeText = document.getElementById('theme-text');
+  
+  body.classList.toggle('light-theme');
+  
+  if (body.classList.contains('light-theme')) {
+    themeText.innerText = "Light Lab";
+  } else {
+    themeText.innerText = "Dark Cyber";
+  }
+}
+
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => localStorage.getItem('faang-backend-url') || 'http://localhost:5000';
 let syncTimeout = null;
@@ -2062,90 +2852,6 @@ function updatePlaygroundPreview(code) {
   if (!code.includes('<html') && !code.includes('<body')) {
     formattedCode = `
       <!DOCTYPE html>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
-<button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
-  <span class="toggle-icon">&#10005;</span>
-  <span id="sidebar-toggle-text-left">Collapse Map</span>
-</button>
-<!-- === INJECTED SIDEBAR TOGGLE BUTTON END === -->
-<!-- === INJECTED PREMIUM HUD RACK START === -->
-<div class="controller-rack-hud">
-  <a class="hud-btn" href="../index.html">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>Dashboard</span>
-  </a>
-  <button class="hud-btn" onclick="toggleFocusMode()" aria-label="Toggle Focus Mode">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    <span id="focus-text">Focus Off</span>
-  </button>
-  <button class="hud-btn" onclick="toggleThemeHUD()" aria-label="Toggle Theme">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
-    <span id="theme-text">Dark Cyber</span>
-  </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <span>AI Tutor</span>
-  </button>
-  <button class="hud-btn" id="audio-main-btn" onclick="toggleAudioPanel()" aria-label="Toggle Audio Reader Panel">
-    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-    <span id="audio-text">Audio Reader</span>
-  </button>
-</div>
-
-<!-- Audio Reader Settings Overlay Panel -->
-<div id="audio-control-panel">
-  <div class="audio-panel-header">
-    <h3><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg> Audio Settings</h3>
-    <button class="audio-panel-close" onclick="toggleAudioPanel()">&#10005;</button>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label" for="audio-voice-select">Voice (Indian Accent Preferred)</label>
-    <select id="audio-voice-select" class="audio-select" onchange="changeVoice()"></select>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Speed Selector</label>
-    <div class="audio-slider-container">
-      <input type="range" id="audio-rate-slider" class="audio-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRateLabel(this.value)" onchange="changeRate(this.value)">
-      <span id="audio-rate-val" class="audio-slider-val">1.0x</span>
-    </div>
-  </div>
-  
-  <div class="audio-control-group">
-    <label class="audio-control-label">Reading Mode</label>
-    <div class="audio-mode-selector">
-      <button id="audio-mode-summary" class="audio-mode-btn active" onclick="setReadingMode('summary')">Summary Only</button>
-      <button id="audio-mode-full" class="audio-mode-btn" onclick="setReadingMode('full')">Full Essay</button>
-    </div>
-  </div>
-  
-  <div class="audio-playback-controls">
-    <button class="audio-nav-btn" onclick="prevAudioSegment()" title="Previous Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button>
-    <button class="audio-play-btn" id="audio-play-pause-btn" onclick="toggleAudioPlayback()" title="Play / Pause">&#9654;</button>
-    <button class="audio-nav-btn" onclick="nextAudioSegment()" title="Next Segment"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button>
-    <button class="audio-nav-btn" onclick="stopAudioPlayback()" title="Stop Audio" style="margin-left: 8px;"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><rect x="4" y="4" width="16" height="16" rx="1" ry="1"></rect></svg></button>
-  </div>
-  
-  <!-- Real-time Equalizer -->
-  <div class="audio-equalizer" id="audio-eq-wave" style="display: none;">
-    <div class="eq-bar" style="animation-delay: 0.1s;"></div>
-    <div class="eq-bar" style="animation-delay: 0.3s; height: 70%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.0s; height: 90%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.4s; height: 60%;"></div>
-    <div class="eq-bar" style="animation-delay: 0.2s; height: 80%;"></div>
-  </div>
-
-  <div style="text-align: center; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted, #64748b); margin-top: 4px;" id="audio-progress-text">
-    Status: Ready to play
-  </div>
-  
-  <div class="audio-accent-notice" id="audio-accent-notice">
-    <span><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.43 1.22 4.57 3 5.82V17h6v-2.18c1.78-1.25 3-3.39 3-5.82a7 7 0 0 0-7-7z"></path></svg> System Voice Guide: To add Male/Veena/Ravi Indian voices on Windows, go to <b>Settings > Time & Language > Speech</b> and install the <b>English (India)</b> language pack.</span>
-  </div>
-</div>
-<!-- === INJECTED PREMIUM HUD RACK END === -->
-
       <html>
         <head>
           <meta charset="utf-8">
@@ -3282,840 +3988,7 @@ window.handleAITutorKeyDown = handleAITutorKeyDown;
 window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
-</style>
-</head>
-<body class="sidebar-open phase-3">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="progress-container"><div id="progress-bar"></div></div>
-
-
-
-<!-- ═══════════════════════════════ COLLAPSIBLE SIDEBAR HUD RAIL ═══════════════════════════════ -->
-<aside class="sidebar-hud open" id="sidebarNode">
-  <div class="sidebar-label">DOM Logic Matrix</div>
-  <a class="hud-nav-item active" href="#s1"><span class="nav-hud-num">01</span><span class="nav-hud-text">The Big Idea</span></a>
-  <a class="hud-nav-item" href="#s3"><span class="nav-hud-num">02</span><span class="nav-hud-text">The Intuition</span></a>
-  <a class="hud-nav-item" href="#s4"><span class="nav-hud-num">03</span><span class="nav-hud-text">The Visual</span></a>
-  <a class="hud-nav-item" href="#s5"><span class="nav-hud-num">04</span><span class="nav-hud-text">The Depth</span></a>
-  <a class="hud-nav-item" href="#s6"><span class="nav-hud-num">05</span><span class="nav-hud-text">Code Lab</span></a>
-  <a class="hud-nav-item" href="#s7"><span class="nav-hud-num">06</span><span class="nav-hud-text">Common Mistakes</span></a>
-  <a class="hud-nav-item" href="#s8"><span class="nav-hud-num">07</span><span class="nav-hud-text">Real World</span></a>
-  <a class="hud-nav-item" href="#s9"><span class="nav-hud-num">08</span><span class="nav-hud-text">Interview Angle</span></a>
-  <a class="hud-nav-item" href="#s10"><span class="nav-hud-num">09</span><span class="nav-hud-text">Explain It Test</span></a>
-  <a class="hud-nav-item" href="#s11"><span class="nav-hud-num">10</span><span class="nav-hud-text">Do This Today</span></a>
-  <a class="hud-nav-item" href="#s12"><span class="nav-hud-num">11</span><span class="nav-hud-text">Takeaways & Terms</span></a>
-</aside>
-
-<!-- ═══════════════════════════════ HIGH-ENERGY HERO ENGINE RADAR ═══════════════════════════════ -->
-<div class="hero-radar">
-  <div class="hero-bg-animations">
-    <div class="glow-orb orb-green"></div>
-    <div class="glow-orb orb-cyan"></div>
-  </div>
-  <div class="matrix-grid-overlay"></div>
-  
-  <div class="phase-pill">Phase 3 — JavaScript Programming Runtimes</div>
-  <div class="hero-eyebrow">essay 3.5 of 88 &nbsp;·&nbsp; series: faang roadmap</div>
-  
-  <h1 class="hero-title">
-    DOM Manipulation:<br>
-    Scribing Element Nodes & <em>Core Layout Integrity</em>
-  </h1>
-  <p class="hero-subtitle">
-    Mastering high-performance Document Object Model modifications, programmatic node creation, tokenized class manipulations, reflow prevention strategies, and lightweight fragment batching trees.
-  </p>
-  
-  <div class="hero-meta-hud">
-    <div class="hud-item">
-      <span class="hud-label">Sub-Phase</span>
-      <span class="hud-value">3.5 — DOM Orchestrations</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Read Time</span>
-      <span class="hud-value">~55 minutes</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Prerequisites</span>
-      <span class="hud-value">Essay 3.4 (Objects & Structural Operators)</span>
-    </div>
-    <div class="hud-item">
-      <span class="hud-label">Core Targets</span>
-      <span class="hud-value">querySelector Logic · createElement Pass · Fragment Batching · Tokenized ClassLists</span>
-    </div>
-  </div>
-  
-  <div class="hero-scroll-indicator">↓ &nbsp; navigate document fragment pipelines</div>
-</div>
-
-<!-- ═══════════════════════════════ MAIN VIEW WORKSPACE ═══════════════════════════════ -->
-<div class="layout-main-frame">
-  <main>
-
-    <!-- ── EXECUTIVE STRATEGIC SUMMARY BRIEFING PANEL ── -->
-    <div class="executive-summary-panel">
-      <div class="summary-title-hud">📋 Executive Mission Parameters Summary:</div>
-      <div class="summary-text-hud">
-        The Document Object Model (DOM) connects raw runtime logic with the browser rendering engine. Modifying dynamic layout elements carelessly can lock the primary main thread and trigger expensive layout recalculation loops. This masterclass module maps out optimized target selections, isolated fragment node assembly, tokenized style operations, and batched DOM mutations to safeguard client rendering budgets.
-      </div>
-    </div>
-
-    <!-- ── SYSTEM PRESENTATION PROGRESS MATRIX MAP ── -->
-    <div class="interactive-framework-sector">
-      <h3 class="framework-title-hud">🗺️ Presentation Layer Progress Matrix Map</h3>
-      <div class="framework-flex-track">
-        <div class="frame-node-box done-node-box">Arrays 3.3</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box done-node-box">Objects 3.4</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box active-node-box">DOM Logic 3.5</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Events 3.6</div>
-        <span class="frame-arrow-link">➔</span>
-        <div class="frame-node-box">Async Apps 3.7</div>
-      </div>
-    </div>
-
-    <!-- ══════════ SECTION 1: THE BIG IDEA ══════════ -->
-    <section class="section-card" id="s1">
-      <div class="card-header-hud">
-        <span class="card-hud-num">01</span>
-        <h2 class="card-hud-title">The Big Idea</h2>
-      </div>
-      <p>Many web software developers treat DOM updates as a trivial task done by string injections using properties like <code>innerHTML</code>. **At corporate scale, this unstructured approach introduces massive security and runtime overhead into full-stack systems.** Forcing browsers to re-parse text strings repeatedly triggers expensive geometry invalidations, compromises applications via Cross-Site Scripting (XSS) channels, and bogs down user scrolling paths.</p>
-      <p>High-performance UI engineering targets programmatic node orchestration. By assembling element structures using native methods like <code>querySelector</code>, <code>createElement</code>, and tokenized <code>classList</code> flags, developers can modify layout nodes with pinpoint accuracy. Combined with non-rendered batching containers like <code>DocumentFragment</code>, you can mount complex interface nodes onto live trees in a single step, ensuring smooth visual performance across all target client viewports.</p>
-      
-      <div class="design-compute-hud">
-        <div class="compute-title">⚡ High-Performance DOM Mutation Metric Equation:</div>
-        <div class="compute-value">Rendering Latency = (Quantity of Nodes Attached &times; Parent Reflow Weight) / Batched Pipeline Blocks</div>
-      </div>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Core Insight</div>
-        <p>The clear distinction between a senior frontend engineer and an entry-level developer lies in how they batch layout adjustments. Juniors write immediate updates directly to live views, causing page performance to stutter. Masters build and organize component structures within decoupled, off-screen fragment trees, minimizing live browser reflow passes to protect client frame budgets.</p>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 2: THE INTUITION ══════════ -->
-    <section class="section-card" id="s3">
-      <div class="card-header-hud">
-        <span class="card-hud-num">02</span>
-        <h2 class="card-hud-title">The Intuition</h2>
-      </div>
-      <h3>The Skyscraper Modular Crane Model</h3>
-      <p>Imagine constructing a modern downtown skyscraper tower. You could choose to hoist individual building tiles, single glass panels, and raw concrete buckets up to the top floor one-by-one with a crane, forcing your construction crew to halt structural work and recalculate balance loads after every tiny addition.</p>
-      <p>Alternatively, you can assemble **complete structural rooms, fitted wall setups, and entire utility matrices inside an off-site warehouse facility first.** When complete, the transport crane lifts the full pre-fabricated segment into place on the tower in a single pass. Document Fragments operate exactly like those pre-fabricated building modules, allowing you to organize element branches off-screen and append them to the live DOM tree in one clean step to bypass rendering delays.</p>
-
-      <div class="hud-callout hud-callout-idea">
-        <div class="hud-callout-label">The Three-Second Reframe</div>
-        <p>When element layout updates stutter or lock up browser interactions during heavy data loads, drop temporary code fixes. Ask an analytical question: <strong>"This DOM mutation track is pushing unbatched updates directly to the live viewport. How can I isolate these elements in a temporary document fragment container to optimize our rendering pipeline?"</strong> This framing guides performance fixes.</p>
-      </div>
-
-      <h3>The Storefront Mannequin Wardrobe Metaphor</h3>
-      <p>To master advanced DOM operations, visualize a luxury apparel retail display window. A decorator doesn't sew new fabric directly onto a mannequin standing inside the live display box piece-by-piece under bright showroom lights. They wheel the mannequin into a backstage dressing room, snap pre-tailored outfits and accessories onto its frame in one pass, and return the finished display to the front window. Utilizing tokenized class lists and fragments mimics this layout workflow, altering element states backstage cleanly before displaying them to users.</p>
-    </section>
-
-    <!-- ══════════ SECTION 3: THE VISUAL ══════════ -->
-    <section class="section-card" id="s4">
-      <div class="card-header-hud">
-        <span class="card-hud-num">03</span>
-        <h2 class="card-hud-title">The Visual — Fragment Batching Pipelines</h2>
-      </div>
-      <p>Understanding how the rendering engine handles off-screen node compilation and processes changes along critical loading paths is vital for preventing layout lag. Click through each sequential step to trace element integration paths.</p>
-
-      <div class="workboard-matrix">
-        <div class="flowchart-intro">
-          <p>🖥️ &nbsp; Browser DOM Fragment Compilation & Batching Lifecycles &nbsp;·&nbsp; Click steps to trace data states.</p>
-        </div>
-        <div class="workboard-steps">
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">1</div>
-              <div class="wb-step-title">Decoupled Fragment Allocation Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The runtime engine instantiates a lightweight, virtual parent wrapper node known as a <code>DocumentFragment</code>. This non-rendered shell exists purely inside Heap memory storage, completely separated from the browser's active visual display tree.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">2</div>
-              <div class="wb-step-title">Off-Screen Subtree Construction Loop</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The application script creates children via <code>document.createElement</code>, configuring explicit class identifiers and text attributes before appending them to the virtual fragment tree. Because this work occurs off-screen, it triggers zero live reflow passes.</p>
-            </div>
-          </div>
-          <div class="wb-connector">↓</div>
-          <div class="wb-step" onclick="revealNode(this)">
-            <div class="wb-step-header">
-              <div class="wb-step-indicator">3</div>
-              <div class="wb-step-title">Batched DOM Injection & Layout Paint Pass</div>
-              <div class="wb-step-expand">+</div>
-            </div>
-            <div class="wb-step-body">
-              <p>The populated fragment tree is injected into the live DOM tree in a single operation. The browser's rendering layout engine handles all appended components in one pass, optimizing its reflow and repaint workflows to keep page performance completely fluid.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flow-action-row">
-          <button class="premium-reset-btn" onclick="resetNodes()">↺ Reset Variable Lifecycle</button>
-        </div>
-      </div>
-
-      <!-- PREMIUM INCLUDED VECTOR DIAGRAM -->
-      <div class="infographic-wrapper">
-        <svg class="infographic-graphic" viewBox="0 0 800 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="800" height="320" rx="6" fill="#030308"/>
-          <g opacity="0.15">
-            <path d="M 40 60 L 760 60 M 40 160 L 760 160 M 40 260 L 760 260" stroke="#39ff14" stroke-width="1"/>
-            <path d="M 390 40 L 390 280" stroke="#00f5d4" stroke-width="2" stroke-dasharray="4 4"/>
-          </g>
-          
-          <text x="60" y="35" fill="#94a3b8" font-family="Space Mono" font-size="12" font-weight="bold">Live DOM Viewport (Single Appended Pass)</text>
-          <text x="410" y="35" fill="#00f5d4" font-family="Space Mono" font-size="12" font-weight="bold">Virtual Heap Memory Fragment (Off-Screen Build)</text>
-          
-          <!-- Live View Box Representation -->
-          <rect x="60" y="100" width="280" height="130" rx="4" fill="#0a0c1c" stroke="var(--border-neon-vivid)" stroke-width="2"/>
-          <text x="200" y="140" fill="#f8fafc" font-family="Space Mono" font-size="13" text-anchor="middle">div.dashboard-container</text>
-          <path d="M 410 160 L 350 160" stroke="#39ff14" stroke-width="2" stroke-dasharray="4 4"/>
-          <polygon points="342,160 354,154 354,166" fill="#39ff14"/>
-
-          <!-- Document Fragment Off-Screen Construction -->
-          <rect x="420" y="100" width="330" height="130" rx="4" fill="#0a0c1c" stroke="#00f5d4" stroke-width="2"/>
-          <text x="585" y="135" fill="#00f5d4" font-family="Space Mono" font-size="13" text-anchor="middle">DocumentFragment</text>
-          <text x="585" y="170" fill="#94a3b8" font-family="Space Mono" font-size="11" text-anchor="middle">[ li.item-1, li.item-2, li.item-3 ]</text>
-        </svg>
-        <div class="infographic-caption">Vector Diagram 3.5: Document Fragment Batch Ingestion. Building structural component child branches off-screen within virtual fragment shells shields client browsers from unneeded layout recalculations.</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 4: THE DEPTH ══════════ -->
-    <section class="section-card" id="s5">
-      <div class="card-header-hud">
-        <span class="card-hud-num">04</span>
-        <h2 class="card-hud-title">The Depth</h2>
-      </div>
-      <h3>Part A — Core DOM Queries & Node Target Selection</h3>
-      <p>Modern frontend engineering relies on precise element node targeting selectors. Let us inspect the programmatic structure of high-performance layout target calls:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">dom-orchestration.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">// 1. Query target single node via type-safe CSS selector mappings</span>
-<span class="t-kw">const</span> operationalDashboardGrid = document.querySelector(<span class="t-str">"#dashboard-grid"</span>);
-
-<span class="t-comment">// 2. Query structural array matrices via class criteria matching matches</span>
-<span class="t-kw">const</span> activeTelemetryCardList = document.querySelectorAll(<span class="t-str">".matrix-card.is-active"</span>);
-
-<span class="t-comment">// 3. High-Performance node verification loop tracking</span>
-activeTelemetryCardList.forEach((cardNode) => {
-  cardNode.classList.add(<span class="t-str">"border-accelerated"</span>);
-});</pre>
-      </div>
-
-      <p>The <code>querySelector</code> and <code>querySelectorAll</code> methods locate elements using standard W3C CSS selector patterns. While legacy properties like <code>getElementsByClassName</code> return live HTMLCollections that re-evaluate automatically as the document changes, modern selection engines return a static **NodeList** matrix snapshot, lowering processing overhead as layout trees scale.</p>
-
-      <h3>Part B — Programmatic Node Assembly vs. Text Injections</h3>
-      <p>Relying on raw string assignments via <code>innerHTML</code> introduces security vulnerabilities and performance bottlenecks into enterprise systems. Let us contrast text injections with programmatic node creation workflows:</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">node-generation-pipeline.js</span><div class="p-code-dots"><div class="p-code-dot"></div><div class="p-code-dot"></div><div class="p-code-dot"></div></div></div>
-        <pre><span class="t-comment">// ❌ Dangerous text injection vulnerability target pass</span>
-<span class="t-sel">nodeContainer.innerHTML = `&lt;div class="card"&gt;${unverifiedUserData}&lt;/div&gt;`;</span>
-
-<span class="t-comment">// ✅ Safe, programmatic element node assembly architecture</span>
-<span class="t-kw">const</span> structuralCardElement = document.createElement(<span class="t-str">"div"</span>);
-structuralCardElement.classList.add(<span class="t-str">"matrix-card-component"</span>);
-structuralCardElement.textContent = <span class="t-val">"Type-Safe Telemetry Parameters"</span>;
-<span class="t-sel">nodeContainer.appendChild(structuralCardElement);</span></pre>
-      </div>
-
-      <p>Using <code>innerHTML</code> assignments forces browser rendering engines to halt active script executions, drop existing node paths, and completely re-tokenize raw incoming strings. This process exposes systems to **Cross-Site Scripting (XSS)** exploits if inputs contain malicious strings. Alternatively, assembling nodes via <code>createElement</code> injects text characters safely using built-in escape filters, keeping your data workflows highly secure.</p>
-
-      <h3>Part C — Tokenized Style Tracking via classList APIs</h3>
-      <p>Modifying inline element styles directly via script instructions (e.g., <code>element.style.color = "blue";</code>) forces real-time style recalculations and breaks clean separation of concerns. Production-grade systems manage element states via tokenized class list APIs:</p>
-      <p><code>element.classList.toggle("is-accelerated-layer", conditionVariable);</code></p>
-      <p>The <code>classList</code> interface exposes clean array-style methods (<code>add</code>, <code>remove</code>, <code>toggle</code>, <code>contains</code>) to manage element state flags predictably. This approach keeps your visual presentations decoupled from core application logic, relying on centralized stylesheets to handle presentation changes efficiently.</p>
-
-      <h3>Part D — High-Performance DOM Directives Comparison</h3>
-      <p>Enterprise data engineering requires selecting tree modification methods deliberately to protect layout calculations. Let us contrast the behavior profiles of your core DOM tools:</p>
-
-      <div class="matrix-tabs">
-        <div class="tab-trigger-rack">
-          <button class="hud-tab-btn active-hud-tab" onclick="toggleHUDTab(this, 't1')">Programmatic Nodes</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't2')">Document Fragments</button>
-          <button class="hud-tab-btn" onclick="toggleHUDTab(this, 't3')">ClassList Tokenization</button>
-        </div>
-        
-        <div class="hud-tab-panel active-hud-panel" id="t1">
-          <p>Assembling elements programmatically via native methods avoids text-parsing bottlenecks. It ensures input data characters are safely escaped, keeping user interface interactions fast and highly secure against injection exploits.</p>
-        </div>
-        <div class="hud-tab-panel" id="t2">
-          <p>Document Fragments operate as virtual, off-screen drawing boards. Building new element components inside a fragment shell lets you insert large node subtrees onto page trees in one step, avoiding repetitive browser reflow passes.</p>
-        </div>
-        <div class="hud-tab-panel" id="t3">
-          <p>The classList interface provides a type-safe way to manage state flags on elements. It keeps your style presentations separate from core program logic, ensuring layouts update smoothly during state shifts.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 5: CODE LAB ══════════ -->
-    <section class="section-card" id="s6">
-      <div class="card-header-hud">
-        <span class="card-hud-num">05</span>
-        <h2 class="card-hud-title">Code Lab — Refactoring Unbatched DOM Append Loops</h2>
-      </div>
-      <p>Let us analyze real production layout errors, refactoring unbatched loop mutations into clean, high-performance fragment pipelines.</p>
-
-      <div class="premium-code-block">
-        <div class="p-code-header"><span class="p-code-filename">loop-mutation-refactor.js</span></div>
-        <pre><span class="t-comment">// Anti-Pattern: Loop pushes nodes directly to views, causing repetitive reflow lag</span>
-<span class="t-kw">const</span> targetRootContainer = document.querySelector(<span class="t-str">"#metrics-list"</span>);
-<span class="t-kw">const</span> dataCollectionPayload = [<span class="t-val">"Alpha"</span>, <span class="t-val">"Beta"</span>, <span class="t-val">"Gamma"</span>];
-
-dataCollectionPayload.forEach((itemText) => {
-  <span class="t-kw">const</span> rawListItem = document.createElement(<span class="t-str">"li"</span>);
-  rawListItem.textContent = itemText;
-  targetRootContainer.appendChild(rawListItem); <span class="t-comment">// 💥 Triggers immediate Reflow loops</span>
-});</pre>
-        <div class="error-explanation">
-          <div class="error-label">Production Refactored Configuration</div>
-          <pre><span class="t-comment">// Batch updates cleanly off-screen using an isolated DocumentFragment container</span>
-<span class="t-kw">const</span> targetRootContainer = document.querySelector(<span class="t-str">"#metrics-list"</span>);
-<span class="t-kw">const</span> dataCollectionPayload = [<span class="t-val">"Alpha"</span>, <span class="t-val">"Beta"</span>, <span class="t-val">"Gamma"</span>];
-
-<span class="t-kw">const</span> dynamicVirtualFragment = document.createDocumentFragment();
-
-dataCollectionPayload.forEach((itemText) => {
-  <span class="t-kw">const</span> secureListItem = document.createElement(<span class="t-str">"li"</span>);
-  secureListItem.textContent = itemText;
-  dynamicVirtualFragment.appendChild(secureListItem); <span class="t-comment">// Inserts off-screen smoothly</span>
-});
-
-targetRootContainer.appendChild(dynamicVirtualFragment);
-<span class="t-comment">// Updates the live DOM view tree in a single pass, cutting out layout thrashing</span></pre>
-          <div class="error-breakdown">
-            <div class="breakdown-item">
-              <div class="breakdown-key">Root Problem Analysis</div>
-              <div class="breakdown-val">Appending child nodes straight to live page containers inside tight loop passes forces the browser layout engine to rerun expensive geometry calculations on every item, creating interaction stutter.</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-key">Refactored Result</div>
-              <div class="breakdown-val">Assembling element branches inside a virtual <code>DocumentFragment</code> batches changes completely off-screen, merging nodes onto the page in a single pass to preserve rendering budgets.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 6: COMMON MISTAKES ══════════ -->
-    <section class="section-card" id="s7">
-      <div class="card-header-hud">
-        <span class="card-hud-num">06</span>
-        <h2 class="card-hud-title">Common Mistakes</h2>
-      </div>
-      <p>Avoid these common tree layout mutation pitfalls during technical interview assessments. Keeping element updates batched prevents layout thrashing as complex applications scale.</p>
-
-      <div class="pitfall-matrix">
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 01</div>
-          <div class="pitfall-title">Deploying innerHTML for Continuous State Modifications</div>
-          <div class="pitfall-body">Using raw string rewrites (like <code>innerHTML += ...</code>) to append new data logs. This choice forces full element tree rebuilds and opens up security vectors.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Assemble node branches programmatically using <code>createElement</code> and attach elements safely with structural methods like <code>appendChild</code> instead.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 02</div>
-          <div class="pitfall-title">Forgetting Live Collection Loops Calculation Costs</div>
-          <div class="pitfall-body">Iterating loops across live, auto-updating elements collections (like <code>getElementsByClassName</code>), causing slow, repetitive DOM scanning loops.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Target page elements with modern query methods like <code>querySelectorAll</code> to operate across a stable, static NodeList snapshot.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 03</div>
-          <div class="pitfall-title">Modifying Inline Box Spacings directly via Scripts</div>
-          <div class="pitfall-body">Injecting geometry sizing definitions directly via style strings (such as <code>el.style.width = "200px"</code>), which triggers real-time layout recalculations.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Toggle clean presentation modifier classes via the <code>classList</code> interface, allowing stylesheets to handle layout transitions efficiently.</div>
-        </div>
-
-        <div class="pitfall-node">
-          <div class="pitfall-id">PITFALL 04</div>
-          <div class="pitfall-title">Interleaving Layout Geometry Queries with Mutations</div>
-          <div class="pitfall-body">Alternating between reading box sizes (<code>offsetHeight</code>) and applying style updates inside tight loops, forcing layout thrashing.</div>
-          <div class="remedy-badge">✓ The Remedy</div>
-          <div class="pitfall-desc">Batch your operations strictly: execute all layout size reads upfront, then apply all design state updates in a separate pass.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 7: REAL WORLD ══════════ -->
-    <section class="section-card" id="s8">
-      <div class="card-header-hud">
-        <span class="card-hud-num">07</span>
-        <h2 class="card-hud-title">Real World — Scaled Layout Performance Architectures</h2>
-      </div>
-      <p>Top-tier web systems manage document tree transformations with strict care to avoid main-thread processing delays and maintain lightning-fast interaction rendering speeds.</p>
-
-      <div class="enterprise-radar">
-        <div class="radar-cell">
-          <div class="cell-tag">Virtual DOM Engines</div>
-          <div class="cell-desc">Enterprise presentation frameworks like React minimize expensive direct layout writes. They track changes inside a lightweight Virtual DOM tree in script memory first, batching final page modifications into minimal, combined updates.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Twitter Timeline Feeds</div>
-          <div class="cell-desc">Twitter web engineers stabilize busy multi-post feeds using off-screen fragment containers. As fresh message streams load, element cards mount into virtual trees completely, merging views into view frames to eliminate scrolling lag.</div>
-        </div>
-        <div class="radar-cell">
-          <div class="cell-tag">Figma Vector Workspaces</div>
-          <div class="cell-desc">Figma's dense web collaborative canvas tools bypass standard HTML tree rendering entirely for complex paths, running layout calculations inside an absolute WebGL context layer to secure fluid interactions at scale.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 8: INTERVIEW ANGLE ══════════ -->
-    <section class="section-card" id="s9">
-      <div class="card-header-hud">
-        <span class="card-hud-num">08</span>
-        <h2 class="card-hud-title">Interview Angle</h2>
-      </div>
-      <p>In mid-to-senior technical evaluations, document tree concepts are evaluated by analyzing your approach to layout preservation, rendering optimizations, and data safety constraints.</p>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">Technical Challenge Scenario</div>
-        <div class="pb-q-title">"We are designing an enterprise activity telemetry log portal that appends thousands of real-time server records onto a dashboard list every second. The current loop implementation locks the browser main thread, triggering interaction lag. How do you re-engineer this setup?"</div>
-        <div class="pb-hud-answer"><strong>Strategic Architecture Formulation:</strong> "The interaction lag stems from layout thrashing caused by pushing multiple unbatched DOM updates directly to live views inside tight loop paths. This practice forces the browser's layout engine to rerun expensive geometry calculations (Reflow) on every item, blocking user interactions. To eliminate this rendering bottleneck, I would implement an off-screen batching pipeline using a <code>DocumentFragment</code> container. Instead of writing updates directly to the live container, each incoming record element is assembled programmatically using <code>document.createElement()</code>, and its text fields are set safely via <code>textContent</code> to prevent cross-site scripting vulnerabilities. The items append into the non-rendered fragment shell in memory first. Once the loop batch finishes, injecting the populated fragment tree into the live DOM view updates the user interface in a single operation, cutting down layout recalculation costs to keep performance completely fluid."</div>
-      </div>
-
-      <div class="playbook-card">
-        <div class="pb-hud-label">System Performance Assessment</div>
-        <div class="pb-q-title">"Explain what layout thrashing means inside the browser rendering engine, and trace how interleaving node size queries with style modifications triggers this problem."</div>
-        <div class="pb-hud-answer"><strong>Engine Impact Analysis:</strong> "Layout thrashing happens when a script forces the browser to run alternating write and read actions sequentially inside tight loops. When code edits a style property, the engine flags current geometry layouts as dirty. If the next line immediately requests a layout size (like <code>element.offsetHeight</code>), the engine can't wait; it must halt script execution to compute current dimensions upfront. Alternating these actions inside a loop forces the browser to rerun full reflow and repaint calculations on every single iteration, locking up main thread resources."</div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 9: EXPLAIN IT TEST ══════════ -->
-    <section class="section-card" id="s10">
-      <div class="card-header-hud">
-        <span class="card-hud-num">09</span>
-        <h2 class="card-hud-title">Explain It Test — Knowledge Verification</h2>
-      </div>
-      <p>Test your understanding before moving forward. Explain your answers out loud as if speaking to a technical interviewer, then flip the card to verify your styling accuracy.</p>
-
-      <div class="retrieval-grid">
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 01</div>
-            <div class="r-question-text">What is a DocumentFragment and how does it prevent layout thrashing during DOM mutations?</div>
-            <div class="r-action-hint">Consider virtual off-screen element compilation ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 01</div>
-            <div class="r-answer-text">A DocumentFragment is a lightweight virtual container wrapper that exists purely in script memory storage off-screen. Assembling sub-components inside a fragment shell lets you inject large node structures into active trees in a single pass, avoiding repetitive browser reflow loops.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 02</div>
-            <div class="r-question-text">Why does deploying the innerHTML property to insert dynamic user-submitted text data create severe system vulnerabilities?</div>
-            <div class="r-action-hint">Consider Cross-Site Scripting (XSS) injection paths ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 02</div>
-            <div class="r-answer-text">Using <code>innerHTML</code> forces browser engines to parse incoming text strings raw. If inputs contain unverified scripts, the browser executes them automatically, opening up Cross-Site Scripting (XSS) vectors. Use <code>textContent</code> instead to safely escape characters.</div>
-            <div class="r-action-hint">Tap to flip back ↗ </div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 03</div>
-            <div class="r-question-text">Contrast the behavior profiles of live HTMLCollections against static NodeList snapshots.</div>
-            <div class="r-action-hint">Consider tree changes and lookup overhead costs ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 03</div>
-            <div class="r-answer-text">Live HTMLCollections (returned by legacy queries) re-evaluate and scan the full DOM tree automatically whenever document elements change. Modern <code>querySelectorAll</code> engines return a static NodeList snapshot in memory, avoiding background scanning work.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-
-        <div class="retrieval-node" onclick="flipHUDNode(this)">
-          <div class="r-front">
-            <div class="r-meta">Question 04</div>
-            <div class="r-question-text">What distinct browser processing bottleneck occurs when code updates inline sizes directly via element.style paths?</div>
-            <div class="r-action-hint">Consider style decoupling and geometry invalidation passes ↗</div>
-          </div>
-          <div class="r-back">
-            <div class="r-meta">Answer 04</div>
-            <div class="r-answer-text">Modifying sizes directly via style strings forces instant geometry recalculation passes. Managing element visibility and state flags through tokenized <code>classList</code> references keeps presentation styles decoupled, allowing sheets to handle modifications efficiently.</div>
-            <div class="r-action-hint">Tap to flip back ↗</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 10: DO THIS TODAY ══════════ -->
-    <section class="section-card" id="s11">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Do This Today — Practical Verification Tasks</h2>
-      </div>
-      <p>Complete these document tree orchestration tasks to master batched node mutations. Click each milestone row to track your progress.</p>
-
-      <div class="milestone-hud-list">
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 1 — Profile Layout Reflow Passes via browser DevTools Panels (30 Min)</div>
-            <div class="row-desc">Open a dynamic application view window and launch your browser's developer console. Open the Performance profiling panel, record a short capture session while running element additions, and analyze the calculation logs to trace reflow passes.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 2 — Build an Isolated Off-Screen Component DocumentFragment Tree (30 Min)</div>
-            <div class="row-desc">Create an isolated markup page template locally. Build an array-driven loop that generates list subtrees, assembling nodes off-screen inside a virtual <code>DocumentFragment</code> shell before appending them to the live page in one step.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 3 — Refactor Direct Inline Style Scripts into ClassList Token Flags (30 Min)</div>
-            <div class="row-desc">Locate or write a script that updates element box positions and border sizes by direct style injections. Refactor the implementation using tokenized class switches, managing visual state changes via clean external stylesheets.</div>
-          </div>
-        </div>
-
-        <div class="milestone-hud-row" onclick="completeHUDNode(this)">
-          <div class="row-checkbox">✓</div>
-          <div class="row-body">
-            <div class="row-title">Task 4 — Audit Page Layout Integrity during Active Content Insertions (30 Min)</div>
-            <div class="row-desc">Incorporate large text arrays into your page layout view blocks, testing execution limits under rapid updates. Leverage DevTools 'Rendering' options to highlight repaint regions, ensuring your element updates stay batched and performant.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── COMPREHENSIVE RECAP PANEL ── -->
-    <section class="section-card" id="recap-section">
-      <div class="comprehensive-recap-panel">
-        <h3 class="recap-title-hud">🎯 Document Tree Manipulation Performance Recap</h3>
-        <div class="recap-grid-hud">
-          <div class="recap-item-node">
-            <div class="recap-item-title">Node Integration Rules</div>
-            <div class="recap-item-desc">Assemble sub-component elements programmatically off-screen within virtual fragment shells, updating live views in a single pass to save compute resources.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Data Safety Overlays</div>
-            <div class="recap-item-desc">Enforce clean text insertions using textContent APIs exclusively, escaping incoming data characters completely to neutralize cross-site scripting vulnerabilities.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Query Metric Boundaries</div>
-            <div class="recap-item-desc">Target page element modules via modern query methods to operate across static NodeList snapshots, avoiding the overhead of live collections.</div>
-          </div>
-          <div class="recap-item-node">
-            <div class="recap-item-title">Style Variation Controls</div>
-            <div class="recap-item-desc">Organize element state transitions through tokenized classList variations, keeping presentation layouts decoupled from your core runtime script fields.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════════ SECTION 11: TAKEAWAYS & TERMS ══════════ -->
-    <section class="section-card" id="s12">
-      <div class="card-header-hud">
-        <span class="card-hud-num">10</span>
-        <h2 class="card-hud-title">Takeaways & Terms</h2>
-      </div>
-      <p>These tree manipulation rules form the baseline operational requirement for high-performance frontend interaction systems. Review them frequently to guide your development work.</p>
-
-      <div class="summary-hud-grid">
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">1</div>
-          <div class="summary-hud-text">Batch all DOM updates. Leverage DocumentFragment shells to assemble node branches off-screen, minimizing live browser reflow passes to protect frame rates.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">2</div>
-          <div class="summary-hud-text">Escape data text characters. Deploy textContent properties exclusively for data injections, shielding script execution pipelines from security threats.</div>
-        </div>
-        <div class="summary-hud-cell">
-          <div class="summary-hud-metric">3</div>
-          <div class="summary-hud-text">Toggle state tokens cleanly. Manage interface variations through classList APIs, allowing stylesheets to handle layout transitions efficiently.</div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <h3>Terms to Know</h3>
-
-      /* FIX: Standardized high-contrast grid boxes clear of muddy brown accents to guarantee word visibility */
-      <div class="glossary-matrix-grid">
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Document Object Model</div>
-          <div class="g-node-definition">The active node tree graph compiled by browser layout engines, mapping page markup elements into addressable script objects.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">DocumentFragment</div>
-          <div class="g-node-definition">A lightweight virtual wrapper container that exists purely in script memory storage off-screen, used to batch node mutations efficiently.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Layout Reflow Pass</div>
-          <div class="g-node-definition">The browser pipeline stage where the engine computes exact spatial positions, boundary coordinates, and dimensions down the element tree.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Screen Repaint Pass</div>
-          <div class="g-node-definition">The rendering phase where the engine rasterizes updated pixel properties, drawing updated background colors or borders to the viewport.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Layout Thrashing</div>
-          <div class="g-node-definition">A performance bottleneck caused by forcing the browser to alternate between write and read actions sequentially inside tight loops.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Cross-Site Scripting</div>
-          <div class="g-node-definition">An injection vulnerability vector (XSS) where a platform execution script inadvertently parses and runs malicious user input strings.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Static NodeList</div>
-          <div class="g-node-definition">A non-reactive snapshot collection of elements in memory that remains unchanged even when downstream DOM modifications alter the tree.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Live HTMLCollection</div>
-          <div class="g-node-definition">An active element collection that scans and re-evaluates document trees automatically upon every modification pass, adding processing overhead.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">classList Interface</div>
-          <div class="g-node-definition">A clean programmatic API used to add, remove, or toggle token class identifiers on elements without modifying styles directly.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">textContent API</div>
-          <div class="g-node-definition">A safe property selector that injects text strings into nodes with automatic character escaping, mitigating script injection exploits.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Virtual DOM Tree</div>
-          <div class="g-node-definition">A lightweight copy of the page tree used by modern frameworks to compute layout adjustments before updating the physical screen.</div>
-        </div>
-        <div class="glossary-cell-node">
-          <div class="g-node-term">Lookahead Tokenizer</div>
-          <div class="g-node-definition">The browser compilation component that parses raw text characters into valid language tags before building document layout structures.</div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="matrix-footer">
-        <a class="matrix-next-btn" href="essay-3.6.html">
-            <div>
-              <div class="footer-btn-label">Advance to Next Syllabus Module</div>
-              <div class="footer-btn-title">Essay 3.6 - Event Architecture: Listeners, Bubbling, & Delegation Pipelines</div>
-            </div>
-            <div class="footer-btn-arrow">&#8594;</div>
-          </a>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<script>
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  document.getElementById('progress-bar').style.width = progress + '%';
-});
-
-const sections = document.querySelectorAll('.section-card');
-const navItems = document.querySelectorAll('.hud-nav-item');
-
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.05 });
-
-const navObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const id = entry.target.id;
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + id) item.classList.add('active');
-      });
-    }
-  });
-}, { threshold: 0, rootMargin: '-10% 0px -60% 0px' });
-
-sections.forEach(s => {
-  revealObserver.observe(s);
-  navObserver.observe(s);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  sections.forEach(s => {
-    const rect = s.getBoundingClientRect();
-    if (rect.top < window.innerHeight) s.classList.add('visible');
-  });
-});
-
-function revealNode(el) { el.classList.toggle('active-node'); }
-function resetNodes() { document.querySelectorAll('.wb-step').forEach(s => s.classList.remove('active-node')); }
-
-function toggleHUDTab(btn, panelId) {
-  document.querySelectorAll('.hud-tab-btn').forEach(b => b.classList.remove('active-hud-tab'));
-  document.querySelectorAll('.hud-tab-panel').forEach(p => p.classList.remove('active-hud-panel'));
-  btn.classList.add('active-hud-tab');
-  document.getElementById(panelId).classList.add('active-hud-panel');
-}
-
-function flipHUDNode(el) { el.classList.toggle('flipped'); }
-function completeHUDNode(el) { el.classList.toggle('completed-node'); }
-
-function toggleSidebarHUD() {
-  const body = document.body;
-  const sidebar = document.getElementById('sidebarNode');
-  const toggleText = document.getElementById('toggle-text');
-  
-  body.classList.toggle('sidebar-open');
-  sidebar.classList.toggle('open');
-  
-  if (sidebar.classList.contains('open')) {
-    toggleText.innerText = "Collapse Map";
-  } else {
-    toggleText.innerText = "Expand Map";
-  }
-}
-
-function toggleThemeHUD() {
-  const body = document.body;
-  const themeText = document.getElementById('theme-text');
-  
-  body.classList.toggle('light-theme');
-  
-  if (body.classList.contains('light-theme')) {
-    themeText.innerText = "Light Lab";
-  } else {
-    themeText.innerText = "Dark Cyber";
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->
