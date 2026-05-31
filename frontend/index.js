@@ -1,14 +1,24 @@
 // ── COURSE ESSAYS DATABASE ──
 const ESSAYS_DATA = {
+  // Phase 0 — Foundation and Setup
+  "0.1": { title: "Essay 0.1 — Your complete development environment: VS Code, Node, Git, extensions, terminal", phase: 0, path: "", time: 45 },
+  "0.2": { title: "Essay 0.2 — The terminal and command line: navigation, files, processes, shortcuts", phase: 0, path: "", time: 45 },
+  "0.3": { title: "Essay 0.3 — Git and GitHub from scratch: init, add, commit, push, branches, pull requests", phase: 0, path: "", time: 45 },
+
+  // Phase 1 — HTML
   "1.1": { title: "Essay 1.1 — HTML: The Skeleton of Every Webpage", phase: 1, path: "essays/essay-1.1.html", time: 45 },
   "1.2": { title: "Essay 1.2 — CSS: Layout Paradigms & Paint Budgets", phase: 1, path: "essays/essay-1.2.html", time: 45 },
   "1.3": { title: "Essay 1.3 — HTML5 Modern Features & Metadata", phase: 1, path: "essays/essay-1.3.html", time: 45 },
+
+  // Phase 2 — CSS
   "2.1": { title: "Essay 2.1 — CSS Fundamentals & Specificity Hierarchy", phase: 2, path: "essays/essay-2.1.html", time: 45 },
   "2.2": { title: "Essay 2.2 — Flexbox Layouts: Linear Space Alignment Rules", phase: 2, path: "essays/essay-2.2.html", time: 45 },
   "2.3": { title: "Essay 2.3 — CSS Grid Matrix: Two-Dimensional Space Frameworks", phase: 2, path: "essays/essay-2.3.html", time: 45 },
   "2.4": { title: "Essay 2.4 — Responsive Design: Mobile-First Viewports & Media Queries", phase: 2, path: "essays/essay-2.4.html", time: 45 },
   "2.5": { title: "Essay 2.5 — CSS Transitions & Animations: High-Performance Visual Timelines", phase: 2, path: "essays/essay-2.5.html", time: 45 },
   "2.6": { title: "Essay 2.6 — Tailwind CSS: Modern Utility-First Style Architecture", phase: 2, path: "essays/essay-2.6.html", time: 45 },
+
+  // Phase 3 — JavaScript
   "3.1": { title: "Essay 3.1 — JavaScript Engine Loop: Variables, Conditions, & Execution Pipelines", phase: 3, path: "essays/essay-3.1.html", time: 45 },
   "3.2": { title: "Essay 3.2 — Functions & Closures: Advanced Scope Lifecycle Operations", phase: 3, path: "essays/essay-3.2.html", time: 45 },
   "3.3": { title: "Essay 3.3 — Array Modules & Higher-Order Methods: Map, Filter, & Reduce Algebra", phase: 3, path: "essays/essay-3.3.html", time: 45 },
@@ -18,6 +28,8 @@ const ESSAYS_DATA = {
   "3.7": { title: "Essay 3.7 — Asynchronous JavaScript: Timers, Promises, & Event Loop Architectures", phase: 3, path: "essays/essay-3.7.html", time: 45 },
   "3.8": { title: "Essay 3.8 — Fetch API: Making Network Requests & Parsing JSON Payloads", phase: 3, path: "essays/essay-3.8.html", time: 45 },
   "3.9": { title: "Essay 3.9 — ES6+ Modern Features: Modules, Template Literals, & Local Storage", phase: 3, path: "essays/essay-3.9.html", time: 45 },
+
+  // Phase 4 — React
   "4.1": { title: "Essay 4.1 — React Fundamentals: Virtual DOM Architectures & Component Structures", phase: 4, path: "essays/essay-4.1.html", time: 45 },
   "4.2": { title: "Essay 4.2 — State with useState: Managing Component Data Transitions", phase: 4, path: "essays/essay-4.2.html", time: 50 },
   "4.3": { title: "Essay 4.3 — useEffect: Side Effects, Data Fetching, & Cleanup", phase: 4, path: "essays/essay-4.3.html", time: 55 },
@@ -25,6 +37,8 @@ const ESSAYS_DATA = {
   "4.5": { title: "Essay 4.5 — Forms in React: Controlled Inputs & Validation Handlers", phase: 4, path: "essays/essay-4.5.html", time: 45 },
   "4.6": { title: "Essay 4.6 — useContext: Global State Orchestration & Prop Drilling Elimination", phase: 4, path: "essays/essay-4.6.html", time: 50 },
   "4.7": { title: "Essay 4.7 — Scaled Codebase Organization & Vercel Deployment", phase: 4, path: "essays/essay-4.7.html", time: 45 },
+
+  // Phase 5 — Next.js
   "5.1": { title: "Essay 5.1 — Next.js Framework: Server Components & File Routing Networks", phase: 5, path: "essays/essay-5.1.html", time: 50 },
   "5.2": { title: "Essay 5.2 — Data Fetching on the Server: Server Actions & Direct Database Ingestions", phase: 5, path: "essays/essay-5.2.html", time: 50 },
   "5.3": { title: "Essay 5.3 — Data Caching & Revalidations: Force Dynamic, Fetch Flags, & Time Invalidation Models", phase: 5, path: "essays/essay-5.3.html", time: 45 },
@@ -33,39 +47,92 @@ const ESSAYS_DATA = {
   "5.6": { title: "Essay 5.6 — Platform API Optimizations: Route Handlers & Edge Streaming", phase: 5, path: "essays/essay-5.6.html", time: 40 },
   "5.7": { title: "Essay 5.7 — Advanced Full-Stack Security: CSRF Defenses, XSS Mitigation, & CORS Controls", phase: 5, path: "essays/essay-5.7.html", time: 45 },
   "5.8": { title: "Essay 5.8 — Ecosystem Deployment: Multi-Zone Optimizations & Vercel Advanced Architectures", phase: 5, path: "essays/essay-5.8.html", time: 45 },
-  "6.1": { title: "Essay 6.1 — Browser DevTools: Elements, Console, Network, Performance, & Sources", phase: 6, path: "essays/essay-6.1.html", time: 40 },
-  "6.2": { title: "Essay 6.2 — VS Code Mastery: Extensions, Shortcuts, Debugging, &amp; Snippets", phase: 6, path: "essays/essay-6.2.html", time: 40 },
-  "6.3": { title: "Essay 6.3 — Postman: Testing APIs, Environments, Collections, &amp; Automation Frameworks", phase: 6, path: "essays/essay-6.3.html", time: 40 },
-  "7.1": { title: "Essay 7.1 — Node.js Fundamentals: Event Loop, Libuv Threads, npm, &amp; package.json", phase: 7, path: "essays/essay-7.1.html", time: 45 },
-  "7.2": { title: "Essay 7.2 — Express Core: Server Framework Instantiation &amp; Port Handshaking", phase: 7, path: "essays/essay-7.2.html", time: 40 },
-  "7.3": { title: "Essay 7.3 — Routes, Middleware, and the HTTP Request-Response Lifecycle Matrix", phase: 7, path: "essays/essay-7.3.html", time: 45 },
-  "7.4": { title: "Essay 7.4 — Input Validation with Zod: Schema Enforcement &amp; Defensive Request Guardrails", phase: 7, path: "essays/essay-7.4.html", time: 45 },
-  "7.5": { title: "Essay 7.5 — Error Handling Middleware: Professional Global Trace Management", phase: 7, path: "essays/essay-7.5.html", time: 40 },
-  "7.6": { title: "Essay 7.6 — Environment Variables: dotenv, Secrets, &amp; Configuration Management", phase: 7, path: "essays/essay-7.6.html", time: 40 },
-  "7.7": { title: "Essay 7.7 — Building a Complete REST API: Putting All Backend Skills Together", phase: 7, path: "essays/essay-7.7.html", time: 50 },
-  "8.1": { title: "Essay 8.1 — Database Fundamentals: Relational vs NoSQL Topologies", phase: 8, path: "essays/essay-8.1.html", time: 40 },
-  "8.2": { title: "Essay 8.2 — SQL Fundamentals: Structured Query Mutations &amp; Data Filters", phase: 8, path: "essays/essay-8.2.html", time: 40 },
-  "8.3": { title: "Essay 8.3 — Advanced SQL: Relational JOIN Planes, Aggregations, &amp; Subqueries", phase: 8, path: "essays/essay-8.3.html", time: 45 },
-  "8.4": { title: "Essay 8.4 — PostgreSQL in Practice: Cluster Setup, pgAdmin Management, &amp; Connection Pools", phase: 8, path: "essays/essay-8.4.html", time: 45 },
-  "8.5": { title: "Essay 8.5 — Prisma ORM: Type-Safe Database Access, Declarative Schemas, &amp; Automated Migrations", phase: 8, path: "essays/essay-8.5.html", time: 45 },
-  "8.6": { title: "Essay 8.6 — Database Design: Normalization Rules, ER Diagrams, &amp; Schema Planning", phase: 8, path: "essays/essay-8.6.html", time: 40 },
-  "8.7": { title: "Essay 8.7 — MongoDB and Mongoose: Document Databases, CRUD Operations, &amp; Schemas", phase: 8, path: "essays/essay-8.7.html", time: 45 },
-  "9.1": { title: "Essay 9.1 — Authentication Fundamentals: Sessions, Cookies, &amp; Login Architecture", phase: 9, path: "essays/essay-9.1.html", time: 45 },
-  "9.2": { title: "Essay 9.2 — Password Hashing with bcrypt: Cryptographic Salts &amp; One-Way Functions", phase: 9, path: "essays/essay-9.2.html", time: 45 },
-  "9.3": { title: "Essay 9.3 — JWT in Practice: Creating, Verifying, Refresh Tokens, &amp; Secure Storage", phase: 9, path: "essays/essay-9.3.html", time: 45 },
-  "9.4": { title: "Essay 9.4 — Role-Based Access Control (RBAC): Protecting Routes &amp; Authority Matrices", phase: 9, path: "essays/essay-9.4.html", time: 55 },
-  "9.5": { title: "Essay 9.5 — Production Node.js Security: Helmet, CORS, Rate-Limiting, &amp; OWASP Top 10", phase: 9, path: "essays/essay-9.5.html", time: 45 },
-  "10.1": { title: "Essay 10.1 — File Upload with Multer &amp; Cloud Storage with Cloudinary", phase: 10, path: "essays/essay-10.1.html", time: 45 },
-  "10.2": { title: "Essay 10.2 — Email Sending: NodeMailer, SendGrid, &amp; Transactional Routing Structures", phase: 10, path: "essays/essay-10.2.html", time: 45 },
-  "10.3": { title: "Essay 10.3 — WebSockets &amp; Real-Time Systems with Socket.io", phase: 10, path: "essays/essay-10.3.html", time: 45 },
-  "10.4": { title: "Essay 10.4 — Redis Cache Topologies: Strategies, Session Storage, &amp; Pub/Sub Channels", phase: 10, path: "essays/essay-10.4.html", time: 45 },
-  "11.1": { title: "Essay 11.1 — System Design Foundations: Scalability, CAP Theorem, &amp; Load Balancers", phase: 11, path: "essays/essay-11.1.html", time: 45 },
-  "11.2": { title: "Essay 11.2 — Database Internals: ACID Compliance, Indexing, Sharding, &amp; Replication", phase: 11, path: "essays/essay-11.2.html", time: 45 },
-  "11.3": { title: "Essay 11.3 — Caching Architecture: Strategies, Invalidation, &amp; Distributed Topologies", phase: 11, path: "essays/essay-11.3.html", time: 45 },
-  "11.4": { title: "Essay 11.4 — Message Queues: Kafka, RabbitMQ, Async Processing, &amp; Job Queues", phase: 11, path: "essays/essay-11.4.html", time: 45 },
-  "11.5": { title: "Essay 11.5 — Designing Real Systems: URL Shortener, WhatsApp, YouTube, &amp; Google Drive", phase: 11, path: "essays/essay-11.5.html", time: 45 },
-  "11.6": { title: "Essay 11.6 — Microservices vs. Monoliths: The Real-World Engineering Trade-Offs", phase: 11, path: "essays/essay-11.6.html", time: 45 },
-  "12.1": { title: "Essay 12.1 — AI and LLMs: What Every Web Developer Needs to Understand", phase: 12, path: "essays/essay-12.1.html", time: 45 }
+
+  // Phase 6 — Developer Tools
+  "6.1": { title: "Essay 6.1 — Browser DevTools: elements, console, network, performance, & sources", phase: 6, path: "essays/essay-6.1.html", time: 40 },
+  "6.2": { title: "Essay 6.2 — VS Code mastery: extensions, shortcuts, debugging, snippets", phase: 6, path: "essays/essay-6.2.html", time: 40 },
+  "6.3": { title: "Essay 6.3 — Postman: testing APIs, environments, collections, & automation frameworks", phase: 6, path: "essays/essay-6.3.html", time: 40 },
+
+  // Phase 7 — Node.js and Express
+  "7.1": { title: "Essay 7.1 — Node.js fundamentals: how it works, event loop, npm, package.json", phase: 7, path: "essays/essay-7.1.html", time: 45 },
+  "7.2": { title: "Essay 7.2 — Express: building your first server, hello world on the internet", phase: 7, path: "essays/essay-7.2.html", time: 40 },
+  "7.3": { title: "Essay 7.3 — Routes, middleware, and the request-response cycle", phase: 7, path: "essays/essay-7.3.html", time: 45 },
+  "7.4": { title: "Essay 7.4 — Input validation with Zod: never trust user input", phase: 7, path: "essays/essay-7.4.html", time: 45 },
+  "7.5": { title: "Essay 7.5 — Error handling middleware: professional-grade error management", phase: 7, path: "essays/essay-7.5.html", time: 40 },
+  "7.6": { title: "Essay 7.6 — Environment variables: dotenv, secrets, configuration management", phase: 7, path: "essays/essay-7.6.html", time: 40 },
+  "7.7": { title: "Essay 7.7 — Building a complete REST API: putting all backend skills together", phase: 7, path: "essays/essay-7.7.html", time: 50 },
+
+  // Phase 8 — Databases
+  "8.1": { title: "Essay 8.1 — Database fundamentals: relational vs NoSQL, when to use each", phase: 8, path: "essays/essay-8.1.html", time: 40 },
+  "8.2": { title: "Essay 8.2 — SQL fundamentals: SELECT, WHERE, INSERT, UPDATE, DELETE", phase: 8, path: "essays/essay-8.2.html", time: 40 },
+  "8.3": { title: "Essay 8.3 — Advanced SQL: JOINs, aggregation, GROUP BY, HAVING, subqueries", phase: 8, path: "essays/essay-8.3.html", time: 45 },
+  "8.4": { title: "Essay 8.4 — PostgreSQL in practice: setup, pgAdmin, connecting to Node.js", phase: 8, path: "essays/essay-8.4.html", time: 45 },
+  "8.5": { title: "Essay 8.5 — Prisma ORM: type-safe database access, schema, migrations", phase: 8, path: "essays/essay-8.5.html", time: 45 },
+  "8.6": { title: "Essay 8.6 — Database design: normalization, ER diagrams, schema planning", phase: 8, path: "essays/essay-8.6.html", time: 40 },
+  "8.7": { title: "Essay 8.7 — MongoDB and Mongoose: document databases, CRUD, schemas", phase: 8, path: "essays/essay-8.7.html", time: 45 },
+
+  // Phase 9 — Authentication and Security
+  "9.1": { title: "Essay 9.1 — Authentication fundamentals: sessions, cookies, how login works", phase: 9, path: "essays/essay-9.1.html", time: 45 },
+  "9.2": { title: "Essay 9.2 — Password Hashing with bcrypt: cryptographic salts & one-way functions", phase: 9, path: "essays/essay-9.2.html", time: 45 },
+  "9.3": { title: "Essay 9.3 — JWT in practice: creating, verifying, refresh tokens, secure storage", phase: 9, path: "essays/essay-9.3.html", time: 45 },
+  "9.4": { title: "Essay 9.4 — Role-Based Access Control (RBAC): protecting routes and authority matrices", phase: 9, path: "essays/essay-9.4.html", time: 55 },
+  "9.5": { title: "Essay 9.5 — Production Node.js Security: Helmet, CORS, rate-limiting, and OWASP top 10", phase: 9, path: "essays/essay-9.5.html", time: 45 },
+
+  // Phase 10 — Advanced Backend Features
+  "10.1": { title: "Essay 10.1 — File upload with Multer and cloud storage with Cloudinary", phase: 10, path: "essays/essay-10.1.html", time: 45 },
+  "10.2": { title: "Essay 10.2 — Email sending: NodeMailer, SendGrid, transactional emails", phase: 10, path: "essays/essay-10.2.html", time: 45 },
+  "10.3": { title: "Essay 10.3 — WebSockets and real-time systems with Socket.io", phase: 10, path: "essays/essay-10.3.html", time: 45 },
+  "10.4": { title: "Essay 10.4 — Redis Cache Topologies: caching, session storage, and pub/sub", phase: 10, path: "essays/essay-10.4.html", time: 45 },
+
+  // Phase 11 — System Design
+  "11.1": { title: "Essay 11.1 — System design foundations: scalability, CAP theorem, load balancers", phase: 11, path: "essays/essay-11.1.html", time: 45 },
+  "11.2": { title: "Essay 11.2 — Database internals: ACID, indexing, sharding, replication, MVCC", phase: 11, path: "essays/essay-11.2.html", time: 45 },
+  "11.3": { title: "Essay 11.3 — Caching architecture: strategies, invalidation, Redis patterns", phase: 11, path: "essays/essay-11.3.html", time: 45 },
+  "11.4": { title: "Essay 11.4 — Message queues: Kafka, RabbitMQ, async processing, job queues", phase: 11, path: "essays/essay-11.4.html", time: 45 },
+  "11.5": { title: "Essay 11.5 — Designing real systems: URL shortener, WhatsApp, YouTube, Google Drive", phase: 11, path: "essays/essay-11.5.html", time: 45 },
+  "11.6": { title: "Essay 11.6 — Microservices vs monolith: the real trade-offs, when each makes sense", phase: 11, path: "essays/essay-11.6.html", time: 45 },
+
+  // Phase 12 — AI Integration
+  "12.1": { title: "Essay 12.1 — AI and LLMs: what every web developer needs to understand", phase: 12, path: "essays/essay-12.1.html", time: 45 },
+  "12.2": { title: "Essay 12.2 — Using AI APIs: Gemini, OpenAI, streaming responses, costs", phase: 12, path: "", time: 45 },
+  "12.3": { title: "Essay 12.3 — Prompt engineering for production: reliable, structured outputs", phase: 12, path: "", time: 45 },
+  "12.4": { title: "Essay 12.4 — RAG: building AI features grounded in your own data", phase: 12, path: "", time: 50 },
+
+  // Phase 13 — CS Fundamentals for Web
+  "13.1": { title: "Essay 13.1 — How the internet works: DNS, HTTP, HTTPS, TCP/IP, status codes", phase: 13, path: "", time: 45 },
+  "13.2": { title: "Essay 13.2 — How browsers work: rendering pipeline, critical path, DevTools", phase: 13, path: "", time: 45 },
+  "13.3": { title: "Essay 13.3 — Operating systems for developers: processes, threads, memory, Linux", phase: 13, path: "", time: 45 },
+  "13.4": { title: "Essay 13.4 — Big O notation: why performance matters in real applications", phase: 13, path: "", time: 45 },
+  "13.5": { title: "Essay 13.5 — Web security fundamentals: XSS, CSRF, SQL injection, HTTPS, CORS", phase: 13, path: "", time: 45 },
+
+  // Phase 14 — TypeScript
+  "14.1": { title: "Essay 14.1 — TypeScript fundamentals: why TypeScript, types, interfaces, enums", phase: 14, path: "", time: 45 },
+  "14.2": { title: "Essay 14.2 — TypeScript with React: typed components, props, hooks, events", phase: 14, path: "", time: 45 },
+  "14.3": { title: "Essay 14.3 — TypeScript with Express: typed routes, request handlers, middleware", phase: 14, path: "", time: 45 },
+
+  // Phase 15 — Testing
+  "15.1": { title: "Essay 15.1 — Testing fundamentals: unit, integration, end-to-end, what to test", phase: 15, path: "", time: 45 },
+  "15.2": { title: "Essay 15.2 — Testing JavaScript and Node.js with Jest", phase: 15, path: "", time: 45 },
+  "15.3": { title: "Essay 15.3 — Testing React components with React Testing Library", phase: 15, path: "", time: 45 },
+
+  // Phase 16 — DevOps and Deployment
+  "16.1": { title: "Essay 16.1 — Clean code principles: naming, functions, DRY, guard clauses", phase: 16, path: "", time: 45 },
+  "16.2": { title: "Essay 16.2 — Docker: containerising your full-stack application", phase: 16, path: "", time: 45 },
+  "16.3": { title: "Essay 16.3 — Deployment: Vercel, Render, Railway, Supabase, environment setup", phase: 16, path: "", time: 45 },
+  "16.4": { title: "Essay 16.4 — CI/CD: GitHub Actions for automated testing and deployment", phase: 16, path: "", time: 45 },
+  "16.5": { title: "Essay 16.5 — Monitoring, logging, and error tracking with Sentry", phase: 16, path: "", time: 45 },
+
+  // Phase 17 — Projects
+  "17.1": { title: "Essay 17.1 — Project 1: Job Board Platform: complete build guide with all decisions explained", phase: 17, path: "", time: 60 },
+  "17.2": { title: "Essay 17.2 — Project 2: AI Study Assistant with RAG: complete build guide", phase: 17, path: "", time: 60 },
+  "17.3": { title: "Essay 17.3 — Project 3: Real-Time Collaborative Notes: complete build guide", phase: 17, path: "", time: 60 },
+
+  // Phase 18 — Career and Interviews
+  "18.1": { title: "Essay 18.1 — GitHub profile and portfolio strategy", phase: 18, path: "", time: 45 },
+  "18.2": { title: "Essay 18.2 — How to explain your projects to interviewers", phase: 18, path: "", time: 45 },
+  "18.3": { title: "Essay 18.3 — System design interviews: framework and practice", phase: 18, path: "", time: 45 },
+  "18.4": { title: "Essay 18.4 — Behavioural interviews: STAR method and your story", phase: 18, path: "", time: 45 },
+  "18.5": { title: "Essay 18.5 — The complete interview playbook: from application to offer", phase: 18, path: "", time: 45 }
 };
 
 // Quiz Question Database
@@ -317,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFilterListeners();
   initSearch();
   initCardClickEvents();
+  initRoadmapGridEvents();
   initStreakTracker();
   initQuizChallenge();
   initScratchpad();
@@ -442,7 +510,10 @@ function updateProgressHUD() {
   
   // Calculate Active Phase (first phase with incomplete items)
   let activePhaseName = 'All Completed';
-  const phaseLessons = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [], 12: [] };
+  const phaseLessons = {};
+  for (let p = 0; p <= 18; p++) {
+    phaseLessons[p] = [];
+  }
   
   Object.keys(ESSAYS_DATA).forEach(id => {
     const l = ESSAYS_DATA[id];
@@ -450,14 +521,15 @@ function updateProgressHUD() {
   });
   
   let foundActive = false;
-  for (let p = 1; p <= 12; p++) {
+  for (let p = 0; p <= 18; p++) {
     const totalInPhase = phaseLessons[p].length;
     const completedInPhase = phaseLessons[p].filter(id => completedEssays.includes(id)).length;
     
     // Update phase accordion stats row text
     const statsLabel = document.getElementById(`p${p}-stats`);
     if (statsLabel) {
-      let estHours = p === 1 ? '2.0' : p === 2 ? '4.0' : p === 3 ? '6.5' : p === 4 ? '5.5' : p === 5 ? '6.0' : p === 7 ? '5.0' : p === 8 ? '5.0' : p === 10 ? '3.0' : p === 11 ? '4.5' : p === 12 ? '1.0' : '2.5';
+      const totalMinutes = phaseLessons[p].reduce((sum, id) => sum + ESSAYS_DATA[id].time, 0);
+      const estHours = (totalMinutes / 60).toFixed(1);
       statsLabel.innerText = `${completedInPhase} of ${totalInPhase} Lessons Completed · ~${estHours} Hours`;
     }
     
@@ -597,6 +669,15 @@ function loadResumeHUD() {
 
 function initCardClickEvents() {
   document.querySelectorAll('.lesson-card-glass').forEach(card => {
+    // Prevent navigation for locked cards
+    if (card.classList.contains('lesson-locked')) {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      return;
+    }
+
     card.addEventListener('click', (e) => {
       if (e.target.closest('.checkbox-hud-container') || e.target.closest('.lesson-action-link')) {
         return;
@@ -607,6 +688,28 @@ function initCardClickEvents() {
       
       const path = ESSAYS_DATA[id].path;
       window.location.href = path;
+    });
+  });
+}
+
+function initRoadmapGridEvents() {
+  document.querySelectorAll('.roadmap-overview-grid a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        // Expand the target accordion section if it's closed
+        if (!targetElement.classList.contains('open')) {
+          targetElement.classList.add('open');
+        }
+        
+        // Scroll to it smoothly
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Push hash to URL
+        history.pushState(null, null, targetId);
+      }
     });
   });
 }
