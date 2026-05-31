@@ -445,6 +445,7 @@ p code, li code {
 
 
 
+
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -1682,12 +1683,35 @@ body.light-theme .auth-input {
   }
   
   #scratchpad-window {
-    width: calc(100% - 32px) !important;
-    left: 16px !important;
-    right: 16px !important;
-    bottom: 16px !important;
-    max-width: none !important;
-    height: 350px !important;
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    border-radius: 0 !important;
+    z-index: 2004 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    padding: 24px 16px !important;
+  }
+  #scratch-pane-notes {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #scratchpad-textarea {
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 120px !important;
+    font-size: 16px !important;
+  }
+  #scratch-pane-flashcards, #scratch-pane-quiz {
+    flex: 1 !important;
+    overflow-y: auto !important;
   }
   
   #ai-tutor-drawer {
@@ -1810,6 +1834,9 @@ body.light-theme .auth-input {
   </div>
 </div>
 <!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+
 
 
 
@@ -2551,6 +2578,7 @@ function toggleThemeHUD() {
     themeText.innerText = "Dark Cyber";
   }
 }
+
 
 
 
@@ -3875,6 +3903,51 @@ document.addEventListener('DOMContentLoaded', () => {
   syncScratchpadTheme(savedTheme === 'light' ? 'light' : 'dark');
   
   initClickToPlay();
+
+  // Handle mobile keyboard resizing using Visual Viewport API
+  if (window.visualViewport) {
+    const handleViewportResize = () => {
+      const isMobile = window.innerWidth <= 1024;
+      const tutorDrawer = document.getElementById('ai-tutor-drawer');
+      const scratchpad = document.getElementById('scratchpad-window');
+      
+      if (!isMobile) {
+        if (tutorDrawer) tutorDrawer.style.height = '';
+        if (scratchpad) scratchpad.style.height = '';
+        return;
+      }
+      
+      const vh = window.visualViewport.height;
+      
+      // Update AI Tutor height dynamically to fit visible area above keyboard
+      if (tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'))) {
+        tutorDrawer.style.height = `${vh}px`;
+      }
+      
+      // Update Scratchpad height dynamically
+      if (scratchpad && window.getComputedStyle(scratchpad).display === 'flex') {
+        scratchpad.style.height = `${vh}px`;
+      }
+    };
+    
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    window.visualViewport.addEventListener('scroll', handleViewportResize);
+    
+    // Bind trigger to toggle actions
+    const originalToggleAITutor = window.toggleAITutorDrawer || toggleAITutorDrawer;
+    window.toggleAITutorDrawer = () => {
+      originalToggleAITutor();
+      setTimeout(handleViewportResize, 50);
+      setTimeout(handleViewportResize, 150);
+    };
+    
+    const originalToggleScratchpad = window.toggleScratchpadHUD || toggleScratchpadHUD;
+    window.toggleScratchpadHUD = () => {
+      originalToggleScratchpad();
+      setTimeout(handleViewportResize, 50);
+      setTimeout(handleViewportResize, 150);
+    };
+  }
 });
 
 // Custom storage synchronization
@@ -4126,6 +4199,11 @@ window.sendAITutorMessage = sendAITutorMessage;
 
 // === INJECTED PREMIUM MODULE JS END ===
 </script>
+
+
+
+
+
 
 
 
