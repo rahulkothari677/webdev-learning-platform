@@ -2564,57 +2564,6 @@ function nextFlashcard(e) {
   renderFlashcard();
 }
 
-const quizData = {
-  "phase-1": [
-    {
-      q: "Which HTML element is semantically correct for main site navigation?",
-      o: ["&lt;nav&gt;", "&lt;div class='nav'&gt;", "&lt;ul&gt;", "&lt;section&gt;"],
-      a: 0
-    },
-    {
-      q: "Which Flexbox property aligns items along the cross-axis?",
-      o: ["justify-content", "align-items", "flex-direction", "align-self"],
-      a: 1
-    }
-  ],
-  "phase-2": [
-    {
-      q: "Which CSS contain value isolates layout, style, and paint?",
-      o: ["contain: strict", "contain: content", "contain: paint", "contain: layout"],
-      a: 0
-    },
-    {
-      q: "How are Container Queries specified in CSS?",
-      o: ["@media (min-width: 400px)", "@container (min-width: 400px)", "@parent (min-width: 400px)", "@element (min-width: 400px)"],
-      a: 1
-    }
-  ],
-  "phase-3": [
-    {
-      q: "Which queue are Promise callbacks appended to?",
-      o: ["Macrotask Queue", "Render Queue", "Microtask Queue", "RequestAnimationFrame Queue"],
-      a: 2
-    },
-    {
-      q: "What is the GC strategy used by modern V8 engines?",
-      o: ["Reference Counting", "Mark-and-Sweep (Generational)", "Manual Deallocation", "Stop-and-Copy Only"],
-      a: 1
-    }
-  ],
-  "phase-4": [
-    {
-      q: "What is the main role of standard key props in React lists?",
-      o: ["To apply styling", "To uniquely identify siblings for diff optimization", "To store element states", "To bind click events"],
-      a: 1
-    },
-    {
-      q: "Which hook handles side effects in React function components?",
-      o: ["useState", "useContext", "useEffect", "useMemo"],
-      a: 2
-    }
-  ]
-};
-
 let currentQuizIndex = 0;
 let answeredIndex = -1;
 

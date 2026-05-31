@@ -507,12 +507,14 @@ function loadProgress() {
   document.querySelectorAll('.lesson-card-glass').forEach(card => {
     const id = card.getAttribute('data-lesson-id');
     const checkbox = card.querySelector('.checkbox-hud-input');
-    if (completedEssays.includes(id)) {
-      checkbox.checked = true;
-      card.classList.add('completed');
-    } else {
-      checkbox.checked = false;
-      card.classList.remove('completed');
+    if (checkbox) {
+      if (completedEssays.includes(id)) {
+        checkbox.checked = true;
+        card.classList.add('completed');
+      } else {
+        checkbox.checked = false;
+        card.classList.remove('completed');
+      }
     }
   });
 }
