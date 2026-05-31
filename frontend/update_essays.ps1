@@ -3387,6 +3387,11 @@ foreach ($file in $htmlFiles) {
     # 10. Clean up old Vercel Analytics tags
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Vercel Web Analytics -->\s*<script defer src=[`"']/_vercel/insights/script\.js[`"']></script>", "")
 
+    # 11. Clean up old favicon links
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Favicons -->\s*<link rel=[`"']icon[`"'].*?>\s*<link rel=[`"']apple-touch-icon[`"'].*?>", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+type=[`"']image/png[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
+
     # Determine the Phase class for the body tag based on filename
     $phaseClass = ""
     if ($file.Name -match "essay-(\d+)\.") {
@@ -3439,12 +3444,15 @@ foreach ($file in $htmlFiles) {
         $content = $content.Substring(0, $bodyEndIndex) + "`n" + $injectedScratchpad + "`n" + $injectedPlaygroundDrawer + "`n" + $injectedAITutorDrawer + "`n" + $injectedAuthModal + "`n" + $content.Substring($bodyEndIndex)
     }
 
-    # 5. Inject Google Analytics & Vercel Web Analytics Tags after <head> tag
+    # 5. Inject Google Analytics, Vercel Web Analytics & Favicons after <head> tag
     $headMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<head[^>]*>")
     if ($headMatch.Success) {
         $insertIndex = $headMatch.Index + $headMatch.Length
         $analyticsHtml = @"
-`n  <!-- Google tag (gtag.js) -->
+`n  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../favicon.png">
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4NEN13DS4"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
