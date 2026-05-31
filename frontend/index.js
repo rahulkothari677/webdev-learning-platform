@@ -1,3 +1,8 @@
+// ── COPYRIGHT & LICENSE ──
+// Copyright (c) 2026 Rahul Kothari. All Rights Reserved.
+// Project: WebDev Pathway (https://www.webdevpathway.com)
+// Unauthorized copying or distribution of this file is strictly prohibited.
+
 // ── COURSE ESSAYS DATABASE ──
 const ESSAYS_DATA = {
   // Phase 0 — Foundation and Setup
