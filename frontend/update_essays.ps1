@@ -1154,15 +1154,19 @@ body.light-theme .auth-input {
     grid-template-columns: 1fr !important;
   }
 
-  /* Compact top toggle button */
   .sidebar-toggle-btn {
     position: fixed !important;
     top: 16px !important;
     left: 16px !important;
     z-index: 1010 !important; /* Stand above everything */
-    padding: 8px 12px !important;
-    border-radius: 20px !important;
-    font-size: 0.72rem !important;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.1rem !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
   }
   .sidebar-toggle-btn #sidebar-toggle-text-left {
