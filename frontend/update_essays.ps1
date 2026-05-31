@@ -3898,10 +3898,10 @@ foreach ($file in $htmlFiles) {
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED AUTH MODAL START === -->.*?<!-- === INJECTED AUTH MODAL END === -->", "")
 
     # 9. Clean up old Google Analytics tags
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Google tag \(gtag\.js\) -->.*?G-L4NEN13DS4'\s*\);\s*</script>", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Google tag \(gtag\.js\) -->.*?</script>.*?</script>", "")
 
     # 10. Clean up old Vercel Analytics tags
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Vercel Web Analytics -->\s*<script defer src=[`"']/_vercel/insights/script\.js[`"']></script>", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Vercel Web Analytics -->.*?</script>", "")
 
     # 11. Clean up old favicon links
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Favicons -->\s*<link rel=[`"']icon[`"'].*?>\s*<link rel=[`"']apple-touch-icon[`"'].*?>", "")
@@ -3944,7 +3944,7 @@ foreach ($file in $htmlFiles) {
     # 2. Inject custom scripts before the FIRST </script> tag in the document (the main script block)
     $scriptEndIndex = $content.IndexOf("</script>")
     if ($scriptEndIndex -ge 0) {
-        $configScript = "<script>window.currentLessonId = '$currentPhase.$currentLesson'; window.phaseLessonIds = $jsLessonsArray;</script>"
+        $configScript = "window.currentLessonId = '$currentPhase.$currentLesson';`nwindow.phaseLessonIds = $jsLessonsArray;"
         $content = $content.Substring(0, $scriptEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n" + $content.Substring($scriptEndIndex)
     }
     
