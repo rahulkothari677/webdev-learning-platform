@@ -1470,11 +1470,18 @@ body.light-theme .progress-ring-track {
   z-index: 2003 !important;
   backdrop-filter: blur(16px) !important;
   animation: player-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: opacity 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
 }
 #audio-control-panel.playing {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(139, 92, 246, 0.35) !important;
   border-color: rgba(139, 92, 246, 0.5) !important;
+  opacity: 0.25;
+  transition: opacity 0.3s ease 2s, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+#audio-control-panel.playing:hover,
+#audio-control-panel:not(.playing) {
+  opacity: 1 !important;
+  transition: opacity 0.2s ease !important;
 }
 body.light-theme #audio-control-panel {
   background: rgba(255, 255, 255, 0.9) !important;
@@ -2278,6 +2285,7 @@ function toggleAudioPlayback() {
   
   const playBtn = document.getElementById('audio-play-pause-btn');
   const eq = document.getElementById('audio-eq-wave');
+  const panel = document.getElementById('audio-control-panel');
   
   if (isAudioPlaying) {
     // We are playing, so pause it
@@ -2286,6 +2294,9 @@ function toggleAudioPlayback() {
     if (playBtn) playBtn.innerHTML = '\u25B6';
     if (eq) {
       eq.classList.remove('animating');
+    }
+    if (panel) {
+      panel.classList.remove('playing');
     }
     updateAudioProgress();
     return;
@@ -2299,6 +2310,9 @@ function toggleAudioPlayback() {
     if (eq) {
       eq.style.display = 'flex';
       eq.classList.add('animating');
+    }
+    if (panel) {
+      panel.classList.add('playing');
     }
     updateAudioProgress();
     return;
@@ -2317,6 +2331,9 @@ function toggleAudioPlayback() {
   
   isAudioPlaying = true;
   if (playBtn) playBtn.innerHTML = '\u23F8';
+  if (panel) {
+    panel.classList.add('playing');
+  }
   playCurrentSegment();
 }
 
@@ -2384,6 +2401,11 @@ function playCurrentSegment() {
     eq.classList.add('animating');
   }
   
+  const panel = document.getElementById('audio-control-panel');
+  if (panel) {
+    panel.classList.add('playing');
+  }
+  
   // Settle delay (150ms) to ensure speech cancel completely finishes before speak triggers (stabilizes local speed rate changes)
   speechTimeout = setTimeout(() => {
     window.speechSynthesis.speak(currentUtterance);
@@ -2413,6 +2435,11 @@ function stopAudioPlayback() {
   if (eq) {
     eq.style.display = 'none';
     eq.classList.remove('animating');
+  }
+  
+  const panel = document.getElementById('audio-control-panel');
+  if (panel) {
+    panel.classList.remove('playing');
   }
   
   currentSegmentIndex = 0;
@@ -2528,6 +2555,11 @@ function initClickToPlay() {
         
         const playBtn = document.getElementById('audio-play-pause-btn');
         if (playBtn) playBtn.innerHTML = '\u23F8';
+        
+        const panel = document.getElementById('audio-control-panel');
+        if (panel) {
+          panel.classList.add('playing');
+        }
         
         playCurrentSegment();
       }
@@ -3251,7 +3283,7 @@ function initHighlightExplainer() {
     tooltip = document.createElement('button');
     tooltip.id = 'floating-ai-tooltip';
     tooltip.className = 'floating-ai-tooltip';
-    tooltip.innerHTML = '<span>✨ Explain with AI</span>';
+    tooltip.innerHTML = '<span>\\u2728 Explain with AI</span>';
     document.body.appendChild(tooltip);
   }
   
