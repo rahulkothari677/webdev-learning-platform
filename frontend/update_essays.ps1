@@ -3321,25 +3321,6 @@ foreach ($file in $htmlFiles) {
     }
     
     # ── INJECTION STEP ──
-    # 0. Inject Google Analytics & Vercel Web Analytics Tags after <head> tag
-    $headMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<head[^>]*>")
-    if ($headMatch.Success) {
-        $insertIndex = $headMatch.Index + $headMatch.Length
-        $analyticsHtml = @"
-`n  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4NEN13DS4"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-L4NEN13DS4');
-  </script>
-  <!-- Vercel Web Analytics -->
-  <script defer src="/_vercel/insights/script.js"></script>
-"@
-        $content = $content.Substring(0, $insertIndex) + $analyticsHtml + $content.Substring($insertIndex)
-    }
     # 1. Inject custom styles before the FIRST </style> tag in the document (the main stylesheet)
     $styleEndIndex = $content.IndexOf("</style>")
     if ($styleEndIndex -ge 0) {
@@ -3363,6 +3344,26 @@ foreach ($file in $htmlFiles) {
     $bodyEndIndex = $content.LastIndexOf("</body>")
     if ($bodyEndIndex -ge 0) {
         $content = $content.Substring(0, $bodyEndIndex) + "`n" + $injectedScratchpad + "`n" + $injectedPlaygroundDrawer + "`n" + $injectedAITutorDrawer + "`n" + $injectedAuthModal + "`n" + $content.Substring($bodyEndIndex)
+    }
+
+    # 5. Inject Google Analytics & Vercel Web Analytics Tags after <head> tag
+    $headMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<head[^>]*>")
+    if ($headMatch.Success) {
+        $insertIndex = $headMatch.Index + $headMatch.Length
+        $analyticsHtml = @"
+`n  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4NEN13DS4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-L4NEN13DS4');
+  </script>
+  <!-- Vercel Web Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+"@
+        $content = $content.Substring(0, $insertIndex) + $analyticsHtml + $content.Substring($insertIndex)
     }
     
     # Write updated contents back to file using UTF-8 encoding
