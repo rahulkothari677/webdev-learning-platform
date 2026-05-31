@@ -1277,15 +1277,11 @@ body.light-theme .auth-input {
   #ai-tutor-drawer {
     width: 100% !important;
     max-width: 100% !important;
-    right: -100% !important;
     height: 100vh !important;
     height: 100dvh !important;
     top: 0 !important;
     bottom: 0 !important;
     z-index: 2005 !important;
-  }
-  #ai-tutor-drawer.open {
-    right: 0 !important;
   }
   #ai-tutor-drawer h3 {
     font-size: 0.85rem !important;
@@ -2721,7 +2717,8 @@ function toggleAITutorDrawer() {
 function closeAITutorDrawer() {
   const drawer = document.getElementById('ai-tutor-drawer');
   if (!drawer) return;
-  drawer.style.right = '-400px';
+  const isMobile = window.innerWidth <= 1024;
+  drawer.style.right = isMobile ? '-100%' : '-400px';
   setTimeout(() => {
     drawer.style.display = 'none';
   }, 400);
