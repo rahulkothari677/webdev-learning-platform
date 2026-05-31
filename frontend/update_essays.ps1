@@ -1165,7 +1165,7 @@ body.light-theme .auth-input {
     font-size: 0.72rem !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
   }
-  .sidebar-toggle-btn span {
+  .sidebar-toggle-btn #sidebar-toggle-text-left {
     display: none !important; /* Hide text, show only icon/chevron */
   }
 
