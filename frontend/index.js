@@ -455,6 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initScratchpad();
   updateProgressHUD();
   updateAuthHUD();
+  initSpotlightGlow();
+  initQuantumBackground();
   if (localStorage.getItem('faang-auth-token')) {
     syncProgressFromServer();
   }
@@ -552,9 +554,18 @@ function updateProgressHUD() {
   // Percent Calc
   const percent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   
-  // Animation for Percent Text & Bar
-  document.getElementById('progress-percent-val').innerText = `${percent}%`;
-  document.getElementById('progress-bar-fill-bar').style.width = `${percent}%`;
+  // Animation for Percent Text & Bar/Ring
+  const percentText = document.getElementById('progress-percent-val');
+  if (percentText) percentText.innerText = `${percent}%`;
+  
+  const fillBar = document.getElementById('progress-bar-fill-bar');
+  if (fillBar) fillBar.style.width = `${percent}%`;
+  
+  const circleMeter = document.getElementById('progress-circle-meter');
+  if (circleMeter) {
+    const offset = 188.4 - (percent / 100) * 188.4;
+    circleMeter.style.strokeDashoffset = offset;
+  }
   
   // Calculate completed read time hours and total course hours
   let completedMinutes = 0;
@@ -1024,3 +1035,97 @@ window.syncProgressToServer = syncProgressToServer;
 window.syncProgressFromServer = syncProgressFromServer;
 window.toggleRoadmapGrid = toggleRoadmapGrid;
 window.toggleFeaturesModal = toggleFeaturesModal;
+
+// --- PREMIUM HOVER SPOTLIGHT TRACKER ---
+function initSpotlightGlow() {
+  document.addEventListener('mousemove', (e) => {
+    // Only track if on desktop
+    if (window.innerWidth <= 1024) return;
+    
+    const target = e.target.closest('.lesson-card-glass, .panel-glass, .quiz-card-hud, .resume-card');
+    if (!target) return;
+    
+    const rect = target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    target.style.setProperty('--mouse-x', `${x}px`);
+    target.style.setProperty('--mouse-y', `${y}px`);
+  });
+}
+
+// --- QUANTUM PARTICLE NETWORK BACKGROUND ---
+function initQuantumBackground() {
+  const canvas = document.getElementById('quantum-bg');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+  
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+  
+  const particles = [];
+  const maxParticles = Math.min(60, Math.floor((width * height) / 25000)); // Dynamic count based on screen size
+  
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.35;
+      this.vy = (Math.random() - 0.5) * 0.35;
+      this.radius = Math.random() * 1.5 + 0.5;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = document.body.classList.contains('light-theme') ? 'rgba(109, 40, 217, 0.15)' : 'rgba(139, 92, 246, 0.35)';
+      ctx.fill();
+    }
+  }
+  
+  for (let i = 0; i < maxParticles; i++) {
+    particles.push(new Particle());
+  }
+  
+  function drawLines() {
+    const isLightTheme = document.body.classList.contains('light-theme');
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          const opacity = 0.12 * (1 - dist / 110);
+          ctx.strokeStyle = isLightTheme ? `rgba(109, 40, 217, ${opacity * 0.6})` : `rgba(6, 182, 212, ${opacity})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+  
+  function loop() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    drawLines();
+    requestAnimationFrame(loop);
+  }
+  
+  loop();
+}
