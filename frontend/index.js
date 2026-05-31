@@ -912,6 +912,17 @@ function resetAllPortalProgress(event) {
   }
 }
 
+function toggleRoadmapGrid() {
+  const grid = document.getElementById('roadmap-overview-section');
+  if (grid) grid.classList.toggle('open');
+}
+
+function toggleFeaturesModal() {
+  const modal = document.getElementById('features-modal');
+  if (!modal) return;
+  modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+}
+
 // Account Auth and Sync Bindings
 window.toggleAuthModal = toggleAuthModal;
 window.switchAuthTab = switchAuthTab;
@@ -919,3 +930,5 @@ window.submitAuth = submitAuth;
 window.logOut = logOut;
 window.syncProgressToServer = syncProgressToServer;
 window.syncProgressFromServer = syncProgressFromServer;
+window.toggleRoadmapGrid = toggleRoadmapGrid;
+window.toggleFeaturesModal = toggleFeaturesModal;
