@@ -3291,6 +3291,9 @@ foreach ($file in $htmlFiles) {
     # 9. Clean up old Google Analytics tags
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Google tag \(gtag\.js\) -->.*?G-L4NEN13DS4'\s*\);\s*</script>", "")
 
+    # 10. Clean up old Vercel Analytics tags
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Vercel Web Analytics -->\s*<script defer src=[`"']/_vercel/insights/script\.js[`"']></script>", "")
+
     # Determine the Phase class for the body tag based on filename
     $phaseClass = ""
     if ($file.Name -match "essay-(\d+)\.") {
@@ -3318,11 +3321,11 @@ foreach ($file in $htmlFiles) {
     }
     
     # ── INJECTION STEP ──
-    # 0. Inject Google Analytics Tag after <head> tag
+    # 0. Inject Google Analytics & Vercel Web Analytics Tags after <head> tag
     $headMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<head[^>]*>")
     if ($headMatch.Success) {
         $insertIndex = $headMatch.Index + $headMatch.Length
-        $googleTagHtml = @"
+        $analyticsHtml = @"
 `n  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4NEN13DS4"></script>
   <script>
@@ -3332,8 +3335,10 @@ foreach ($file in $htmlFiles) {
 
     gtag('config', 'G-L4NEN13DS4');
   </script>
+  <!-- Vercel Web Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
 "@
-        $content = $content.Substring(0, $insertIndex) + $googleTagHtml + $content.Substring($insertIndex)
+        $content = $content.Substring(0, $insertIndex) + $analyticsHtml + $content.Substring($insertIndex)
     }
     # 1. Inject custom styles before the FIRST </style> tag in the document (the main stylesheet)
     $styleEndIndex = $content.IndexOf("</style>")
