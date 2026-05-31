@@ -28,14 +28,16 @@ $injectedCSS = @'
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s;
-  box-shadow: 2px 2px 0 var(--border, #2a2c38);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   text-decoration: none;
 }
 .hud-btn:hover {
-  background: var(--surface2, #1a1c24);
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--border, #2a2c38);
+  background: rgba(139, 92, 246, 0.08);
+  border-color: #8b5cf6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.35);
+  transform: translateY(-1.5px);
 }
 body.light-theme .hud-btn {
   background: var(--surface, #ffffff) !important;
