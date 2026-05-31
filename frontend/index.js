@@ -140,16 +140,76 @@ const ESSAYS_DATA = {
   "18.5": { title: "Essay 18.5 — The complete interview playbook: from application to offer", phase: 18, path: "", time: 45 }
 };
 
-// Quiz Question Database
-const QUIZ_CHALLENGE = {
-  question: "Which JS Higher-Order method returns a new array with elements that pass a logical condition?",
-  options: ["A) map()", "B) reduce()", "C) filter()"],
-  correct: 2,
-  explanation: {
-    success: "🎉 Correct! filter() evaluates a boolean condition on each item and returns a new shallow array containing only the matching elements.",
-    fail: "❌ Incorrect. map() transforms elements in place, reduce() aggregates values into a single value, whereas filter() is explicitly used to extract items matching conditions."
+// Rotating Daily Challenges
+const QUIZ_CHALLENGES = [
+  {
+    question: "Which JS Higher-Order method returns a new array with elements that pass a logical condition?",
+    options: ["A) map()", "B) reduce()", "C) filter()"],
+    correct: 2,
+    explanation: {
+      success: "🎉 Correct! filter() evaluates a boolean condition on each item and returns a new shallow array containing only the matching elements.",
+      fail: "❌ Incorrect. map() transforms elements in place, reduce() aggregates values into a single value, whereas filter() is explicitly used to extract items matching conditions."
+    }
+  },
+  {
+    question: "Which CSS selector specificity has the highest weight?",
+    options: ["A) Inline styles inside elements", "B) ID selectors", "C) Class and attribute selectors"],
+    correct: 0,
+    explanation: {
+      success: "🎉 Correct! Inline styles have a specificity weight of 1000, which overrides IDs (100) and classes (10).",
+      fail: "❌ Incorrect. Inline styles (1000) are heavier than IDs (100) and classes (10)."
+    }
+  },
+  {
+    question: "Which Express error-handling middleware signature is correct?",
+    options: ["A) (req, res, next)", "B) (err, req, res, next)", "C) (err, req, res)"],
+    correct: 1,
+    explanation: {
+      success: "🎉 Correct! Express recognizes error handlers strictly by having exactly 4 parameters: (err, req, res, next).",
+      fail: "❌ Incorrect. Express requires error middleware to have exactly four arguments: (err, req, res, next)."
+    }
+  },
+  {
+    question: "In React, what is the primary role of the standard key prop in list nodes?",
+    options: ["A) To uniquely identify sibling nodes for diff/reconstruction performance", "B) To bind events", "C) To inject inline styles"],
+    correct: 0,
+    explanation: {
+      success: "🎉 Correct! The key prop helps React identify which items have changed, been added, or been removed, minimizing DOM paint operations.",
+      fail: "❌ Incorrect. The key prop is strictly for lists diffing optimization in the Virtual DOM reconciler."
+    }
+  },
+  {
+    question: "What does Partition Tolerance mean in the CAP Theorem?",
+    options: ["A) Database remains consistent", "B) The system continues to operate despite arbitrary network split errors", "C) The system responds instantly to requests"],
+    correct: 1,
+    explanation: {
+      success: "🎉 Correct! Partition tolerance (P) means the system continues to operate despite network partitions (dropped/delayed messages between nodes).",
+      fail: "❌ Incorrect. Partition tolerance is the ability to withstand network breaks between database clusters."
+    }
+  },
+  {
+    question: "Which HTTP header is sent by the browser to request WebSocket connection upgrades?",
+    options: ["A) Upgrade: websocket", "B) Connection: Keep-Alive", "C) Content-Type: text/event-stream"],
+    correct: 0,
+    explanation: {
+      success: "🎉 Correct! The browser initiates a handshake with 'Upgrade: websocket' and 'Connection: Upgrade' headers.",
+      fail: "❌ Incorrect. Standard upgrades use the 'Upgrade: websocket' header."
+    }
+  },
+  {
+    question: "Why do we add random 'salts' to password crypt hashes?",
+    options: ["A) To encrypt the payload", "B) To speed up execution", "C) To protect against precomputed Rainbow Table lookup matching attacks"],
+    correct: 2,
+    explanation: {
+      success: "🎉 Correct! Salts ensure identical passwords have unique hash values, preventing hackers from matching them against Rainbow Tables.",
+      fail: "❌ Incorrect. Salts protect against lookup attacks by adding random entropy to the hashing inputs."
+    }
   }
-};
+];
+
+// Rotate challenge based on day of the month
+const dailyQuizIndex = new Date().getDate() % QUIZ_CHALLENGES.length;
+const QUIZ_CHALLENGE = QUIZ_CHALLENGES[dailyQuizIndex];
 
 const getBackendUrl = () => 'https://webdev-learning-platform-backend.onrender.com';
 let syncTimeout = null;
@@ -791,6 +851,29 @@ function drawStreakUI(streak) {
 
 // ── QUIZ OF THE DAY MODULE ──
 function initQuizChallenge() {
+  const savedDate = localStorage.getItem('faang-daily-quiz-date');
+  const todayStr = new Date().toDateString();
+  
+  if (savedDate !== todayStr) {
+    localStorage.removeItem('faang-daily-quiz-done');
+    localStorage.removeItem('faang-daily-quiz-date');
+  }
+
+  // Dynamically populate daily challenge DOM elements
+  const questionEl = document.getElementById('quiz-question');
+  const optionButtons = document.querySelectorAll('.quiz-option-btn');
+  if (questionEl && optionButtons.length === QUIZ_CHALLENGE.options.length) {
+    questionEl.innerText = QUIZ_CHALLENGE.question;
+    optionButtons.forEach((btn, idx) => {
+      btn.innerText = QUIZ_CHALLENGE.options[idx];
+      btn.disabled = false;
+      btn.classList.remove('correct', 'incorrect');
+    });
+    // Reset feedback display
+    const feedbackEl = document.getElementById('quiz-feedback');
+    if (feedbackEl) feedbackEl.innerText = "Select an option above to test your skills.";
+  }
+
   const quizDone = localStorage.getItem('faang-daily-quiz-done');
   if (quizDone !== null) {
     const selectedIdx = parseInt(quizDone);
@@ -799,7 +882,9 @@ function initQuizChallenge() {
 }
 
 function submitQuizAnswer(index) {
+  const todayStr = new Date().toDateString();
   localStorage.setItem('faang-daily-quiz-done', index);
+  localStorage.setItem('faang-daily-quiz-date', todayStr);
   showQuizFeedback(index);
 }
 
