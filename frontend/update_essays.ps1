@@ -3119,6 +3119,33 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(handleViewportResize, 150);
     };
   }
+
+  // Click outside to close AI Tutor and Scratchpad windows
+  document.addEventListener('mousedown', (e) => {
+    // 1. Close AI Tutor Drawer when clicking outside
+    const tutorDrawer = document.getElementById('ai-tutor-drawer');
+    const aiTutorBtn = document.getElementById('ai-tutor-hud-btn');
+    const tooltip = document.getElementById('floating-ai-tooltip');
+    
+    if (tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'))) {
+      if (!tutorDrawer.contains(e.target) && 
+          (!aiTutorBtn || !aiTutorBtn.contains(e.target)) && 
+          (!tooltip || !tooltip.contains(e.target))) {
+        closeAITutorDrawer();
+      }
+    }
+    
+    // 2. Close Study Notes Scratchpad when clicking outside
+    const scratchpadWindow = document.getElementById('scratchpad-window');
+    const scratchpadToggleBtn = document.getElementById('scratchpad-toggle-btn');
+    
+    if (scratchpadWindow && window.getComputedStyle(scratchpadWindow).display === 'flex') {
+      if (!scratchpadWindow.contains(e.target) && 
+          (!scratchpadToggleBtn || !scratchpadToggleBtn.contains(e.target))) {
+        toggleScratchpadHUD();
+      }
+    }
+  });
 });
 
 // Custom storage synchronization
@@ -3696,7 +3723,7 @@ $injectedHUD = @'
     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2v20"></path></svg>
     <span id="theme-text">Dark Cyber</span>
   </button>
-  <button class="hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
+  <button class="hud-btn" id="ai-tutor-hud-btn" onclick="toggleAITutorDrawer()" aria-label="Toggle AI Tutor Panel">
     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
     <span>AI Tutor</span>
   </button>
