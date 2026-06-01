@@ -3445,6 +3445,13 @@ function initHighlightExplainer() {
   tooltip.addEventListener('click', () => {
     if (!selectedText) return;
     
+    const input = document.getElementById('ai-chat-input');
+    const promptText = `Explain this context from the reading:\n\n"${selectedText}"`;
+    
+    if (input) {
+      input.value = promptText;
+    }
+    
     const tutorDrawer = document.getElementById('ai-tutor-drawer');
     const isDrawerOpen = tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'));
     
@@ -3460,12 +3467,14 @@ function initHighlightExplainer() {
       }
     }
     
-    const input = document.getElementById('ai-chat-input');
-    if (input) {
-      input.value = `Explain this context from the reading:\n\n"${selectedText}"`;
-      input.focus();
-      input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    // Set the value again and focus after a short delay to ensure DOM and layout updates are complete
+    setTimeout(() => {
+      if (input) {
+        input.value = promptText;
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
     
     tooltip.style.display = 'none';
     window.getSelection().removeAllRanges();
