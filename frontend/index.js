@@ -621,7 +621,56 @@ function updateProgressHUD() {
     activePhaseName = "Graduated! 🎉";
   }
   document.getElementById('current-phase-val').innerText = activePhaseName;
+
+  // Sync achievements badges statuses
+  updateAchievementsHUD();
 }
+
+function updateAchievementsHUD() {
+  const badgeMap = {
+    'badge-html': 1,     // Phase 1
+    'badge-css': 2,      // Phase 2
+    'badge-js': 3,       // Phase 3
+    'badge-backend': 7,  // Phase 7
+    'badge-system': 11, // Phase 11
+    'badge-ai': 12       // Phase 12
+  };
+  
+  const phaseLessons = {};
+  for (let p = 0; p <= 18; p++) {
+    phaseLessons[p] = [];
+  }
+  
+  Object.keys(ESSAYS_DATA).forEach(id => {
+    const l = ESSAYS_DATA[id];
+    phaseLessons[l.phase].push(id);
+  });
+  
+  Object.keys(badgeMap).forEach(badgeId => {
+    const phaseNum = badgeMap[badgeId];
+    const totalInPhase = phaseLessons[phaseNum].length;
+    const completedInPhase = phaseLessons[phaseNum].filter(id => completedEssays.includes(id)).length;
+    const badgeEl = document.getElementById(badgeId);
+    
+    if (badgeEl) {
+      const tooltipEl = badgeEl.querySelector('.badge-tooltip');
+      if (totalInPhase > 0 && completedInPhase === totalInPhase) {
+        badgeEl.classList.remove('locked');
+        badgeEl.classList.add('unlocked');
+        if (tooltipEl) {
+          tooltipEl.innerText = `Unlocked! Completed all ${totalInPhase} lessons in Phase ${phaseNum}! 🎉`;
+        }
+      } else {
+        badgeEl.classList.remove('unlocked');
+        badgeEl.classList.add('locked');
+        if (tooltipEl) {
+          tooltipEl.innerText = `Phase ${phaseNum} Progress: ${completedInPhase} / ${totalInPhase} lessons. Complete all to unlock!`;
+        }
+      }
+    }
+  });
+}
+
 
 // ── SEARCH & FILTER IMPLEMENTATIONS ──
 function initSearch() {

@@ -54,6 +54,9 @@
   
   
   
+  
+  
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Essay 1.3 — HTML5 Modern Features & Metadata | FAANG Roadmap</title>
@@ -701,6 +704,7 @@ p code, li code {
   .hero { padding: 60px 32px 60px; }
   .mistakes-grid, .test-cards, .three-things, .company-cards, .error-breakdown, .terms-grid { grid-template-columns: 1fr; }
 }
+
 
 
 
@@ -2336,10 +2340,51 @@ body.light-theme .ai-tutor-suggestion-btn.chip-takeaways:hover {
   color: #78350f;
 }
 
+/* Voice input button styling */
+#ai-voice-input-btn {
+  transition: all 0.2s ease;
+}
+#ai-voice-input-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-hyper-bright, #f8fafc) !important;
+}
+#ai-voice-input-btn.listening {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #ef4444 !important;
+  animation: pulseVoice 1.5s infinite alternate;
+}
+@keyframes pulseVoice {
+  0% {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  }
+}
+body.light-theme #ai-voice-input-btn {
+  background: rgba(0,0,0,0.03) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  color: #64748b !important;
+}
+body.light-theme #ai-voice-input-btn:hover {
+  background: rgba(0,0,0,0.08) !important;
+  color: #0f172a !important;
+}
+body.light-theme #ai-voice-input-btn.listening {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #dc2626 !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
 </style>
 </head>
-<body class="phase-1"                      >
+<body class="phase-1"                       >
 <!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
 <button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
   <span class="toggle-icon">&#10005;</span>
@@ -2431,6 +2476,9 @@ body.light-theme .ai-tutor-suggestion-btn.chip-takeaways:hover {
   </div>
 </div>
 <!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+
 
 
 
@@ -3365,6 +3413,9 @@ function toggleTask(el) { el.classList.toggle('done'); }
 
 
 
+
+window.currentLessonId = '1.3';
+window.phaseLessonIds = ['1.1', '1.2', '1.3'];
 
 window.currentLessonId = '1.3';
 window.phaseLessonIds = ['1.1', '1.2', '1.3'];
@@ -4637,26 +4688,36 @@ const quizData = {
 let currentFlashcardIndex = 0;
 function renderFlashcard() {
   const phase = getCurrentPhase();
-  const deck = flashcardData[phase] || flashcardData['phase-1'];
-  const card = deck[currentFlashcardIndex];
+  const lessonId = window.currentLessonId || '1.1';
+  let deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
   
   const pane = document.getElementById('scratch-pane-flashcards');
   if (!pane) return;
   
+  if (currentFlashcardIndex >= deck.length) {
+    currentFlashcardIndex = 0;
+  }
+  
+  const isCustom = !!(window.customAIFlashcards && window.customAIFlashcards[lessonId]);
+  
   pane.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
       <span>Card ${currentFlashcardIndex + 1} of ${deck.length}</span>
-      <span style="text-transform: uppercase; font-weight: bold; color: var(--teal, #0d9488); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: ${isCustom ? '#8b5cf6' : 'var(--teal, #0d9488)'}; font-family: 'Space Mono', monospace;">
+        ${isCustom ? 'âœ¨ AI Generated' : phase.replace('-', ' ')}
+      </span>
     </div>
     
     <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
       <div class="flashcard-inner">
         <div class="flashcard-front">
-          <div style="font-size: 0.78rem; font-weight: 500; line-height: 1.4;">${card.q}</div>
+          <div style="font-size: 0.78rem; font-weight: 500; line-height: 1.4;">${deck[currentFlashcardIndex].q}</div>
           <div class="flashcard-prompt">&#128260; Tap to Flip</div>
         </div>
         <div class="flashcard-back">
-          <div style="font-size: 0.75rem; font-weight: 400; line-height: 1.4;">${card.a}</div>
+          <div style="font-size: 0.75rem; font-weight: 400; line-height: 1.4;">${deck[currentFlashcardIndex].a}</div>
           <div class="flashcard-prompt" style="color: #6d28d9;">&#128260; Tap to Flip</div>
         </div>
       </div>
@@ -4666,13 +4727,26 @@ function renderFlashcard() {
       <button class="hud-btn" onclick="prevFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">&larr; Prev</button>
       <button class="hud-btn" onclick="nextFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">Next &rarr;</button>
     </div>
+    
+    <div style="width: 100%; margin-top: 8px; display: flex; gap: 6px;">
+      <button id="ai-generate-flashcards-btn" onclick="generateAIFlashcards()" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; border-radius: 4px; padding: 8px 12px; color: #ffffff; font-size: 0.7rem; font-weight: 700; cursor: pointer; flex: 1; text-align: center; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+        <span>âœ¨ AI Generate Cards</span>
+      </button>
+      ${isCustom ? `
+      <button onclick="resetDefaultFlashcards()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 8px; color: #64748b; font-size: 0.65rem; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'" title="Reset to default deck">
+        &#8634;
+      </button>` : ''}
+    </div>
   `;
 }
 
 function prevFlashcard(e) {
   if (e) e.stopPropagation();
   const phase = getCurrentPhase();
-  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  const lessonId = window.currentLessonId || '1.1';
+  const deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
   currentFlashcardIndex = (currentFlashcardIndex - 1 + deck.length) % deck.length;
   renderFlashcard();
 }
@@ -4680,7 +4754,10 @@ function prevFlashcard(e) {
 function nextFlashcard(e) {
   if (e) e.stopPropagation();
   const phase = getCurrentPhase();
-  const deck = flashcardData[phase] || flashcardData['phase-1'];
+  const lessonId = window.currentLessonId || '1.1';
+  const deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
   currentFlashcardIndex = (currentFlashcardIndex + 1) % deck.length;
   renderFlashcard();
 }
@@ -5466,8 +5543,181 @@ window.toggleCurrentEssayCompletion = toggleCurrentEssayCompletion;
 window.updateHUDCompleteBtn = updateHUDCompleteBtn;
 window.initScrollspy = initScrollspy;
 
+// Speech-to-Text Voice Dictation Feature
+let voiceRecognition = null;
+function toggleVoiceInput() {
+  const btn = document.getElementById('ai-voice-input-btn');
+  const chatInput = document.getElementById('ai-chat-input');
+  if (!btn || !chatInput) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Speech Recognition is not supported in this browser. Please try Chrome, Edge, or Safari.");
+    return;
+  }
+
+  if (btn.classList.contains('listening')) {
+    if (voiceRecognition) {
+      voiceRecognition.stop();
+    }
+  } else {
+    btn.classList.add('listening');
+    btn.title = "Listening... Click to stop";
+    
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = false;
+    voiceRecognition.lang = 'en-US';
+
+    voiceRecognition.onresult = (event) => {
+      const resultText = event.results[0][0].transcript;
+      if (resultText) {
+        const val = chatInput.value.trim();
+        chatInput.value = val ? val + " " + resultText : resultText;
+        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+
+    voiceRecognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      if (event.error !== 'aborted') {
+        alert("Speech Recognition Error: " + event.error);
+      }
+      resetVoiceBtnState();
+    };
+
+    voiceRecognition.onend = () => {
+      resetVoiceBtnState();
+    };
+
+    voiceRecognition.start();
+  }
+
+  function resetVoiceBtnState() {
+    btn.classList.remove('listening');
+    btn.title = "Voice input (Speech to Text)";
+  }
+}
+window.toggleVoiceInput = toggleVoiceInput;
+
+// AI Flashcards Feature (Dynamic Session Cache)
+if (!window.customAIFlashcards) {
+  window.customAIFlashcards = {};
+}
+
+async function generateAIFlashcards() {
+  const btn = document.getElementById('ai-generate-flashcards-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Generating...";
+    btn.style.opacity = '0.7';
+  }
+  
+  const pane = document.getElementById('scratch-pane-flashcards');
+  const loader = document.createElement('div');
+  loader.id = 'flashcard-ai-loader';
+  loader.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 20, 37, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border-radius: 12px; z-index: 10; padding: 20px; text-align: center; color: #ffffff;';
+  loader.innerHTML = `
+    <div style="width: 24px; height: 24px; border: 2.5px solid rgba(139, 92, 246, 0.2); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <div style="font-size: 0.75rem; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;">AI is scanning this essay and generating custom revision cards...</div>
+  `;
+  
+  const scratchpadWindow = document.getElementById('scratchpad-window');
+  if (scratchpadWindow) {
+    scratchpadWindow.style.position = 'relative';
+    scratchpadWindow.appendChild(loader);
+  }
+
+  const essayText = getEssayTextForContext();
+  const systemPrompt = `You are a FAANG interview examiner.
+Your task is to analyze the syllabus text below and generate 5 highly effective revision flashcards.
+Each flashcard must contain a short question ("q") and a concise answer ("a") (under 25 words).
+Respond ONLY with a valid JSON array of exactly 5 objects, where each object has "q" and "a" properties. Do not include markdown formatting or backticks outside the JSON.
+
+Syllabus Text:
+---
+${essayText}
+---`;
+
+  const key = localStorage.getItem('faang-gemini-api-key') || '';
+  const token = localStorage.getItem('faang-auth-token');
+
+  try {
+    let response;
+    if (key) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+    } else {
+      response = await fetch(`${getBackendUrl()}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          prompt: systemPrompt
+        })
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    let responseText = key ? data.candidates[0].content.parts[0].text : data.reply;
+    
+    let jsonText = responseText.trim();
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    }
+    
+    const cards = JSON.parse(jsonText);
+    if (!Array.isArray(cards) || cards.length === 0) {
+      throw new Error("Invalid response format from AI.");
+    }
+    
+    const lessonId = window.currentLessonId || '1.1';
+    window.customAIFlashcards[lessonId] = cards;
+    currentFlashcardIndex = 0;
+    renderFlashcard();
+  } catch (error) {
+    console.error("AI Flashcard Generation error:", error);
+    alert("Could not generate AI flashcards: " + error.message);
+  } finally {
+    if (loader) loader.remove();
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "âœ¨ AI Generate Cards";
+      btn.style.opacity = '1';
+    }
+  }
+}
+
+function resetDefaultFlashcards() {
+  const lessonId = window.currentLessonId || '1.1';
+  if (window.customAIFlashcards) {
+    delete window.customAIFlashcards[lessonId];
+  }
+  currentFlashcardIndex = 0;
+  renderFlashcard();
+}
+
+window.generateAIFlashcards = generateAIFlashcards;
+window.resetDefaultFlashcards = resetDefaultFlashcards;
+
 // === INJECTED PREMIUM MODULE JS END ===
 </script>
+
+
+
+
+
 
 
 
@@ -5694,6 +5944,9 @@ window.initScrollspy = initScrollspy;
   <!-- Input Form -->
   <div id="ai-tutor-input-container" style="padding: 12px 16px 36px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; background: rgba(0,0,0,0.15); align-items: flex-end;">
     <textarea id="ai-chat-input" placeholder="Ask a question about this roadmap module..." rows="3" style="flex: 1; background: #070913; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; resize: none; outline: none; line-height: 1.4; font-family: inherit; height: 80px;" onkeydown="handleAITutorKeyDown(event)"></textarea>
+    <button id="ai-voice-input-btn" onclick="toggleVoiceInput()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.2s; margin-bottom: 22px;" title="Voice input (Speech to Text)">
+      <svg class="mic-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    </button>
     <button onclick="sendAITutorMessage()" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #ffffff; cursor: pointer; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); margin-bottom: 22px;">
       <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
     </button>
