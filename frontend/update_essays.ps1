@@ -3150,6 +3150,7 @@ function toggleAITutorDrawer() {
   if (!drawer) return;
   if (drawer.style.display === 'none' || drawer.style.display === '') {
     drawer.style.display = 'flex';
+    drawer.classList.add('open');
     setTimeout(() => {
       drawer.style.right = '0';
     }, 10);
@@ -3169,6 +3170,7 @@ function toggleAITutorDrawer() {
 function closeAITutorDrawer() {
   const drawer = document.getElementById('ai-tutor-drawer');
   if (!drawer) return;
+  drawer.classList.remove('open');
   const isMobile = window.innerWidth <= 1024;
   drawer.style.right = isMobile ? '-100%' : '-400px';
   setTimeout(() => {
@@ -3444,11 +3446,17 @@ function initHighlightExplainer() {
     if (!selectedText) return;
     
     const tutorDrawer = document.getElementById('ai-tutor-drawer');
-    if (tutorDrawer && !tutorDrawer.classList.contains('open')) {
+    const isDrawerOpen = tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'));
+    
+    if (tutorDrawer && !isDrawerOpen) {
       if (typeof toggleAITutorDrawer === 'function') {
         toggleAITutorDrawer();
       } else {
         tutorDrawer.classList.add('open');
+        tutorDrawer.style.display = 'flex';
+        setTimeout(() => {
+          tutorDrawer.style.right = '0';
+        }, 10);
       }
     }
     
