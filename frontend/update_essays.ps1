@@ -3145,6 +3145,20 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleScratchpadHUD();
       }
     }
+    
+    // 3. Close Navigation Sidebar (Map) when clicking outside
+    const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+    if (sidebar) {
+      const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+      const isSidebarOpen = isFixedSidebar ? sidebar.classList.contains('open') : !document.body.classList.contains('sidebar-closed');
+      
+      if (isSidebarOpen) {
+        const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
+        if (!sidebar.contains(e.target) && (!sidebarToggleBtn || !sidebarToggleBtn.contains(e.target))) {
+          toggleSidebarHUD();
+        }
+      }
+    }
   });
 });
 
