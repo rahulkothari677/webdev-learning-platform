@@ -35,12 +35,12 @@ $injectedCSS = @'
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(180px);
-  opacity: 0.12;
+  filter: blur(140px);
+  opacity: 0.30;
   animation: orbFloat 22s infinite alternate ease-in-out;
 }
 body.light-theme .glow-orb {
-  opacity: 0.04;
+  opacity: 0.08;
 }
 .orb-1 {
   background: var(--brand-violet, #8b5cf6);
@@ -78,15 +78,15 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 45px 45px;
   opacity: 0.8;
 }
 body.light-theme::after {
   background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.005) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.005) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
 }
 
 .hud-btn {
