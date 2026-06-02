@@ -75,6 +75,9 @@
   
   
   
+  
+  
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Essay 1.1 — HTML: The Skeleton of Every Webpage | FAANG Roadmap</title>
@@ -728,6 +731,7 @@ p code, li code {
   .hero { padding: 60px 32px 60px; }
   .mistakes-grid, .test-cards, .three-things, .company-cards, .error-breakdown, .terms-grid { grid-template-columns: 1fr; }
 }
+
 
 
 
@@ -2421,7 +2425,7 @@ body.light-theme #ai-voice-input-btn.listening {
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
 </style>
 </head>
-<body class="phase-1"                             >
+<body class="phase-1"                              >
 <!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
 <button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
   <span class="toggle-icon">&#10005;</span>
@@ -2513,6 +2517,9 @@ body.light-theme #ai-voice-input-btn.listening {
   </div>
 </div>
 <!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+
 
 
 
@@ -3393,122 +3400,1910 @@ body.light-theme #ai-voice-input-btn.listening {
 
 <script>
 
-  // Progress + nav
-  window.addEventListener('scroll', () => {
-    document.getElementById('progress-bar').style.width =
-      (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%';
-    updateNavDots();
+    window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    document.getElementById('progress-bar').style.width = progress + '%';
   });
+
   const sections = document.querySelectorAll('.section');
-  const navDotsEl = document.getElementById('navDots');
-  sections.forEach((_, i) => {
-    const d = document.createElement('button');
-    d.className = 'nav-dot'; d.title = `Section ${i+1}`;
-    d.onclick = () => sections[i].scrollIntoView({ behavior: 'smooth' });
-    navDotsEl.appendChild(d);
-  });
-  function updateNavDots() {
-    const dots = navDotsEl.querySelectorAll('.nav-dot');
-    sections.forEach((s, i) => {
-      const r = s.getBoundingClientRect();
-      dots[i].classList.remove('active','done');
-      if (r.top<=120&&r.bottom>120) dots[i].classList.add('active');
-      else if (r.bottom<=120) dots[i].classList.add('done');
-    });
-  }
-  function toggleMistake(c){c.classList.toggle('open')}
-  function toggleQuiz(i){i.classList.toggle('revealed');i.querySelector('.reveal-btn').textContent=i.classList.contains('revealed')?'Hide':'Reveal';}
-  function toggleCheck(i){i.classList.toggle('checked');updateCheckProgress();}
-  function updateCheckProgress(){
-    const ch=document.querySelectorAll('.check-item.checked').length,t=document.querySelectorAll('.check-item').length;
-    document.getElementById('check-count').textContent=`${ch} / ${t} complete`;
-    document.getElementById('check-fill').style.width=`${(ch/t)*100}%`;
-  }
+  const navItems = document.querySelectorAll('.nav-item');
 
-  // TAG EXPLORER
-  const tags = [
-    { tag:'h1–h6', desc:'Headings from most (h1) to least (h6) important. Search engines read these to understand your content hierarchy. One h1 per page.', code:'<h1>Primary Heading</h1>\n<h2>Section Heading</h2>\n<h3>Subsection</h3>', preview:'<h2 style="margin:0;color:#333">Heading</h2><h3 style="margin:4px 0 0;color:#555">Subheading</h3>' },
-    { tag:'p', desc:'Paragraph. The default text block. Every chunk of prose should be in a p tag.', code:'<p>This is a paragraph of text. Browsers add space before and after it automatically.</p>', preview:'<p style="margin:0;font-family:sans-serif;color:#333;font-size:14px">This is a paragraph. Browsers add margin above and below automatically.</p>' },
-    { tag:'a', desc:'Anchor / hyperlink. The fundamental building block of the web. Every link is an a tag.', code:'<a href="https://google.com" target="_blank" rel="noopener noreferrer">Visit Google</a>\n\n<a href="#contact">Go to Contact Section</a>', preview:'<a href="#" onclick="return false" style="color:#7c3aed;font-family:sans-serif;font-size:14px">Visit Google</a>' },
-    { tag:'img', desc:'Image. Void element — no closing tag. src is required. alt is required for accessibility.', code:'<img\n  src="profile.jpg"\n  alt="Rahul smiling in front of a laptop"\n  width="300"\n  height="300"\n>', preview:'<img src="https://picsum.photos/120/80" alt="Sample image" style="border-radius:4px">' },
-    { tag:'ul / ol / li', desc:'Unordered list (bullets), ordered list (numbers), list item. ul for non-ranked items, ol for ranked/sequential.', code:'<ul>\n  <li>React</li>\n  <li>Node.js</li>\n</ul>\n\n<ol>\n  <li>First learn HTML</li>\n  <li>Then CSS</li>\n</ol>', preview:'<ul style="margin:0;padding-left:20px;font-family:sans-serif;font-size:13px;color:#333"><li>React</li><li>Node.js</li></ul>' },
-    { tag:'div', desc:'Generic block container. No semantic meaning. Use only when no semantic element fits. The most overused tag in HTML.', code:'<!-- Only use div when no semantic tag works -->\n<div class="card">\n  <img src="project.png" alt="...">\n  <h3>Project Title</h3>\n  <p>Description</p>\n</div>', preview:'<div style="border:1px solid #ccc;padding:8px;border-radius:4px;font-family:sans-serif;font-size:13px;color:#333"><strong>div</strong>: generic container</div>' },
-    { tag:'span', desc:'Generic inline container. No semantic meaning. Used to style or target specific words within text.', code:'<p>I know <span style="color: purple;">React</span> and <span style="color: green;">Node.js</span></p>', preview:'<p style="margin:0;font-family:sans-serif;font-size:14px;color:#333">I know <span style="color:#7c3aed">React</span> and <span style="color:#16a34a">Node.js</span></p>' },
-    { tag:'form', desc:'The container for user input. Defines where (action) and how (method) data is sent. Contains inputs, labels, and a submit button.', code:'<form action="/submit" method="POST">\n  <label for="email">Email</label>\n  <input type="email" id="email" name="email">\n  <button type="submit">Send</button>\n</form>', preview:'<form onsubmit="return false" style="font-family:sans-serif;font-size:13px"><input type="email" placeholder="Email" style="padding:4px 8px;border:1px solid #ccc;border-radius:3px;margin-right:6px"><button type="submit" style="padding:4px 12px;background:#7c3aed;color:white;border:none;border-radius:3px;cursor:pointer">Send</button></form>' },
-    { tag:'input', desc:'Void element. The workhorse of forms. The type attribute changes its behaviour completely: text, email, password, number, checkbox, radio, file, date, submit.', code:'<input type="text" placeholder="Name">\n<input type="email" placeholder="Email">\n<input type="password" placeholder="Password">\n<input type="file" accept=".pdf">\n<input type="checkbox" id="agree">', preview:'<div style="display:flex;flex-direction:column;gap:6px"><input type="text" placeholder="text" style="padding:4px 8px;border:1px solid #ccc;border-radius:3px;font-size:13px;width:140px"><input type="email" placeholder="email" style="padding:4px 8px;border:1px solid #ccc;border-radius:3px;font-size:13px;width:140px"></div>' },
-    { tag:'table', desc:'Tabular data — rows and columns. Use only for actual data tables, never for layout. thead, tbody, tr (row), th (header cell), td (data cell).', code:'<table>\n  <thead>\n    <tr><th>Name</th><th>Role</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Rahul</td><td>Engineer</td></tr>\n  </tbody>\n</table>', preview:'<table style="border-collapse:collapse;font-family:sans-serif;font-size:12px"><tr style="background:#f3f0ff"><th style="border:1px solid #ccc;padding:4px 10px">Name</th><th style="border:1px solid #ccc;padding:4px 10px">Role</th></tr><tr><td style="border:1px solid #ccc;padding:4px 10px">Rahul</td><td style="border:1px solid #ccc;padding:4px 10px">Engineer</td></tr></table>' },
-    { tag:'section', desc:'A thematic grouping of content with its own heading. Use for distinct sections of a page: About, Skills, Projects, Contact.', code:'<section id="about">\n  <h2>About Me</h2>\n  <p>...</p>\n</section>\n\n<section id="projects">\n  <h2>Projects</h2>\n  ...\n</section>', preview:'<div style="font-family:sans-serif;font-size:13px;color:#333"><div style="border-left:3px solid #7c3aed;padding:4px 10px;margin-bottom:6px"><strong>About section</strong></div><div style="border-left:3px solid #7c3aed;padding:4px 10px"><strong>Projects section</strong></div></div>' },
-    { tag:'article', desc:'Self-contained content that makes sense on its own: a blog post, a news article, a product card, a user comment.', code:'<article>\n  <h3>Job Board Platform</h3>\n  <p>A full-stack job board with JWT auth, search, and company profiles.</p>\n  <a href="https://demo.com">Live Demo</a>\n</article>', preview:'<article style="font-family:sans-serif;font-size:13px;border:1px solid #ccc;padding:8px;border-radius:4px"><strong style="color:#333">Job Board</strong><p style="margin:4px 0;color:#555;font-size:12px">Full-stack project with auth</p><a href="#" onclick="return false" style="color:#7c3aed;font-size:12px">Live Demo</a></article>' },
-  ];
-
-  const tagGrid = document.getElementById('tagGrid');
-  const tagDetail = document.getElementById('tagDetail');
-  tags.forEach((t, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'tag-chip';
-    chip.innerHTML = `<code>&lt;${t.tag}&gt;</code>`;
-    chip.onclick = () => {
-      document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      document.getElementById('tdName').textContent = `<${t.tag}>`;
-      document.getElementById('tdDesc').textContent = t.desc;
-      document.getElementById('tdCode').innerHTML = t.code.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      document.getElementById('tdPreview').innerHTML = t.preview;
-      tagDetail.classList.add('show');
-    };
-    tagGrid.appendChild(chip);
-  });
-
-  // SKELETON HOVER
-  document.querySelectorAll('.skel-block').forEach(b => {
-    b.addEventListener('mouseenter', () => {
-      const code = b.dataset.code.replace(/\\n/g,'\n');
-      document.getElementById('skelCode').innerHTML =
-        code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    });
-  });
-
-  // FORM BUILDER
-  let formFields = [];
-  function addField(type, label, name) {
-    formFields.push({ type, label, name });
-    renderForm();
-  }
-  function clearForm() { formFields = []; renderForm(); }
-  function renderForm() {
-    const preview = document.getElementById('fbPreview');
-    const codeEl = document.getElementById('fbCode');
-    if (formFields.length === 0) {
-      preview.innerHTML = '<p style="color:#aaa;font-size:0.85rem;font-family:sans-serif">← Click elements to add them to your form</p>';
-      codeEl.innerHTML = '<span style="color:var(--text-dim)">HTML will appear here...</span>';
-      return;
-    }
-    let previewHtml = '';
-    let codeHtml = '<span style="color:#f87171">&lt;form&gt;</span>\n';
-    formFields.forEach(f => {
-      if (f.type === 'textarea') {
-        previewHtml += `<label style="display:block;font-family:sans-serif;font-size:13px;color:#333;font-weight:500;margin-bottom:2px">${f.label}</label><textarea rows="3" placeholder="${f.label}..." style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px;margin-bottom:8px;font-family:sans-serif"></textarea>`;
-        codeHtml += `  <span style="color:#fbbf24">&lt;label</span> <span style="color:#c084fc">for</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>${f.label}<span style="color:#fbbf24">&lt;/label&gt;</span>\n  <span style="color:#fbbf24">&lt;textarea</span> <span style="color:#c084fc">id</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">name</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">rows</span>=<span style="color:#4ade80">"4"</span><span style="color:#fbbf24">&gt;&lt;/textarea&gt;</span>\n`;
-      } else if (f.type === 'select') {
-        previewHtml += `<label style="display:block;font-family:sans-serif;font-size:13px;color:#333;font-weight:500;margin-bottom:2px">${f.label}</label><select style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px;margin-bottom:8px"><option>Choose...</option><option>Option 1</option><option>Option 2</option></select>`;
-        codeHtml += `  <span style="color:#fbbf24">&lt;label</span> <span style="color:#c084fc">for</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>${f.label}<span style="color:#fbbf24">&lt;/label&gt;</span>\n  <span style="color:#fbbf24">&lt;select</span> <span style="color:#c084fc">id</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">name</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>\n    <span style="color:#fbbf24">&lt;option</span> <span style="color:#c084fc">value</span>=<span style="color:#4ade80">""</span><span style="color:#fbbf24">&gt;</span>Choose...<span style="color:#fbbf24">&lt;/option&gt;</span>\n  <span style="color:#fbbf24">&lt;/select&gt;</span>\n`;
-      } else if (f.type === 'checkbox') {
-        previewHtml += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input type="checkbox" id="${f.name}"><label for="${f.name}" style="font-family:sans-serif;font-size:13px;color:#333">${f.label}</label></div>`;
-        codeHtml += `  <span style="color:#fbbf24">&lt;input</span> <span style="color:#c084fc">type</span>=<span style="color:#4ade80">"checkbox"</span> <span style="color:#c084fc">id</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">name</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>\n  <span style="color:#fbbf24">&lt;label</span> <span style="color:#c084fc">for</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>${f.label}<span style="color:#fbbf24">&lt;/label&gt;</span>\n`;
-      } else {
-        previewHtml += `<label style="display:block;font-family:sans-serif;font-size:13px;color:#333;font-weight:500;margin-bottom:2px">${f.label}</label><input type="${f.type}" placeholder="${f.label}..." style="width:100%;padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px;margin-bottom:8px">`;
-        codeHtml += `  <span style="color:#fbbf24">&lt;label</span> <span style="color:#c084fc">for</span>=<span style="color:#4ade80">"${f.name}"</span><span style="color:#fbbf24">&gt;</span>${f.label}<span style="color:#fbbf24">&lt;/label&gt;</span>\n  <span style="color:#fbbf24">&lt;input</span> <span style="color:#c084fc">type</span>=<span style="color:#4ade80">"${f.type}"</span> <span style="color:#c084fc">id</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">name</span>=<span style="color:#4ade80">"${f.name}"</span> <span style="color:#c084fc">required</span><span style="color:#fbbf24">&gt;</span>\n`;
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
       }
     });
-    previewHtml += `<button type="submit" style="padding:8px 20px;background:#7c3aed;color:white;border:none;border-radius:4px;font-size:14px;cursor:pointer;font-family:sans-serif">Submit</button>`;
-    codeHtml += `  <span style="color:#fbbf24">&lt;button</span> <span style="color:#c084fc">type</span>=<span style="color:#4ade80">"submit"</span><span style="color:#fbbf24">&gt;</span>Submit<span style="color:#fbbf24">&lt;/button&gt;</span>\n<span style="color:#f87171">&lt;/form&gt;</span>`;
-    preview.innerHTML = previewHtml;
-    codeEl.innerHTML = codeHtml;
+  }, { threshold: 0.04 });
+
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navItems.forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('href') === '#' + id) {
+            item.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { threshold: 0, rootMargin: '-10% 0px -65% 0px' });
+
+  sections.forEach(s => {
+    revealObserver.observe(s);
+    navObserver.observe(s);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    sections.forEach(s => {
+      const rect = s.getBoundingClientRect();
+      if (rect.top < window.innerHeight) s.classList.add('visible');
+    });
+  });, observerOptions);
+  
+  sections.forEach(section => observer.observe(section));
+}
+
+function updatePlaygroundPreview(code) {
+  const iframe = document.getElementById('playground-preview-frame');
+  if (!iframe) return;
+  
+  let formattedCode = code;
+  if (!code.includes('<html') && !code.includes('<body')) {
+    formattedCode = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              padding: 24px;
+              color: #1e293b;
+              background-color: #f8fafc;
+            }
+          </style>
+        </head>
+        <body>
+          ${code}
+        </body>
+      </html>
+    `;
+  }
+  
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(formattedCode);
+  doc.close();
+}
+
+function initCodePlayground() {
+  const codeBlocks = document.querySelectorAll('.code-block, .premium-code-block');
+  
+  codeBlocks.forEach(block => {
+    const header = block.querySelector('.code-header, .p-code-header');
+    const codeEl = block.querySelector('code');
+    const filenameEl = block.querySelector('.code-filename, .p-code-filename');
+    
+    if (!header || !codeEl) return;
+    
+    const filename = filenameEl ? filenameEl.innerText : 'sandbox.html';
+    
+    // Check if run code button already exists
+    if (header.querySelector('.run-code-btn')) return;
+    
+    const btn = document.createElement('button');
+    btn.className = 'run-code-btn';
+    btn.innerHTML = '&#9889; Run Live';
+    btn.style.marginLeft = '12px';
+    
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openPlayground(codeEl.textContent, filename);
+    });
+    
+    const dots = header.querySelector('.code-dots, .p-code-dots');
+    if (dots) {
+      header.insertBefore(btn, dots);
+    } else {
+      header.appendChild(btn);
+    }
+  });
+}
+
+function openPlayground(code, filename) {
+  const drawer = document.getElementById('code-playground-drawer');
+  const input = document.getElementById('playground-code-input');
+  const filenameEl = document.getElementById('playground-filename');
+  
+  if (!drawer || !input) return;
+  
+  filenameEl.innerText = filename;
+  input.value = code;
+  drawer.style.display = 'flex';
+  setTimeout(() => {
+    drawer.style.right = '0';
+  }, 10);
+  
+  updatePlaygroundPreview(code);
+  
+  input.oninput = (e) => {
+    updatePlaygroundPreview(e.target.value);
+  };
+}
+
+function closePlayground() {
+  const drawer = document.getElementById('code-playground-drawer');
+  if (!drawer) return;
+  drawer.style.right = '-600px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleScratchpadHUD() {
+  const win = document.getElementById('scratchpad-window');
+  if (!win) return;
+  if (win.style.display === 'none' || win.style.display === '') {
+    win.style.display = 'flex';
+  } else {
+    win.style.display = 'none';
+  }
+}
+
+function updateWordCount(text) {
+  const wordCountEl = document.getElementById('scratchpad-word-count');
+  if (!wordCountEl) return;
+  const trimmed = text.trim();
+  const words = trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+  wordCountEl.innerText = words + (words === 1 ? " word" : " words");
+}
+
+function downloadStudentNotes() {
+  const text = localStorage.getItem('faang-student-notes') || "";
+  if (text.trim() === "") {
+    alert("Scratchpad is empty. Add some study notes before exporting.");
+    return;
+  }
+  const blob = new Blob([text], { type: 'text/plain' });
+  const anchor = document.createElement('a');
+  anchor.download = 'FAANG_Roadmap_Study_Notes.txt';
+  anchor.href = window.URL.createObjectURL(blob);
+  anchor.dataset.downloadurl = ['text/plain', anchor.download, anchor.href].join(':');
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+}
+
+// --- PREMIUM FOCUS MODE ---
+function toggleFocusMode() {
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  body.classList.toggle('focus-mode');
+  const isFocus = body.classList.contains('focus-mode');
+  localStorage.setItem('faang-focus-mode', isFocus ? 'on' : 'off');
+  if (focusBtnText) {
+    focusBtnText.innerText = isFocus ? "Focus On" : "Focus Off";
+  }
+}
+
+function initFocusMode() {
+  const savedFocus = localStorage.getItem('faang-focus-mode');
+  const body = document.body;
+  const focusBtnText = document.getElementById('focus-text');
+  if (savedFocus === 'on') {
+    body.classList.add('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus On";
+  } else {
+    body.classList.remove('focus-mode');
+    if (focusBtnText) focusBtnText.innerText = "Focus Off";
+  }
+}
+
+function scrollToTopHUD() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- PREMIUM AUDIO READER SYSTEM ---
+let audioSegments = [];
+let currentSegmentIndex = 0;
+let currentUtterance = null;
+let readingMode = 'summary'; // 'summary' or 'full'
+let selectedVoice = null;
+let speechRate = 1.0;
+let isAudioPlaying = false;
+let speechTimeout = null;
+
+function toggleAudioPanel() {
+  const panel = document.getElementById('audio-control-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'flex';
+    document.body.classList.add('audio-interactive-mode');
+    populateVoices();
+    initClickToPlay();
+    updateAudioProgress();
+  } else {
+    panel.style.display = 'none';
+    document.body.classList.remove('audio-interactive-mode');
+  }
+}
+
+function populateVoices() {
+  if (!window.speechSynthesis) return;
+  const select = document.getElementById('audio-voice-select');
+  if (!select) return;
+  
+  const voices = window.speechSynthesis.getVoices();
+  select.innerHTML = '';
+  
+  // Sort voices: Local Indian English first (en-IN + localService), then online Indian English, then local English, then the rest
+  const sortedVoices = [...voices].sort((a, b) => {
+    const aIsIn = a.lang.toLowerCase().includes('en-in');
+    const bIsIn = b.lang.toLowerCase().includes('en-in');
+    
+    const aIsLocal = a.localService;
+    const bIsLocal = b.localService;
+    
+    if (aIsIn && !bIsIn) return -1;
+    if (!aIsIn && bIsIn) return 1;
+    
+    if (aIsIn && bIsIn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    const aIsEn = a.lang.toLowerCase().startsWith('en');
+    const bIsEn = b.lang.toLowerCase().startsWith('en');
+    
+    if (aIsEn && !bIsEn) return -1;
+    if (!aIsEn && bIsEn) return 1;
+    
+    if (aIsEn && bIsEn) {
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+      return a.name.localeCompare(b.name);
+    }
+    
+    return a.name.localeCompare(b.name);
+  });
+  
+  sortedVoices.forEach(voice => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    // Add [Offline] badge for local services to highlight rate support
+    const serviceType = voice.localService ? ' [Offline]' : ' [Cloud]';
+    option.innerText = voice.name + ' (' + voice.lang + ')' + serviceType;
+    if (voice.lang.toLowerCase().includes('en-in') && !selectedVoice) {
+      option.selected = true;
+      selectedVoice = voice;
+    }
+    select.appendChild(option);
+  });
+  
+  // Default to first voice if no en-IN found and selectedVoice not set
+  if (!selectedVoice && sortedVoices.length > 0) {
+    selectedVoice = sortedVoices[0];
+  }
+  
+  // Show/hide help alert about en-IN accent based on availability
+  const notice = document.getElementById('audio-accent-notice');
+  if (notice) {
+    const hasIndianVoice = voices.some(v => v.lang.toLowerCase().includes('en-in'));
+    notice.style.display = hasIndianVoice ? 'none' : 'block';
+  }
+}
+
+// Handle asynchronous voice loading
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = populateVoices;
+}
+
+function changeVoice() {
+  const select = document.getElementById('audio-voice-select');
+  if (!select || !window.speechSynthesis) return;
+  const voices = window.speechSynthesis.getVoices();
+  selectedVoice = voices.find(v => v.name === select.value);
+  
+  // If speaking, restart from current segment
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function updateRateLabel(val) {
+  const valEl = document.getElementById('audio-rate-val');
+  if (valEl) valEl.innerText = parseFloat(val).toFixed(1) + 'x';
+}
+
+function changeRate(val) {
+  speechRate = parseFloat(val);
+  updateRateLabel(val);
+  
+  // If speaking, restart from current segment to apply rate change
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  }
+}
+
+function setReadingMode(mode) {
+  readingMode = mode;
+  const sumBtn = document.getElementById('audio-mode-summary');
+  const fullBtn = document.getElementById('audio-mode-full');
+  
+  if (mode === 'summary') {
+    sumBtn.classList.add('active');
+    fullBtn.classList.remove('active');
+  } else {
+    sumBtn.classList.remove('active');
+    fullBtn.classList.add('active');
+  }
+  
+  stopAudioPlayback();
+}
+
+function buildSegments() {
+  audioSegments = [];
+  if (readingMode === 'summary') {
+    const summaryTextEl = document.querySelector('.executive-summary-panel .summary-text-hud');
+    if (summaryTextEl) {
+      audioSegments = [summaryTextEl];
+    }
+  } else {
+    const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+    audioSegments = elements.filter(el => {
+      if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+        return false;
+      }
+      if (!el.innerText.trim()) return false;
+      return true;
+    });
+  }
+}
+
+function toggleAudioPlayback() {
+  if (!window.speechSynthesis) {
+    alert("Speech Synthesis is not supported in this browser.");
+    return;
+  }
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  const eq = document.getElementById('audio-eq-wave');
+  const panel = document.getElementById('audio-control-panel');
+  
+  if (isAudioPlaying) {
+    // We are playing, so pause it
+    window.speechSynthesis.pause();
+    isAudioPlaying = false;
+    if (playBtn) playBtn.innerHTML = '\u25B6';
+    if (eq) {
+      eq.classList.remove('animating');
+    }
+    if (panel) {
+      panel.classList.remove('playing');
+    }
+    updateAudioProgress();
+    return;
+  }
+  
+  // We are paused, try to resume
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    isAudioPlaying = true;
+    if (playBtn) playBtn.innerHTML = '\u23F8';
+    if (eq) {
+      eq.style.display = 'flex';
+      eq.classList.add('animating');
+    }
+    if (panel) {
+      panel.classList.add('playing');
+    }
+    updateAudioProgress();
+    return;
+  }
+  
+  // Starting playback from scratch or resuming cancelled speech
+  buildSegments();
+  if (audioSegments.length === 0) {
+    alert("No readable text found for audio playback.");
+    return;
+  }
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    currentSegmentIndex = 0;
+  }
+  
+  isAudioPlaying = true;
+  if (playBtn) playBtn.innerHTML = '\u23F8';
+  if (panel) {
+    panel.classList.add('playing');
+  }
+  playCurrentSegment();
+}
+
+function playCurrentSegment() {
+  if (!window.speechSynthesis || audioSegments.length === 0) return;
+  
+  // Clear event listeners on current utterance to prevent cancel event triggers from skipping lines
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  
+  // Stop existing speech first
+  window.speechSynthesis.cancel();
+  
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clean all previous highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  if (currentSegmentIndex < 0 || currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+    return;
+  }
+  
+  const currentEl = audioSegments[currentSegmentIndex];
+  currentEl.classList.add('voice-active-segment');
+  currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  const text = currentEl.innerText;
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  
+  if (selectedVoice) {
+    currentUtterance.voice = selectedVoice;
+  }
+  currentUtterance.rate = speechRate;
+  
+  currentUtterance.onend = () => {
+    // Only proceed to next if we are actively playing and not paused/cancelled
+    if (isAudioPlaying) {
+      currentSegmentIndex++;
+      if (currentSegmentIndex < audioSegments.length) {
+        playCurrentSegment();
+      } else {
+        stopAudioPlayback();
+      }
+    }
+  };
+  
+  currentUtterance.onerror = (e) => {
+    // If it was interrupted by user, do nothing. Otherwise, handle error.
+    if (e.error !== 'interrupted') {
+      console.error("SpeechSynthesis error:", e);
+      stopAudioPlayback();
+    }
+  };
+  
+  updateAudioProgress();
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) {
+    eq.style.display = 'flex';
+    eq.classList.add('animating');
+  }
+  
+  const panel = document.getElementById('audio-control-panel');
+  if (panel) {
+    panel.classList.add('playing');
+  }
+  
+  // Settle delay (150ms) to ensure speech cancel completely finishes before speak triggers (stabilizes local speed rate changes)
+  speechTimeout = setTimeout(() => {
+    window.speechSynthesis.speak(currentUtterance);
+  }, 150);
+}
+
+function stopAudioPlayback() {
+  isAudioPlaying = false;
+  if (currentUtterance) {
+    currentUtterance.onend = null;
+    currentUtterance.onerror = null;
+  }
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+  
+  // Clear highlights
+  audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+  
+  const playBtn = document.getElementById('audio-play-pause-btn');
+  if (playBtn) playBtn.innerHTML = '\u25B6';
+  
+  const eq = document.getElementById('audio-eq-wave');
+  if (eq) {
+    eq.style.display = 'none';
+    eq.classList.remove('animating');
+  }
+  
+  const panel = document.getElementById('audio-control-panel');
+  if (panel) {
+    panel.classList.remove('playing');
+  }
+  
+  currentSegmentIndex = 0;
+  
+  const progressText = document.getElementById('audio-progress-text');
+  if (progressText) progressText.innerText = "Status: Stopped";
+}
+
+function nextAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex++;
+  if (currentSegmentIndex >= audioSegments.length) {
+    stopAudioPlayback();
+  } else {
+    if (isAudioPlaying) {
+      playCurrentSegment();
+    } else {
+      // Just highlight and scroll, don't speak
+      audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+      const currentEl = audioSegments[currentSegmentIndex];
+      currentEl.classList.add('voice-active-segment');
+      currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      updateAudioProgress();
+    }
+  }
+}
+
+// --- RESET UTTERANCE STATE ON BEFOREUNLOAD ---
+function prevAudioSegment() {
+  if (audioSegments.length === 0) buildSegments();
+  if (audioSegments.length === 0) return;
+  
+  currentSegmentIndex--;
+  if (currentSegmentIndex < 0) {
+    currentSegmentIndex = 0;
+  }
+  
+  if (isAudioPlaying) {
+    playCurrentSegment();
+  } else {
+    // Just highlight and scroll, don't speak
+    audioSegments.forEach(el => el.classList.remove('voice-active-segment'));
+    const currentEl = audioSegments[currentSegmentIndex];
+    currentEl.classList.add('voice-active-segment');
+    currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    updateAudioProgress();
+  }
+}
+
+function updateAudioProgress() {
+  const progressText = document.getElementById('audio-progress-text');
+  if (!progressText || audioSegments.length === 0) return;
+  
+  const current = currentSegmentIndex + 1;
+  const total = audioSegments.length;
+  
+  // Calculate remaining words
+  let remainingWords = 0;
+  for (let i = currentSegmentIndex; i < audioSegments.length; i++) {
+    remainingWords += audioSegments[i].innerText.split(/\s+/).length;
+  }
+  
+  // Average reading speed is 150 words per minute
+  const baseWPM = 150;
+  const actualWPM = baseWPM * speechRate;
+  const minutesLeft = Math.ceil(remainingWords / actualWPM);
+  
+  progressText.innerText = 'Segment ' + current + ' of ' + total + ' (' + minutesLeft + ' min left)';
+}
+
+function initClickToPlay() {
+  // Pull all readable text blocks directly from layout body main
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const readableElements = elements.filter(el => {
+    if (el.closest('.matrix-footer') || el.closest('.matrix-next-btn') || el.closest('.next-btn') || el.closest('.sidebar-hud') || el.closest('.controller-rack-hud') || el.closest('#audio-control-panel') || el.closest('#scratchpad-hud-container') || el.closest('.code-block') || el.closest('.premium-code-block')) {
+      return false;
+    }
+    if (!el.innerText.trim()) return false;
+    return true;
+  });
+  
+  readableElements.forEach(el => {
+    if (el.dataset.hasAudioListener) return;
+    el.dataset.hasAudioListener = "true";
+    
+    el.addEventListener('click', (e) => {
+      // Only execute if settings panel is open
+      if (!document.body.classList.contains('audio-interactive-mode')) return;
+      
+      // Prevent triggers on code frames, inputs, link tags
+      if (e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('input') || e.target.closest('code') || e.target.closest('pre')) {
+        return;
+      }
+      
+      // Force change to Full Essay mode if summary mode is active
+      if (readingMode === 'summary') {
+        readingMode = 'full';
+        const sumBtn = document.getElementById('audio-mode-summary');
+        const fullBtn = document.getElementById('audio-mode-full');
+        if (sumBtn) sumBtn.classList.remove('active');
+        if (fullBtn) fullBtn.classList.add('active');
+      }
+      
+      // Re-build essay segments list
+      buildSegments();
+      
+      const index = audioSegments.indexOf(el);
+      if (index !== -1) {
+        currentSegmentIndex = index;
+        isAudioPlaying = true;
+        
+        const playBtn = document.getElementById('audio-play-pause-btn');
+        if (playBtn) playBtn.innerHTML = '\u23F8';
+        
+        const panel = document.getElementById('audio-control-panel');
+        if (panel) {
+          panel.classList.add('playing');
+        }
+        
+        playCurrentSegment();
+      }
+    });
+  });
+}
+
+window.addEventListener('beforeunload', () => {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+});
+
+// --- TABBED SCRATCHPAD SYSTEM ---
+function switchScratchTab(tabName) {
+  const tabs = document.querySelectorAll('.scratch-tab-btn');
+  tabs.forEach(tab => {
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  
+  const panes = ['notes', 'flashcards', 'quiz'];
+  panes.forEach(pane => {
+    const paneEl = document.getElementById(`scratch-pane-${pane}`);
+    if (paneEl) {
+      paneEl.style.display = (pane === tabName) ? 'flex' : 'none';
+    }
+  });
+  
+  if (tabName === 'flashcards') {
+    renderFlashcard();
+  } else if (tabName === 'quiz') {
+    renderQuiz();
+  }
+}
+
+function getCurrentPhase() {
+  const body = document.body;
+  for (let p = 1; p <= 18; p++) {
+    if (body.classList.contains('phase-' + p)) return 'phase-' + p;
+  }
+  return 'phase-1';
+}
+
+const flashcardData = {
+  "phase-1": [
+    { q: "What is the difference between Block and Inline elements?", a: "Block elements start on a new line and occupy the full width (e.g., div, p). Inline elements take only as much width as necessary (e.g., span, a)." },
+    { q: "How is CSS selector specificity calculated?", a: "Calculated as a weight: Inline Styles (1000) > IDs (100) > Classes/attributes (10) > Elements/pseudo-elements (1)." },
+    { q: "How does 'flex-grow' work in Flexbox?", a: "It defines the ability for a flex item to grow if necessary. It accepts a unitless value that serves as a proportion of free space." }
+  ],
+  "phase-2": [
+    { q: "What is the difference between Grid's implicit and explicit grids?", a: "Explicit grid is defined using grid-template-columns/rows. Implicit grid is automatically created by the browser to hold items outside that explicit grid." },
+    { q: "What do CSS Container Queries solve?", a: "They let you apply styles to an element based on the size of its parent container rather than the viewport, enabling true component-driven design." },
+    { q: "What does the 'contain' property do in CSS?", a: "It tells the browser that the element's subtree is independent of the rest of the page, allowing layout, paint, and size optimization." }
+  ],
+  "phase-3": [
+    { q: "Explain the Event Loop task execution order.", a: "1. Run Call Stack. 2. Run all Microtasks (Promise callbacks, MutationObserver). 3. Run Macrotasks (setTimeout, events). 4. RequestAnimationFrame & Render." },
+    { q: "What is the difference between debounce and throttle?", a: "Debounce delays execution until a certain time of inactivity passes. Throttle limits the maximum number of times a function can be called over time." },
+    { q: "What are closures in JavaScript?", a: "A closure is a function that retains access to its outer scope variables even after the outer function has returned. Keeps the lexical environment in memory." }
+  ],
+  "phase-4": [
+    { q: "What is React's Virtual DOM and Reconciliation?", a: "React keeps a virtual representation of the DOM. Reconciliation is the diffing algorithm React uses to update the real DOM with minimal changes." },
+    { q: "How does a Client-Side SPA Router work?", a: "It intercepts link clicks, changes the URL using History API (pushState) without reloading the page, and loads the corresponding JS components." },
+    { q: "What is hydration in React SSR?", a: "The process of React checking pre-rendered HTML sent by the server, attaching event listeners, and making the markup interactive on the client." }
+  ],
+  "phase-5": [
+    { q: "What is Next.js Partial Prerendering (PPR)?", a: "It combines static shells with dynamic streaming content in the same route page, serving the static structure instantly while streaming slow data." },
+    { q: "How does the Next.js Data Cache persist?", a: "It caches fetch request results across server requests and deployments, bypassing the network unless revalidated or opt-out flags are passed." },
+    { q: "What is Next.js Middleware execution order?", a: "Runs before the request hits the route handler, allowing authentication redirects, header modifications, or custom logging checks." }
+  ],
+  "phase-6": [
+    { q: "What is Chrome DevTools Performance Profiling?", a: "It records runtime performance timelines, identifying layout shifts, long tasks (>50ms), garbage collection spikes, and CPU bottlenecks." },
+    { q: "What are VS Code snippets used for?", a: "Reusable code templates triggered by keyboard shortcuts, reducing repetitive code boilerplate typing for common structures." },
+    { q: "What are Postman Environment Variables?", a: "Dynamic keys that swap values (like URLs or Auth tokens) depending on whether you're targeting Local, Staging, or Production environments." }
+  ],
+  "phase-7": [
+    { q: "Explain Node.js non-blocking I/O event loop.", a: "It offloads file, network, or process operations to the system kernel (via libuv). When done, a callback triggers back in the single main thread." },
+    { q: "What is Express routing middleware order?", a: "Middleware executes in the order it is declared using app.use(). If next() is not called, the request is left hanging or terminated." },
+    { q: "What is Zod parsing schema approach?", a: "Zod parses inputs against a structural schema, returning clean typed outputs or throwing verbose error messages for validation failures." }
+  ],
+  "phase-8": [
+    { q: "What are ACID database transactions?", a: "Atomicity (all or nothing), Consistency (valid state transitions), Isolation (independent transactions), and Durability (persistence)." },
+    { q: "How does a database B-Tree index work?", a: "Creates a balanced tree traversal structure to look up rows in log(n) time, bypassing slow full-table scans for matches." },
+    { q: "What is Mongoose schema vs MongoDB collections?", a: "MongoDB is schema-less by default. Mongoose sits on top of Node.js to enforce document validation, schemas, and relational hooks." }
+  ],
+  "phase-9": [
+    { q: "Why do we add salts to hashed passwords?", a: "A unique random string appended to the password before hashing, protecting against precomputed table attacks (Rainbow Tables)." },
+    { q: "How does JWT authentication work?", a: "Tokens are signed by the server using a secret, containing client details. The client sends it in headers, and the server validates it without DB checks." },
+    { q: "What is CORS (Cross-Origin Resource Sharing)?", a: "A browser security model checking headers (like Access-Control-Allow-Origin) to decide if a script can access APIs hosted elsewhere." }
+  ],
+  "phase-10": [
+    { q: "What is Socket.io WebSocket connection upgrade?", a: "It starts with standard HTTP long polling for compatibility, and upgrades to a persistent, bidirectional WebSocket connection if supported." },
+    { q: "What is Multer cloud storage pipeline?", a: "A multipart/form-data parser that streams file uploads to local memory buffers or disk before piping them up to Cloudinary/AWS S3." },
+    { q: "How does Redis Session Caching speed up backends?", a: "Stores user sessions in memory rather than disk databases, enabling sub-millisecond retrieval of login states." }
+  ],
+  "phase-11": [
+    { q: "Explain the CAP Theorem trade-offs.", a: "A distributed system can only guarantee two out of three: Consistency (same data), Availability (always answers), and Partition Tolerance (network splits)." },
+    { q: "What is database sharding?", a: "Horizontal partitioning of tables, storing different rows on distinct server instances to scale reads, writes, and memory limits." },
+    { q: "How do message queues (like Kafka) ensure durability?", a: "They append messages to write-ahead logs on disk, persisting events even if consuming microservices crash or disconnect." }
+  ],
+  "phase-12": [
+    { q: "What is an LLM context window limit?", a: "The maximum number of tokens (words/characters) the model can parse and process at once for prompts and output answers." },
+    { q: "What is Vector Database RAG?", a: "Retrieval-Augmented Generation. It queries external document embeddings, retrieves matches, and appends them to LLM prompts for factual grounding." },
+    { q: "How does temperature affect LLM outputs?", a: "Ranges from 0 to 2. Low temperature (e.g. 0) yields deterministic and factual answers. High temperature yields creative and random variations." }
+  ],
+  "phase-13": [
+    { q: "Explain the TCP 3-Way Handshake.", a: "1. Client sends SYN. 2. Server replies SYN-ACK. 3. Client sends ACK. This establishes a reliable, duplex connection channel." },
+    { q: "What is browser layout and paint path?", a: "HTML parses to DOM + CSS parses to CSSOM -> Render Tree -> Layout (dimensions/coordinates) -> Paint (pixels) -> Composite Layers." },
+    { q: "What is the difference between OS Process and Thread?", a: "A Process is an isolated running program with its own memory. A Thread is a lightweight segment of execution sharing its parent process memory." }
+  ],
+  "phase-14": [
+    { q: "What is the key difference between Interface and Type in TS?", a: "Interfaces are extendable via declaration merging (repeating the same name merges keys). Types are static and merged via intersections (&)." },
+    { q: "What does TS keyof operator do?", a: "Extracts all public property keys of an object type and returns them as a union type of string literal values." },
+    { q: "What is TypeScript strictNullChecks?", a: "Enforces that null and undefined must be handled explicitly, avoiding common 'cannot read property of null' runtime errors." }
+  ],
+  "phase-15": [
+    { q: "What is mock testing isolation?", a: "Replacing external dependencies (like databases or network APIs) with dummy mock modules to isolate the code unit and run tests offline." },
+    { q: "Why are RTL (React Testing Library) user events preferred?", a: "They simulate real browser click and keyboard dispatch pathways, unlike fireEvent which only fires synthetic event wrappers." },
+    { q: "What are Snapshot Tests useful for?", a: "Comparing current component HTML markup against a stored reference copy, alerting developers to unintentional UI structure changes." }
+  ],
+  "phase-16": [
+    { q: "What is a Docker image vs container?", a: "A Docker image is a read-only template containing the application code and environment setup. A container is a running instance of that image." },
+    { q: "What are GitHub Actions workflows runners?", a: "Virtual machines (Linux, Windows, macOS) hosted by GitHub that execute the CI/CD scripts when triggered by events like git push." },
+    { q: "How do Sentry sourcemaps help debugging?", a: "They map minified production bundles back to the original source code lines, letting you see the exact file and line where error stacktraces crashed." }
+  ],
+  "phase-17": [
+    { q: "What is database migration syncing?", a: "Programmatic scripts that safely evolve database schemas (tables/columns) across environments without wiping existing production tables data." },
+    { q: "How do you scale WebSockets horizontally?", a: "Use a Pub/Sub redis adapter to broadcast event messages across distinct server instances, updating clients regardless of which machine they are connected to." },
+    { q: "What is vector embedding semantic search?", a: "Converting queries to coordinate arrays and using cosine similarity to find documents with matching meanings, bypassing simple keyword match limits." }
+  ],
+  "phase-18": [
+    { q: "What is the STAR interviewing framework?", a: "Situation (setting context), Task (identifying challenges), Action (what you coded/built), and Result (concrete metrics, outputs, or learning outcomes)." },
+    { q: "How do you structure a System Design interview?", a: "1. Scope requirements. 2. Draw high-level blocks. 3. Estimate scale/loads. 4. Identify bottlenecks. 5. Detail component scaling." },
+    { q: "What is a GitHub profile pin priority?", a: "Highlighting 2-3 production-grade capstone projects with clear readme guides, architectural diagrams, and links rather than pinning dozens of simple class exercises." }
+  ]
+};
+
+const quizData = {
+  "phase-1": [
+    { q: "Which HTML element is semantically correct for main site navigation?", o: ["&lt;nav&gt;", "&lt;div class='nav'&gt;", "&lt;ul&gt;", "&lt;section&gt;"], a: 0 },
+    { q: "Which Flexbox property aligns items along the cross-axis?", o: ["justify-content", "align-items", "flex-direction", "align-self"], a: 1 }
+  ],
+  "phase-2": [
+    { q: "Which CSS contain value isolates layout, style, and paint?", o: ["contain: strict", "contain: content", "contain: paint", "contain: layout"], a: 0 },
+    { q: "How are Container Queries specified in CSS?", o: ["@media (min-width: 400px)", "@container (min-width: 400px)", "@parent (min-width: 400px)", "@element (min-width: 400px)"], a: 1 }
+  ],
+  "phase-3": [
+    { q: "Which queue are Promise callbacks appended to?", o: ["Macrotask Queue", "Render Queue", "Microtask Queue", "RequestAnimationFrame Queue"], a: 2 },
+    { q: "What is the GC strategy used by modern V8 engines?", o: ["Reference Counting", "Mark-and-Sweep (Generational)", "Manual Deallocation", "Stop-and-Copy Only"], a: 1 }
+  ],
+  "phase-4": [
+    { q: "What is the main role of standard key props in React lists?", o: ["To apply styling", "To uniquely identify siblings for diff optimization", "To store element states", "To bind click events"], a: 1 },
+    { q: "Which hook handles side effects in React function components?", o: ["useState", "useContext", "useEffect", "useMemo"], a: 2 }
+  ],
+  "phase-5": [
+    { q: "Where does Middleware run in Next.js routing lifecycle?", o: ["After page renders", "Before the request hits route handler/page", "Inside getServerSideProps", "Inside the browser main thread"], a: 1 },
+    { q: "Which fetch tag revalidates Next.js data after a time limit?", o: ["{ cache: 'no-store' }", "{ next: { revalidate: 3600 } }", "{ force: 'dynamic' }", "{ mode: 'cors' }"], a: 1 }
+  ],
+  "phase-6": [
+    { q: "Which DevTools panel profiles page load speed and CPU paint blocks?", o: ["Elements", "Application", "Performance", "Security"], a: 2 },
+    { q: "What is Postman Collections used for?", o: ["Hosting static files", "Grouping related API requests for automated tests runs", "Running database migrations", "Writing CSS preprocessor configs"], a: 1 }
+  ],
+  "phase-7": [
+    { q: "What is the callback signature of an Express error-handling middleware?", o: ["(req, res, next)", "(err, req, res, next)", "(req, res, err)", "(err, req, res)"], a: 1 },
+    { q: "Which Zod method checks inputs and returns detailed status objects rather than throwing?", o: ["parse()", "safeParse()", "check()", "validate()"], a: 1 }
+  ],
+  "phase-8": [
+    { q: "Which SQL command aggregates rows based on matching column groups?", o: ["WHERE", "ORDER BY", "GROUP BY", "SELECT DISTINCT"], a: 2 },
+    { q: "What database index speeds up rows matches lookup in O(log n)?", o: ["Clustered Index only", "Hash index", "B-Tree Index", "Bitmask Index"], a: 2 }
+  ],
+  "phase-9": [
+    { q: "What JWT component contains the signature validations keys?", o: ["Header", "Payload", "Crypto Signature Segment", "Metadata"], a: 2 },
+    { q: "Which node module protects Express APIs by adding standard secure HTTP headers?", o: ["cors", "helmet", "dotenv", "bcrypt"], a: 1 }
+  ],
+  "phase-10": [
+    { q: "Which HTTP header is sent by browsers to request WebSocket upgrades?", o: ["Connection: Keep-Alive", "Upgrade: websocket", "Content-Type: text/event-stream", "Transfer-Encoding: chunked"], a: 1 },
+    { q: "Which Redis command publishes message events to channels?", o: ["SET", "PUBLISH", "SUBSCRIBE", "LPUSH"], a: 1 }
+  ],
+  "phase-11": [
+    { q: "In CAP theorem, what does Partition Tolerance mean?", o: ["Data remains consistent", "The system functions during network split errors", "The system responds instantly to requests", "Database sharding is enabled"], a: 1 },
+    { q: "Which database MVCC mechanism solves concurrency issues?", o: ["Explicit Row Locking", "Multi-Version Concurrency Control", "Single-threaded writes queue", "Global Database Mutex"], a: 1 }
+  ],
+  "phase-12": [
+    { q: "What is the embedding vector extraction phase in RAG?", o: ["Model output sampling", "Document search lookup", "Converting text data into high-dimensional coordinate arrays", "Prompt templating validation"], a: 2 },
+    { q: "Which LLM temperature setting yields highly factual responses?", o: ["temperature: 1.8", "temperature: 0.0", "temperature: 1.0", "temperature: 2.0"], a: 1 }
+  ],
+  "phase-13": [
+    { q: "What does the SYN-ACK handshake segment signify in TCP?", o: ["Connection termination", "Client acknowledging data", "Server acknowledging client SYN and requesting client ACK", "DNS lookup completion"], a: 2 },
+    { q: "What is the worst-case Big O time complexity of Binary Search?", o: ["O(1)", "O(n)", "O(log n)", "O(n log n)"], a: 2 }
+  ],
+  "phase-14": [
+    { q: "Which TS utility extracts public keys of an object structure?", o: ["keyof", "typeof", "readonly", "any"], a: 0 },
+    { q: "What is the main advantage of Types over Interfaces in TypeScript?", o: ["Declaration merging", "Allowing union types and intersection aliases", "Faster compilation speed", "Direct runtime checking support"], a: 1 }
+  ],
+  "phase-15": [
+    { q: "Which RTL query priority level is recommended for accessible elements checks?", o: ["getByTestId", "getByText", "getByRole", "querySelector"], a: 2 },
+    { q: "What testing method mocks external server API fetches calls?", o: ["Unit Testing isolation via mocks", "E2E testing live calls", "Snapshot regressions", "Static typing scans"], a: 0 }
+  ],
+  "phase-16": [
+    { q: "Which Dockerfile instruction specifies the default command when a container starts?", o: ["RUN", "COPY", "CMD", "FROM"], a: 2 },
+    { q: "What does GitHub Actions workflow runner execute?", o: ["Browser renders", "The YAML CI workflow tasks", "Vercel deployments only", "Sentry tracking hooks"], a: 1 }
+  ],
+  "phase-17": [
+    { q: "Which database mechanism resolves conflicts during concurrent writes in live systems?", o: ["Optimistic Locking via version columns", "Full database locks", "Offline batch processing", "Manual admin review"], a: 0 },
+    { q: "What Redis adapter scales real-time chat horizontal relays?", o: ["Redis Pub/Sub Adapter", "Redis JSON module", "Redis Cluster hash", "Redis Graph database"], a: 0 }
+  ],
+  "phase-18": [
+    { q: "What STAR method section describes the specific technical actions you took?", o: ["Situation", "Task", "Action", "Result"], a: 2 },
+    { q: "What is the first step of the System Design Interview template?", o: ["Write SQL schemas", "Scope requirements and scale limits", "Design deep database caches", "Configure network load balancers"], a: 1 }
+  ]
+};
+
+let currentFlashcardIndex = 0;
+function renderFlashcard() {
+  const phase = getCurrentPhase();
+  const lessonId = window.currentLessonId || '1.1';
+  let deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
+  
+  const pane = document.getElementById('scratch-pane-flashcards');
+  if (!pane) return;
+  
+  if (currentFlashcardIndex >= deck.length) {
+    currentFlashcardIndex = 0;
+  }
+  
+  const isCustom = !!(window.customAIFlashcards && window.customAIFlashcards[lessonId]);
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Card ${currentFlashcardIndex + 1} of ${deck.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: ${isCustom ? '#8b5cf6' : 'var(--teal, #0d9488)'}; font-family: 'Space Mono', monospace;">
+        ${isCustom ? 'âœ¨ AI Generated' : phase.replace('-', ' ')}
+      </span>
+    </div>
+    
+    <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div style="font-size: 0.78rem; font-weight: 500; line-height: 1.4;">${deck[currentFlashcardIndex].q}</div>
+          <div class="flashcard-prompt">&#128260; Tap to Flip</div>
+        </div>
+        <div class="flashcard-back">
+          <div style="font-size: 0.75rem; font-weight: 400; line-height: 1.4;">${deck[currentFlashcardIndex].a}</div>
+          <div class="flashcard-prompt" style="color: #6d28d9;">&#128260; Tap to Flip</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 4px;">
+      <button class="hud-btn" onclick="prevFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">&larr; Prev</button>
+      <button class="hud-btn" onclick="nextFlashcard(event)" style="padding: 6px 12px; font-size: 0.65rem; flex: 1; justify-content: center;">Next &rarr;</button>
+    </div>
+    
+    <div style="width: 100%; margin-top: 8px; display: flex; gap: 6px;">
+      <button id="ai-generate-flashcards-btn" onclick="generateAIFlashcards()" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; border-radius: 4px; padding: 8px 12px; color: #ffffff; font-size: 0.7rem; font-weight: 700; cursor: pointer; flex: 1; text-align: center; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.2); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+        <span>âœ¨ AI Generate Cards</span>
+      </button>
+      ${isCustom ? `
+      <button onclick="resetDefaultFlashcards()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 8px; color: #64748b; font-size: 0.65rem; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#64748b'" title="Reset to default deck">
+        &#8634;
+      </button>` : ''}
+    </div>
+  `;
+}
+
+function prevFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const lessonId = window.currentLessonId || '1.1';
+  const deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
+  currentFlashcardIndex = (currentFlashcardIndex - 1 + deck.length) % deck.length;
+  renderFlashcard();
+}
+
+function nextFlashcard(e) {
+  if (e) e.stopPropagation();
+  const phase = getCurrentPhase();
+  const lessonId = window.currentLessonId || '1.1';
+  const deck = (window.customAIFlashcards && window.customAIFlashcards[lessonId]) 
+              ? window.customAIFlashcards[lessonId] 
+              : (flashcardData[phase] || flashcardData['phase-1']);
+  currentFlashcardIndex = (currentFlashcardIndex + 1) % deck.length;
+  renderFlashcard();
+}
+
+let currentQuizIndex = 0;
+let answeredIndex = -1;
+
+function renderQuiz() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  const item = pool[currentQuizIndex];
+  
+  const pane = document.getElementById('scratch-pane-quiz');
+  if (!pane) return;
+  
+  let optionsHtml = '';
+  item.o.forEach((opt, idx) => {
+    let btnClass = 'quiz-option-btn';
+    if (answeredIndex !== -1) {
+      if (idx === item.a) {
+        btnClass += ' correct';
+      } else if (idx === answeredIndex) {
+        btnClass += ' incorrect';
+      }
+    }
+    optionsHtml += `
+      <button class="${btnClass}" onclick="submitQuizAnswer(${idx})" ${answeredIndex !== -1 ? 'disabled' : ''}>
+        ${opt}
+      </button>
+    `;
+  });
+  
+  pane.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.7rem; color: var(--text-muted, #64748b); margin-bottom: 4px;">
+      <span>Question ${currentQuizIndex + 1} of ${pool.length}</span>
+      <span style="text-transform: uppercase; font-weight: bold; color: var(--laser-pink, #ff007f); font-family: 'Space Mono', monospace;">${phase.replace('-', ' ')}</span>
+    </div>
+    
+    <div style="font-size: 0.76rem; font-weight: 500; line-height: 1.4; margin: 8px 0; color: var(--text-primary, #f8fafc);">
+      ${item.q}
+    </div>
+    
+    <div style="display: flex; flex-direction: column; width: 100%;">
+      ${optionsHtml}
+    </div>
+    
+    ${answeredIndex !== -1 ? `
+      <div style="display: flex; justify-content: space-between; gap: 8px; width: 100%; margin-top: 6px;">
+        <span style="font-size: 0.68rem; font-weight: bold; color: ${answeredIndex === item.a ? 'var(--green, #4ade80)' : 'var(--rose, #f87171)'}; display: flex; align-items: center;">
+          ${answeredIndex === item.a ? '&#10003; Correct!' : '&#10007; Incorrect'}
+        </span>
+        <button class="hud-btn" onclick="nextQuizQuestion()" style="padding: 6px 12px; font-size: 0.65rem;">
+          ${currentQuizIndex === pool.length - 1 ? 'Restart' : 'Next &rarr;'}
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
+function submitQuizAnswer(idx) {
+  answeredIndex = idx;
+  renderQuiz();
+}
+
+function nextQuizQuestion() {
+  const phase = getCurrentPhase();
+  const pool = quizData[phase] || quizData['phase-1'];
+  currentQuizIndex = (currentQuizIndex + 1) % pool.length;
+  answeredIndex = -1;
+  renderQuiz();
+}
+
+// Bind functions to the window object to prevent namespace resolution failures
+window.toggleThemeHUD = toggleThemeHUD;
+window.toggleSidebarHUD = toggleSidebarHUD;
+window.toggleScratchpadHUD = toggleScratchpadHUD;
+window.downloadStudentNotes = downloadStudentNotes;
+window.closePlayground = closePlayground;
+window.toggleFocusMode = toggleFocusMode;
+window.switchScratchTab = switchScratchTab;
+window.prevFlashcard = prevFlashcard;
+window.nextFlashcard = nextFlashcard;
+window.submitQuizAnswer = submitQuizAnswer;
+window.nextQuizQuestion = nextQuizQuestion;
+window.scrollToTopHUD = scrollToTopHUD;
+window.toggleAudioPanel = toggleAudioPanel;
+window.changeVoice = changeVoice;
+window.updateRateLabel = updateRateLabel;
+window.changeRate = changeRate;
+window.setReadingMode = setReadingMode;
+window.toggleAudioPlayback = toggleAudioPlayback;
+window.stopAudioPlayback = stopAudioPlayback;
+window.prevAudioSegment = prevAudioSegment;
+window.nextAudioSegment = nextAudioSegment;
+window.initClickToPlay = initClickToPlay;
+window.updateAudioProgress = updateAudioProgress;
+
+// Account Auth and Sync Bindings
+window.toggleAuthModal = toggleAuthModal;
+window.switchAuthTab = switchAuthTab;
+window.submitAuth = submitAuth;
+window.logOut = logOut;
+window.saveBackendUrl = saveBackendUrl;
+window.syncProgressToServer = syncProgressToServer;
+window.syncProgressFromServer = syncProgressFromServer;
+
+// Hook up functions on load
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebarState();
+  initScrollProgressTracker();
+  initCodePlayground();
+  initFocusMode();
+  switchScratchTab('notes');
+  initAITutorResizer();
+  updateAuthHUD();
+  if (localStorage.getItem('faang-auth-token')) {
+    syncProgressFromServer();
+  }
+  
+  // Back to Top Button Scroll Listener
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 350) {
+        backToTopBtn.style.display = 'flex';
+      } else {
+        backToTopBtn.style.display = 'none';
+      }
+    });
   }
 
-  updateNavDots();
-  updateCheckProgress();
+  // Controller HUD scroll transparency listener
+  const controllerRack = document.querySelector('.controller-rack-hud');
+  if (controllerRack) {
+    const handleScroll = () => {
+      if (window.scrollY > 60) {
+        controllerRack.classList.add('scrolled-hud');
+      } else {
+        controllerRack.classList.remove('scrolled-hud');
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+  }
+  
+  // Scratchpad Bindings
+  const notesText = localStorage.getItem('faang-student-notes') || "";
+  const textarea = document.getElementById('scratchpad-textarea');
+  if (textarea) {
+    textarea.value = notesText;
+    updateWordCount(notesText);
+    textarea.addEventListener('input', (e) => {
+      const text = e.target.value;
+      localStorage.setItem('faang-student-notes', text);
+      updateWordCount(text);
+      if (localStorage.getItem('faang-auth-token')) {
+        queueNotesSync();
+      }
+    });
+  }
+  
+  const savedTheme = localStorage.getItem('faang-course-theme');
+  const themeText = document.getElementById('theme-text');
+  if (themeText) {
+    themeText.innerText = savedTheme === 'light' ? "Light Lab" : "Dark Cyber";
+  }
+  syncScratchpadTheme(savedTheme === 'light' ? 'light' : 'dark');
+  
+  initClickToPlay();
+  initHighlightExplainer();
+  initSidebarProgressWidget();
+  initScrollspy();
+  updateHUDCompleteBtn();
 
+  // Handle mobile keyboard resizing using Visual Viewport API
+  if (window.visualViewport) {
+    const handleViewportResize = () => {
+      const isMobile = window.innerWidth <= 1024;
+      const tutorDrawer = document.getElementById('ai-tutor-drawer');
+      const scratchpad = document.getElementById('scratchpad-window');
+      
+      if (!isMobile) {
+        if (tutorDrawer) tutorDrawer.style.height = '';
+        if (scratchpad) scratchpad.style.height = '';
+        return;
+      }
+      
+      const vh = window.visualViewport.height;
+      
+      // Update AI Tutor height dynamically to fit visible area above keyboard
+      if (tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'))) {
+        tutorDrawer.style.height = `${vh}px`;
+      }
+      
+      // Update Scratchpad height dynamically
+      if (scratchpad && window.getComputedStyle(scratchpad).display === 'flex') {
+        scratchpad.style.height = `${vh}px`;
+      }
+    };
+    
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    window.visualViewport.addEventListener('scroll', handleViewportResize);
+    
+    // Bind trigger to toggle actions
+    const originalToggleAITutor = window.toggleAITutorDrawer || toggleAITutorDrawer;
+    window.toggleAITutorDrawer = () => {
+      originalToggleAITutor();
+      setTimeout(handleViewportResize, 50);
+      setTimeout(handleViewportResize, 150);
+    };
+    
+    const originalToggleScratchpad = window.toggleScratchpadHUD || toggleScratchpadHUD;
+    window.toggleScratchpadHUD = () => {
+      originalToggleScratchpad();
+      setTimeout(handleViewportResize, 50);
+      setTimeout(handleViewportResize, 150);
+    };
+  }
+
+  // Click outside to close AI Tutor and Scratchpad windows
+  document.addEventListener('mousedown', (e) => {
+    // 1. Close AI Tutor Drawer when clicking outside
+    const tutorDrawer = document.getElementById('ai-tutor-drawer');
+    const aiTutorBtn = document.getElementById('ai-tutor-hud-btn');
+    const tooltip = document.getElementById('floating-ai-tooltip');
+    
+    if (tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'))) {
+      if (!tutorDrawer.contains(e.target) && 
+          (!aiTutorBtn || !aiTutorBtn.contains(e.target)) && 
+          (!tooltip || !tooltip.contains(e.target))) {
+        closeAITutorDrawer();
+      }
+    }
+    
+    // 2. Close Study Notes Scratchpad when clicking outside
+    const scratchpadWindow = document.getElementById('scratchpad-window');
+    const scratchpadToggleBtn = document.getElementById('scratchpad-toggle-btn');
+    
+    if (scratchpadWindow && window.getComputedStyle(scratchpadWindow).display === 'flex') {
+      if (!scratchpadWindow.contains(e.target) && 
+          (!scratchpadToggleBtn || !scratchpadToggleBtn.contains(e.target))) {
+        toggleScratchpadHUD();
+      }
+    }
+    
+    // 3. Close Navigation Sidebar (Map) when clicking outside
+    const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+    if (sidebar) {
+      const isFixedSidebar = window.getComputedStyle(sidebar).position === 'fixed';
+      const isSidebarOpen = isFixedSidebar ? sidebar.classList.contains('open') : !document.body.classList.contains('sidebar-closed');
+      
+      if (isSidebarOpen) {
+        const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
+        if (!sidebar.contains(e.target) && (!sidebarToggleBtn || !sidebarToggleBtn.contains(e.target))) {
+          toggleSidebarHUD();
+        }
+      }
+    }
+  });
+});
+
+// Custom storage synchronization
+window.addEventListener('storage', (e) => {
+  if (e.key === 'faang-student-notes') {
+    const textarea = document.getElementById('scratchpad-textarea');
+    if (textarea) {
+      textarea.value = e.newValue || '';
+      updateWordCount(e.newValue || '');
+    }
+  }
+  if (e.key === 'faang-course-theme') {
+    const theme = e.newValue;
+    const body = document.body;
+    const themeText = document.getElementById('theme-text');
+    if (theme === 'light') {
+      body.classList.add('light-theme');
+      if (themeText) themeText.innerText = "Light Lab";
+    } else {
+      body.classList.remove('light-theme');
+      if (themeText) themeText.innerText = "Dark Cyber";
+    }
+    syncScratchpadTheme(theme);
+  }
+});
+// --- PREMIUM GEMINI AI TUTOR SYSTEM ---
+function toggleAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  if (drawer.style.display === 'none' || drawer.style.display === '') {
+    drawer.style.display = 'flex';
+    drawer.classList.add('open');
+    setTimeout(() => {
+      drawer.style.right = '0';
+    }, 10);
+    const input = document.getElementById('ai-chat-input');
+    if (input) input.focus();
+    const key = localStorage.getItem('faang-gemini-api-key') || '';
+    const keyInput = document.getElementById('ai-api-key-input');
+    if (keyInput) keyInput.value = key;
+    if (!key) {
+      document.getElementById('ai-key-config').style.display = 'flex';
+    }
+  } else {
+    closeAITutorDrawer();
+  }
+}
+
+function closeAITutorDrawer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  if (!drawer) return;
+  drawer.classList.remove('open');
+  const isMobile = window.innerWidth <= 1024;
+  drawer.style.right = isMobile ? '-100%' : '-400px';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+  }, 400);
+}
+
+function toggleAIKeyConfig() {
+  const config = document.getElementById('ai-key-config');
+  if (!config) return;
+  config.style.display = (config.style.display === 'none' || config.style.display === '') ? 'flex' : 'none';
+}
+
+function saveAIKey() {
+  const input = document.getElementById('ai-api-key-input');
+  if (!input) return;
+  const key = input.value.trim();
+  localStorage.setItem('faang-gemini-api-key', key);
+  alert(key ? "Gemini API Key saved successfully!" : "API Key cleared.");
+  if (key) {
+    document.getElementById('ai-key-config').style.display = 'none';
+  }
+}
+
+function handleAITutorKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAITutorMessage();
+  }
+}
+
+async function sendAITutorMessage() {
+  const input = document.getElementById('ai-chat-input');
+  if (!input) return;
+  const question = input.value.trim();
+  if (!question) return;
+
+  const key = localStorage.getItem('faang-gemini-api-key') || '';
+  const token = localStorage.getItem('faang-auth-token');
+
+  input.value = '';
+  const history = document.getElementById('ai-chat-history');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'ai-msg-bubble user';
+  userMsg.style.cssText = 'align-self: flex-end; max-width: 85%; background: rgba(255,255,255,0.06); border-radius: 8px 8px 0px 8px; padding: 10px 12px; color: #ffffff; font-size: 0.8rem; line-height: 1.5; word-break: break-word; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    userMsg.style.background = '#f1f5f9';
+    userMsg.style.color = '#0f172a';
+  }
+  
+  userMsg.innerText = question;
+  history.appendChild(userMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'ai-msg-bubble tutor loading';
+  loadingMsg.style.cssText = 'align-self: flex-start; max-width: 85%; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 8px 8px 8px 0px; padding: 10px 12px; color: #e4e2dc; font-size: 0.8rem; line-height: 1.5; margin-top: 4px;';
+  
+  if (document.body.classList.contains('light-theme')) {
+    loadingMsg.style.background = 'rgba(124, 58, 237, 0.05)';
+    loadingMsg.style.borderColor = 'rgba(124, 58, 237, 0.15)';
+    loadingMsg.style.color = '#0f172a';
+  }
+  
+  loadingMsg.innerHTML = '<span class="dots" style="display:inline-block; animation: blink 1.4s infinite both;">Thinking...</span>';
+  history.appendChild(loadingMsg);
+  history.scrollTop = history.scrollHeight;
+
+  const essayText = getEssayTextForContext();
+  const systemPrompt = `You are an expert FAANG Web Development Roadmap Tutor.
+Below is the text of the syllabus module the student is currently reading:
+---
+${essayText}
+---
+The student has asked the following question. Respond to the question, help them understand, give code examples if relevant, or suggest quick practice tasks. Keep your response highly structured, clear, and engaging. Limit formatting to basic Markdown: bold (**text**), lists (- item), inline code (\`code\`), and code blocks (\`\`\`language ... \`\`\`). Keep your response concise (usually under 250 words) so it fits nicely in the chat drawer.`;
+
+  try {
+    let response;
+    if (key) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + "\n\nStudent Question: " + question }] }]
+        })
+      });
+    } else {
+      response = await fetch(`${getBackendUrl()}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          prompt: systemPrompt + "\n\nStudent Question: " + question
+        })
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const responseText = key ? data.candidates[0].content.parts[0].text : data.reply;
+    
+    loadingMsg.classList.remove('loading');
+    loadingMsg.innerHTML = formatMarkdown(responseText);
+  } catch (error) {
+    loadingMsg.classList.remove('loading');
+    loadingMsg.style.color = '#ef4444';
+    loadingMsg.innerText = "Error: " + error.message + ". Please verify your connection or API configuration.";
+  }
+  
+  history.scrollTop = history.scrollHeight;
+}
+
+function getEssayTextForContext() {
+  const elements = Array.from(document.querySelectorAll('main p, main h3, main h4, main li, main .hud-callout p'));
+  const text = elements.map(el => el.innerText).join('\n');
+  return text.substring(0, 8000);
+}
+
+function formatMarkdown(text) {
+  let escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  
+  // Hoist code blocks to prevent splits on double newlines
+  const codeBlocks = [];
+  escaped = escaped.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<div class="code-block" style="background:#090b10; border:1px solid #2a2c38; padding:12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; margin:10px 0; overflow-x:auto; color:#f8fafc;"><div style="font-size:0.6rem; color:#64748b; border-bottom:1px solid #1a1c24; margin-bottom:8px; padding-bottom:4px; text-transform:uppercase;">${lang || 'code'}</div><pre><code>${code}</code></pre></div>`);
+    return placeholder;
+  });
+  
+  // Format inline code
+  escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-family:\'JetBrains Mono\',monospace; font-size:0.75rem; color:#2ec4b6;">$1</code>');
+  
+  // Format bold
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // Format bullet lists
+  escaped = escaped.replace(/^\s*-\s+(.+)$/gm, '<li style="margin-left:20px; font-size:0.8rem; line-height:1.5; margin-bottom:4px;">$1</li>');
+  
+  // Format paragraphs
+  escaped = escaped.split('\n\n').map(p => {
+    const trimmed = p.trim();
+    if (trimmed.startsWith('__CODE_BLOCK_') && trimmed.endsWith('__') && trimmed.split('_').length === 5) {
+      return p;
+    }
+    if (trimmed.startsWith('<li')) return p;
+    return `<p style="margin-bottom:10px; line-height:1.6; font-size:0.82rem;">${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+  
+  // Restore code blocks
+  codeBlocks.forEach((block, idx) => {
+    escaped = escaped.replace(`__CODE_BLOCK_${idx}__`, block);
+  });
+  
+  return escaped;
+}
+
+function initAITutorResizer() {
+  const drawer = document.getElementById('ai-tutor-drawer');
+  const handle = document.getElementById('ai-tutor-resize-handle');
+  if (!drawer || !handle) return;
+  
+  let startX, startWidth;
+  
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    startWidth = parseInt(document.defaultView.getComputedStyle(drawer).width, 10);
+    document.documentElement.addEventListener('mousemove', doDrag, false);
+    document.documentElement.addEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'none';
+  });
+  
+  function doDrag(e) {
+    const newWidth = startWidth + (startX - e.clientX);
+    if (newWidth > 280 && newWidth < 800) {
+      drawer.style.width = newWidth + 'px';
+    }
+  }
+  
+  function stopDrag(e) {
+    document.documentElement.removeEventListener('mousemove', doDrag, false);
+    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+    drawer.style.transition = 'right 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+  }
+}
+
+window.initAITutorResizer = initAITutorResizer;
+window.toggleAITutorDrawer = toggleAITutorDrawer;
+window.closeAITutorDrawer = closeAITutorDrawer;
+window.toggleAIKeyConfig = toggleAIKeyConfig;
+window.saveAIKey = saveAIKey;
+window.handleAITutorKeyDown = handleAITutorKeyDown;
+window.sendAITutorMessage = sendAITutorMessage;
+
+function submitTutorSuggestion(promptText) {
+  const input = document.getElementById('ai-chat-input');
+  if (!input) return;
+  input.value = promptText;
+  sendAITutorMessage();
+}
+window.submitTutorSuggestion = submitTutorSuggestion;
+
+// --- PREMIUM FEATURE: HIGHLIGHT & ASK AI EXPLAINER ---
+function initHighlightExplainer() {
+  let tooltip = document.getElementById('floating-ai-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('button');
+    tooltip.id = 'floating-ai-tooltip';
+    tooltip.className = 'floating-ai-tooltip';
+    tooltip.innerHTML = '<span>Explain with AI</span>';
+    document.body.appendChild(tooltip);
+  }
+  
+  let selectedText = '';
+  
+  const handleSelection = () => {
+    if (document.body.classList.contains('focus-mode')) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    
+    const selection = window.getSelection();
+    selectedText = selection.toString().trim();
+    
+    if (!selectedText) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    
+    const range = selection.getRangeAt(0);
+    const container = range.commonAncestorContainer;
+    const isInsideMain = container.nodeType === Node.ELEMENT_NODE 
+      ? container.closest('main') 
+      : container.parentElement?.closest('main');
+      
+    if (!isInsideMain) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    
+    const rects = range.getClientRects();
+    if (rects.length === 0) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    
+    const selectionRect = range.getBoundingClientRect();
+    const tooltipWidth = 140; 
+    const tooltipHeight = 36; 
+    
+    const left = selectionRect.left + (selectionRect.width / 2) - (tooltipWidth / 2) + window.scrollX;
+    const top = selectionRect.top - tooltipHeight - 8 + window.scrollY;
+    
+    tooltip.style.left = `${Math.max(10, left)}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.display = 'flex';
+  };
+  
+  document.addEventListener('mouseup', handleSelection);
+  document.addEventListener('keyup', handleSelection);
+  
+  tooltip.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+  });
+  
+  tooltip.addEventListener('click', () => {
+    if (!selectedText) return;
+    
+    const input = document.getElementById('ai-chat-input');
+    const promptText = `Explain this context from the reading:\n\n"${selectedText}"`;
+    
+    if (input) {
+      input.value = promptText;
+    }
+    
+    const tutorDrawer = document.getElementById('ai-tutor-drawer');
+    const isDrawerOpen = tutorDrawer && (tutorDrawer.style.display === 'flex' || tutorDrawer.classList.contains('open'));
+    
+    if (tutorDrawer && !isDrawerOpen) {
+      if (typeof toggleAITutorDrawer === 'function') {
+        toggleAITutorDrawer();
+      } else {
+        tutorDrawer.classList.add('open');
+        tutorDrawer.style.display = 'flex';
+        setTimeout(() => {
+          tutorDrawer.style.right = '0';
+        }, 10);
+      }
+    }
+    
+    // Set the value again and focus after a short delay to ensure DOM and layout updates are complete
+    setTimeout(() => {
+      if (input) {
+        input.value = promptText;
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
+    
+    tooltip.style.display = 'none';
+    window.getSelection().removeAllRanges();
+  });
+  
+  document.addEventListener('mousedown', (e) => {
+    if (e.target !== tooltip && !tooltip.contains(e.target)) {
+      tooltip.style.display = 'none';
+    }
+  });
+}
+
+// --- PREMIUM FEATURE: SIDEBAR PROGRESS COMPLETION RING ---
+function initSidebarProgressWidget() {
+  const sidebar = document.querySelector('.sidebar, .sidebar-hud');
+  if (!sidebar) return;
+  if (document.getElementById('sidebar-progress-widget')) return;
+  
+  const widget = document.createElement('div');
+  widget.id = 'sidebar-progress-widget';
+  widget.className = 'sidebar-progress-widget';
+  widget.innerHTML = `
+    <div class="progress-ring-container">
+      <svg class="progress-ring-svg" width="48" height="48">
+        <circle class="progress-ring-track" stroke="rgba(255,255,255,0.05)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+        <circle class="progress-ring-circle" stroke="url(#sidebar-progress-grad)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24" stroke-dasharray="125.66 125.66" stroke-dashoffset="125.66"/>
+        <defs>
+          <linearGradient id="sidebar-progress-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#10b981" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="progress-ring-text" id="sidebar-progress-percent">0%</div>
+    </div>
+    <div class="progress-widget-meta">
+      <div class="progress-widget-label">Phase Progress</div>
+      <div class="progress-widget-sub" id="sidebar-progress-count">0 of 0 Completed</div>
+    </div>
+  `;
+  sidebar.appendChild(widget);
+  updateSidebarProgress();
+}
+
+function updateSidebarProgress() {
+  const circle = document.querySelector('.progress-ring-circle');
+  const percentText = document.getElementById('sidebar-progress-percent');
+  const countText = document.getElementById('sidebar-progress-count');
+  if (!circle || !percentText) return;
+  
+  const circumference = 125.66;
+  const completed = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+  const lessonsInPhase = window.phaseLessonIds || [];
+  
+  if (lessonsInPhase.length === 0) {
+    circle.style.strokeDashoffset = circumference;
+    percentText.innerText = '0%';
+    if (countText) countText.innerText = '0 of 0 Completed';
+    return;
+  }
+  
+  const completedInPhase = lessonsInPhase.filter(id => completed.includes(id)).length;
+  const totalInPhase = lessonsInPhase.length;
+  const percent = Math.round((completedInPhase / totalInPhase) * 100);
+  
+  const offset = circumference - (percent / 100) * circumference;
+  circle.style.strokeDashoffset = offset;
+  percentText.innerText = `${percent}%`;
+  if (countText) {
+    countText.innerText = `${completedInPhase} of ${totalInPhase} Completed`;
+  }
+}
+
+// --- PREMIUM FEATURE: MARK ESSAY COMPLETION ---
+function toggleCurrentEssayCompletion() {
+  if (!window.currentLessonId) return;
+  let completed = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+  const index = completed.indexOf(window.currentLessonId);
+  
+  if (index === -1) {
+    completed.push(window.currentLessonId);
+    
+    const today = new Date().toDateString();
+    const lastActive = localStorage.getItem('faang-last-active-day');
+    let streak = parseInt(localStorage.getItem('faang-learning-streak') || '0', 10);
+    if (lastActive !== today) {
+      if (lastActive) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (lastActive === yesterday.toDateString()) {
+          streak += 1;
+        } else {
+          streak = 1;
+        }
+      } else {
+        streak = 1;
+      }
+      localStorage.setItem('faang-learning-streak', streak);
+      localStorage.setItem('faang-last-active-day', today);
+    }
+  } else {
+    completed.splice(index, 1);
+  }
+  
+  localStorage.setItem('faang-completed-essays', JSON.stringify(completed));
+  
+  updateHUDCompleteBtn();
+  updateSidebarProgress();
+  
+  if (typeof syncProgressToServer === 'function') {
+    syncProgressToServer();
+  }
+}
+
+function updateHUDCompleteBtn() {
+  const btn = document.getElementById('hud-complete-btn');
+  if (!btn) return;
+  const completed = JSON.parse(localStorage.getItem('faang-completed-essays') || '[]');
+  const isCompleted = completed.includes(window.currentLessonId);
+  const textSpan = document.getElementById('hud-complete-text');
+  
+  if (isCompleted) {
+    btn.classList.add('completed');
+    if (textSpan) textSpan.innerText = 'Completed';
+    btn.style.borderColor = '#10b981';
+    btn.style.color = '#10b981';
+    btn.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.2)';
+  } else {
+    btn.classList.remove('completed');
+    if (textSpan) textSpan.innerText = 'Mark Complete';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    btn.style.boxShadow = '';
+  }
+}
+
+// --- PREMIUM FEATURE: SCROLLSPY INTERACTION ---
+function initScrollspy() {
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item, .hud-nav-item');
+  if (sections.length === 0 || navItems.length === 0) return;
+  
+  const observerOptions = {
+    root: null,
+    rootMargin: '-15% 0px -75% 0px',
+    threshold: 0
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        if (!id) return;
+        
+        navItems.forEach(item => {
+          const href = item.getAttribute('href');
+          if (href === `#${id}`) {
+            item.classList.add('active');
+          } else if (href && href.startsWith('#')) {
+            item.classList.remove('active');
+          }
+        });
+      }
+    });
+  }, observerOptions);
+  
+  sections.forEach(sec => observer.observe(sec));
+}
+
+// Storage event synchronization for multi-tab support
+window.addEventListener('storage', (e) => {
+  if (e.key === 'faang-completed-essays') {
+    updateHUDCompleteBtn();
+    updateSidebarProgress();
+  }
+});
+
+window.initHighlightExplainer = initHighlightExplainer;
+window.initSidebarProgressWidget = initSidebarProgressWidget;
+window.updateSidebarProgress = updateSidebarProgress;
+window.toggleCurrentEssayCompletion = toggleCurrentEssayCompletion;
+window.updateHUDCompleteBtn = updateHUDCompleteBtn;
+window.initScrollspy = initScrollspy;
+
+// Speech-to-Text Voice Dictation Feature
+let voiceRecognition = null;
+function toggleVoiceInput() {
+  const btn = document.getElementById('ai-voice-input-btn');
+  const chatInput = document.getElementById('ai-chat-input');
+  if (!btn || !chatInput) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Speech Recognition is not supported in this browser. Please try Chrome, Edge, or Safari.");
+    return;
+  }
+
+  if (btn.classList.contains('listening')) {
+    if (voiceRecognition) {
+      voiceRecognition.stop();
+    }
+  } else {
+    btn.classList.add('listening');
+    btn.title = "Listening... Click to stop";
+    
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = false;
+    voiceRecognition.lang = 'en-US';
+
+    voiceRecognition.onresult = (event) => {
+      const resultText = event.results[0][0].transcript;
+      if (resultText) {
+        const val = chatInput.value.trim();
+        chatInput.value = val ? val + " " + resultText : resultText;
+        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+
+    voiceRecognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      if (event.error !== 'aborted') {
+        alert("Speech Recognition Error: " + event.error);
+      }
+      resetVoiceBtnState();
+    };
+
+    voiceRecognition.onend = () => {
+      resetVoiceBtnState();
+    };
+
+    voiceRecognition.start();
+  }
+
+  function resetVoiceBtnState() {
+    btn.classList.remove('listening');
+    btn.title = "Voice input (Speech to Text)";
+  }
+}
+window.toggleVoiceInput = toggleVoiceInput;
+
+// AI Flashcards Feature (Dynamic Session Cache)
+if (!window.customAIFlashcards) {
+  window.customAIFlashcards = {};
+}
+
+async function generateAIFlashcards() {
+  const btn = document.getElementById('ai-generate-flashcards-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Generating...";
+    btn.style.opacity = '0.7';
+  }
+  
+  const pane = document.getElementById('scratch-pane-flashcards');
+  const loader = document.createElement('div');
+  loader.id = 'flashcard-ai-loader';
+  loader.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 20, 37, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border-radius: 12px; z-index: 10; padding: 20px; text-align: center; color: #ffffff;';
+  loader.innerHTML = `
+    <div style="width: 24px; height: 24px; border: 2.5px solid rgba(139, 92, 246, 0.2); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <div style="font-size: 0.75rem; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif;">AI is scanning this essay and generating custom revision cards...</div>
+  `;
+  
+  const scratchpadWindow = document.getElementById('scratchpad-window');
+  if (scratchpadWindow) {
+    scratchpadWindow.style.position = 'relative';
+    scratchpadWindow.appendChild(loader);
+  }
+
+  const essayText = getEssayTextForContext();
+  const systemPrompt = `You are a FAANG interview examiner.
+Your task is to analyze the syllabus text below and generate 5 highly effective revision flashcards.
+Each flashcard must contain a short question ("q") and a concise answer ("a") (under 25 words).
+Respond ONLY with a valid JSON array of exactly 5 objects, where each object has "q" and "a" properties. Do not include markdown formatting or backticks outside the JSON.
+
+Syllabus Text:
+---
+${essayText}
+---`;
+
+  const key = localStorage.getItem('faang-gemini-api-key') || '';
+  const token = localStorage.getItem('faang-auth-token');
+
+  try {
+    let response;
+    if (key) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+    } else {
+      response = await fetch(`${getBackendUrl()}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({
+          prompt: systemPrompt
+        })
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    let responseText = key ? data.candidates[0].content.parts[0].text : data.reply;
+    
+    let jsonText = responseText.trim();
+    if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    }
+    
+    const cards = JSON.parse(jsonText);
+    if (!Array.isArray(cards) || cards.length === 0) {
+      throw new Error("Invalid response format from AI.");
+    }
+    
+    const lessonId = window.currentLessonId || '1.1';
+    window.customAIFlashcards[lessonId] = cards;
+    currentFlashcardIndex = 0;
+    renderFlashcard();
+  } catch (error) {
+    console.error("AI Flashcard Generation error:", error);
+    alert("Could not generate AI flashcards: " + error.message);
+  } finally {
+    if (loader) loader.remove();
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "âœ¨ AI Generate Cards";
+      btn.style.opacity = '1';
+    }
+  }
+}
+
+function resetDefaultFlashcards() {
+  const lessonId = window.currentLessonId || '1.1';
+  if (window.customAIFlashcards) {
+    delete window.customAIFlashcards[lessonId];
+  }
+  currentFlashcardIndex = 0;
+  renderFlashcard();
+}
+
+window.generateAIFlashcards = generateAIFlashcards;
+window.resetDefaultFlashcards = resetDefaultFlashcards;
+
+// === INJECTED PREMIUM MODULE JS END ===
 
 window.currentLessonId = '1.1';
 window.phaseLessonIds = ['1.1', '1.2', '1.3'];
@@ -5799,6 +7594,11 @@ window.resetDefaultFlashcards = resetDefaultFlashcards;
 
 // === INJECTED PREMIUM MODULE JS END ===
 </script>
+
+
+
+
+
 
 
 
