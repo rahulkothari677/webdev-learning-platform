@@ -91,6 +91,10 @@
   
   
   
+  
+  
+  
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Essay 8.1 — Database Fundamentals: Relational vs NoSQL Topologies | FAANG Roadmap</title>
@@ -462,6 +466,7 @@ body.light-theme .summary-hud-metric { color: rgba(37, 99, 235, 0.08); }
   .hero-radar { padding: 120px 24px 60px; }
   .pitfall-matrix, .retrieval-grid, .enterprise-radar, .summary-hud-grid, .glossary-matrix-grid, .recap-grid-hud { grid-template-columns: 1fr; }
 }
+
 
 
 
@@ -2392,6 +2397,10 @@ body.light-theme #ai-voice-input-btn.listening {
 
 
 
+
+
+
+
 <div id="progress-container"><div id="progress-bar"></div></div>
 
 
@@ -3108,6 +3117,13 @@ window.phaseLessonIds = ['8.1', '8.2', '8.3', '8.4', '8.5', '8.6', '8.7'];
 window.currentLessonId = '8.1';
 window.phaseLessonIds = ['8.1', '8.2', '8.3', '8.4', '8.5', '8.6', '8.7'];
 </script>
+
+
+
+
+
+
+
 
 
 
@@ -4722,18 +4738,6 @@ function initThreeBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // 1. ALL-AROUND CYBERSPACE WIREFRAME TUNNEL GRID
-    const tunnelRadius = 45; // Larger radius to push grid to corners
-    const tunnelLength = 120;
-    const radialSegments = 20; // Less dense for crisp, straight lines
-    const tubularSegments = 15;
-
-    const gridGeom = new THREE.CylinderGeometry(tunnelRadius, tunnelRadius, tunnelLength, radialSegments, tubularSegments, true);
-    gridGeom.rotateX(Math.PI / 2); // Point inward towards camera
-
-    // Straight cylinder lines in perspective for a clean tech look
-    gridGeom.computeVertexNormals();
-
     const isLightInitial = document.body.classList.contains('light-theme');
 
     // Retrieve active theme colors from page variables dynamically
@@ -4767,31 +4771,38 @@ function initThreeBackground() {
     const colorLeft = themeColors[0] || new THREE.Color(0x00f2fe);
     const colorRight = themeColors[1] || themeColors[0] || new THREE.Color(0xff0080);
 
-    // Apply color gradient to cylinder wireframe vertices (cyan on left, magenta on right)
-    const posAttr = gridGeom.attributes.position;
-    const gridColors = [];
-    for (let i = 0; i < posAttr.count; i++) {
-      let x = posAttr.getX(i);
-      // Map X from [-45, 45] to [0, 1]
-      let ratio = (x + 45) / 90;
-      ratio = Math.max(0, Math.min(1, ratio));
-      const tempCol = new THREE.Color();
-      tempCol.lerpColors(colorLeft, colorRight, ratio);
-      gridColors.push(tempCol.r, tempCol.g, tempCol.b);
-    }
-    gridGeom.setAttribute('color', new THREE.Float32BufferAttribute(gridColors, 3));
+    // 1. CORNER PERSPECTIVE SQUARE GRIDS (Straight lines, square cells)
+    // Left Grid: Cyan/Color1 accent, positioned on the left side
+    const gridSize = 100;
+    const gridDivisions = 25;
+    
+    const leftGrid = new THREE.GridHelper(gridSize, gridDivisions, colorLeft, colorLeft);
+    leftGrid.rotateX(Math.PI / 2); // Make it vertical
+    leftGrid.position.set(-42, 0, -25);
+    leftGrid.rotation.y = Math.PI / 4.5; // Angled from corner towards camera
+    
+    leftGrid.material.transparent = true;
+    leftGrid.material.opacity = isLightInitial ? 0.02 : 0.08; // Ultra subtle grid
+    leftGrid.material.blending = THREE.AdditiveBlending;
+    leftGrid.material.depthWrite = false;
+    scene.add(leftGrid);
 
-    const gridMat = new THREE.MeshBasicMaterial({
-      vertexColors: true,
-      wireframe: true,
-      transparent: true,
-      opacity: isLightInitial ? 0.08 : 0.45, // Enhanced visibility
-      blending: THREE.AdditiveBlending
-    });
+    // Right Grid: Magenta/Color2 accent, positioned on the right side
+    const rightGrid = new THREE.GridHelper(gridSize, gridDivisions, colorRight, colorRight);
+    rightGrid.rotateX(Math.PI / 2); // Make it vertical
+    rightGrid.position.set(42, 0, -25);
+    rightGrid.rotation.y = -Math.PI / 4.5; // Angled from corner towards camera
+    
+    rightGrid.material.transparent = true;
+    rightGrid.material.opacity = isLightInitial ? 0.02 : 0.08; // Ultra subtle grid
+    rightGrid.material.blending = THREE.AdditiveBlending;
+    rightGrid.material.depthWrite = false;
+    scene.add(rightGrid);
 
-    const gridMesh = new THREE.Mesh(gridGeom, gridMat);
-    gridMesh.position.z = -20;
-    scene.add(gridMesh);
+    // Set visibility based on initial screen width (hidden on mobile/tablet)
+    const isMobileInitial = window.innerWidth < 1024;
+    leftGrid.visible = !isMobileInitial;
+    rightGrid.visible = !isMobileInitial;
 
     // 2. SOFT GLOWING NEON DOT CANVAS GENERATOR
     const createNeonDotTexture = () => {
@@ -4818,16 +4829,16 @@ function initThreeBackground() {
 
     // 3. TWO-TIERED DYNAMIC PARTICLE SYSTEM FOR DEPTH
     // System A: Small, deep, slow-drifting background dots
-    const bgDotCount = 60;
+    const bgDotCount = 50;
     const bgDotGeom = new THREE.BufferGeometry();
     const bgPositions = new Float32Array(bgDotCount * 3);
     const bgColors = new Float32Array(bgDotCount * 3);
     const bgDrift = [];
 
     for (let i = 0; i < bgDotCount; i++) {
-      bgPositions[i * 3] = (Math.random() - 0.5) * 60;
-      bgPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      bgPositions[i * 3 + 2] = (Math.random() - 0.5) * 30 - 10;
+      bgPositions[i * 3] = (Math.random() - 0.5) * 65;
+      bgPositions[i * 3 + 1] = (Math.random() - 0.5) * 45;
+      bgPositions[i * 3 + 2] = (Math.random() - 0.5) * 30 - 15;
 
       const col = themeColors[Math.floor(Math.random() * themeColors.length)];
       bgColors[i * 3] = col.r;
@@ -4835,18 +4846,18 @@ function initThreeBackground() {
       bgColors[i * 3 + 2] = col.b;
 
       bgDrift.push({
-        x: (Math.random() - 0.5) * 0.006,
-        y: (Math.random() - 0.5) * 0.006
+        x: (Math.random() - 0.5) * 0.005,
+        y: (Math.random() - 0.5) * 0.005
       });
     }
     bgDotGeom.setAttribute('position', new THREE.BufferAttribute(bgPositions, 3));
     bgDotGeom.setAttribute('color', new THREE.BufferAttribute(bgColors, 3));
 
     const bgDotMat = new THREE.PointsMaterial({
-      size: 1.2,
+      size: 1.0,
       vertexColors: true,
       transparent: true,
-      opacity: isLightInitial ? 0.15 : 0.4,
+      opacity: isLightInitial ? 0.12 : 0.35,
       map: neonTexture,
       blending: THREE.AdditiveBlending,
       depthWrite: false
@@ -4855,15 +4866,15 @@ function initThreeBackground() {
     scene.add(bgDotSystem);
 
     // System B: Larger, glowing, pulsing midground particles
-    const fgDotCount = 35;
+    const fgDotCount = 30;
     const fgDotGeom = new THREE.BufferGeometry();
     const fgPositions = new Float32Array(fgDotCount * 3);
     const fgColors = new Float32Array(fgDotCount * 3);
     const fgDrift = [];
 
     for (let i = 0; i < fgDotCount; i++) {
-      fgPositions[i * 3] = (Math.random() - 0.5) * 55;
-      fgPositions[i * 3 + 1] = (Math.random() - 0.5) * 35;
+      fgPositions[i * 3] = (Math.random() - 0.5) * 60;
+      fgPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
       fgPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 5;
 
       const col = themeColors[Math.floor(Math.random() * themeColors.length)];
@@ -4872,20 +4883,20 @@ function initThreeBackground() {
       fgColors[i * 3 + 2] = col.b;
 
       fgDrift.push({
-        x: (Math.random() - 0.5) * 0.012,
-        y: (Math.random() - 0.5) * 0.012,
+        x: (Math.random() - 0.5) * 0.01,
+        y: (Math.random() - 0.5) * 0.01,
         pulseOffset: Math.random() * Math.PI * 2,
-        pulseSpeed: 1.5 + Math.random() * 2
+        pulseSpeed: 1.2 + Math.random() * 1.5
       });
     }
     fgDotGeom.setAttribute('position', new THREE.BufferAttribute(fgPositions, 3));
     fgDotGeom.setAttribute('color', new THREE.BufferAttribute(fgColors, 3));
 
     const fgDotMat = new THREE.PointsMaterial({
-      size: 2.6, // Prominent premium glow
+      size: 2.4, // Clean, glowing floating point size
       vertexColors: true,
       transparent: true,
-      opacity: isLightInitial ? 0.25 : 0.8,
+      opacity: isLightInitial ? 0.22 : 0.75,
       map: neonTexture,
       blending: THREE.AdditiveBlending,
       depthWrite: false
@@ -4901,9 +4912,12 @@ function initThreeBackground() {
       requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      // Slow, premium rotation and breathing depth movement
-      gridMesh.rotation.z = time * 0.012;
-      gridMesh.position.z = -20 + (Math.sin(time * 0.08) * 1.5);
+      // Gentle, slow swaying on Y/Z axis (no spinning/circular motion)
+      leftGrid.rotation.y = Math.PI / 4.5 + Math.sin(time * 0.08) * 0.03;
+      leftGrid.rotation.z = Math.cos(time * 0.06) * 0.015;
+
+      rightGrid.rotation.y = -Math.PI / 4.5 - Math.sin(time * 0.08) * 0.03;
+      rightGrid.rotation.z = -Math.cos(time * 0.06) * 0.015;
 
       // Animate background particles (slow drift)
       const bgPosArr = bgDotGeom.attributes.position.array;
@@ -4911,8 +4925,8 @@ function initThreeBackground() {
         bgPosArr[i * 3] += bgDrift[i].x;
         bgPosArr[i * 3 + 1] += bgDrift[i].y;
 
-        if (Math.abs(bgPosArr[i * 3]) > 30) bgDrift[i].x *= -1;
-        if (Math.abs(bgPosArr[i * 3 + 1]) > 20) bgDrift[i].y *= -1;
+        if (Math.abs(bgPosArr[i * 3]) > 32) bgDrift[i].x *= -1;
+        if (Math.abs(bgPosArr[i * 3 + 1]) > 22) bgDrift[i].y *= -1;
       }
       bgDotGeom.attributes.position.needsUpdate = true;
 
@@ -4922,17 +4936,18 @@ function initThreeBackground() {
         fgPosArr[i * 3] += fgDrift[i].x;
         fgPosArr[i * 3 + 1] += fgDrift[i].y;
 
-        if (Math.abs(fgPosArr[i * 3]) > 28) fgDrift[i].x *= -1;
-        if (Math.abs(fgPosArr[i * 3 + 1]) > 18) fgDrift[i].y *= -1;
+        if (Math.abs(fgPosArr[i * 3]) > 30) fgDrift[i].x *= -1;
+        if (Math.abs(fgPosArr[i * 3 + 1]) > 20) fgDrift[i].y *= -1;
       }
       fgDotGeom.attributes.position.needsUpdate = true;
 
       const isLight = document.body.classList.contains('light-theme');
-      gridMat.opacity = isLight ? 0.08 : 0.45;
+      leftGrid.material.opacity = isLight ? 0.02 : 0.08;
+      rightGrid.material.opacity = isLight ? 0.02 : 0.08;
       
-      const baseOpacity = isLight ? 0.25 : 0.6;
-      const pulseRange = isLight ? 0.1 : 0.25;
-      fgDotMat.opacity = baseOpacity + Math.sin(time * 1.5) * pulseRange;
+      const baseOpacity = isLight ? 0.22 : 0.55;
+      const pulseRange = isLight ? 0.08 : 0.2;
+      fgDotMat.opacity = baseOpacity + Math.sin(time * 1.2) * pulseRange;
 
       renderer.render(scene, camera);
     };
@@ -4943,6 +4958,10 @@ function initThreeBackground() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      const isMobile = window.innerWidth < 1024;
+      leftGrid.visible = !isMobile;
+      rightGrid.visible = !isMobile;
     });
 
   } catch (err) {
