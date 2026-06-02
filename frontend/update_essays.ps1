@@ -23,6 +23,72 @@ $injectedCSS = @'
 .controller-rack-hud.scrolled-hud:hover {
   opacity: 1 !important;
 }
+
+/* Floating Background Orbs */
+.bg-glow-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(180px);
+  opacity: 0.12;
+  animation: orbFloat 22s infinite alternate ease-in-out;
+}
+body.light-theme .glow-orb {
+  opacity: 0.04;
+}
+.orb-1 {
+  background: var(--brand-violet, #8b5cf6);
+  width: 600px;
+  height: 600px;
+  top: -150px;
+  right: -150px;
+}
+.orb-2 {
+  background: var(--laser-cyan, #00d2ff);
+  width: 500px;
+  height: 500px;
+  bottom: 5%;
+  left: -150px;
+  animation-delay: -5s;
+}
+.orb-3 {
+  background: var(--laser-pink, #ec4899);
+  width: 400px;
+  height: 400px;
+  top: 35%;
+  right: 10%;
+  animation-delay: -10s;
+}
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 30px) scale(1.12); }
+}
+
+/* Scanline Grid overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+  background-size: 45px 45px;
+  opacity: 0.8;
+}
+body.light-theme::after {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.005) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.005) 1px, transparent 1px);
+}
+
 .hud-btn {
   background: var(--surface, #13141a);
   border: 2px solid var(--border, #2a2c38);
@@ -3959,6 +4025,17 @@ window.resetDefaultFlashcards = resetDefaultFlashcards;
 // === INJECTED PREMIUM MODULE JS END ===
 '@
 
+# === INJECTED DYNAMIC BACKLIGHT ORBS HTML ===
+$injectedOrbs = @'
+<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS START === -->
+<div class="bg-glow-orbs">
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+</div>
+<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS END === -->
+'@
+
 # === INJECTED TOGGLE BUTTON HTML ===
 $injectedToggleBtn = @'
 <!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
@@ -4405,11 +4482,11 @@ foreach ($file in $htmlFiles) {
         $content = $content.Substring(0, $scriptEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n" + $content.Substring($scriptEndIndex)
     }
     
-    # 3. Inject new toggle button and HUD rack right after the opening <body> tag (which may have been updated)
+    # 3. Inject new toggle button, HUD rack, and background orbs right after the opening <body> tag (which may have been updated)
     $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
     if ($bodyMatch.Success) {
         $insertIndex = $bodyMatch.Index + $bodyMatch.Length
-        $content = $content.Substring(0, $insertIndex) + "`n" + $injectedToggleBtn + "`n" + $injectedHUD + "`n" + $content.Substring($insertIndex)
+        $content = $content.Substring(0, $insertIndex) + "`n" + $injectedOrbs + "`n" + $injectedToggleBtn + "`n" + $injectedHUD + "`n" + $content.Substring($insertIndex)
     }
     
     # 4. Inject playground drawer and scratchpad right before the closing </body> tag
