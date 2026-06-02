@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 2: Deep-Dive into Systems Setup (VS Code, Node, Git & PATH) | WebDev Academy Manual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================
+       1. CORE DESIGN SYSTEM & DESIGN TOKENS
+       ========================================== */
+    :root {
+      --bg-color: #080a10;
+      --surface-color: #0f131f;
+      --surface-card: #151a2b;
+      --border-color: #222a40;
+      --text-color: #e2e8f0;
+      --text-muted: #94a3b8;
+      
+      /* Vibrant Accent Colors */
+      --primary: #8b5cf6;       /* Neon Violet */
+      --secondary: #06b6d4;     /* Neon Cyan */
+      --success: #10b981;       /* Emerald */
+      --warning: #f59e0b;       /* Amber */
+      --danger: #ef4444;        /* Rose */
+      
+      --font-body: 'Outfit', sans-serif;
+      --font-serif: 'Fraunces', serif;
+      --font-code: 'JetBrains Mono', monospace;
+      
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Standard Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================
+       2. LAYOUT & INTERACTIVE SHELL STYLES
+       ========================================== */
+    .academy-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sticky Sidebar Navigation */
+    .academy-sidebar {
+      background-color: var(--surface-color);
+      border-right: 1px solid var(--border-color);
+      padding: 32px 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .logo-area {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .nav-item a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .nav-item a:hover, 
+    .nav-item.active a {
+      color: #ffffff;
+      background-color: rgba(139, 92, 246, 0.1);
+      border-left: 3px solid var(--primary);
+    }
+
+    .nav-num {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--primary);
+      opacity: 0.8;
+    }
+
+    .hud-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+      flex: 1;
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-color);
+      color: #ffffff;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .action-btn:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+    }
+
+    /* Main Content Container */
+    .academy-content {
+      padding: 64px 80px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Book-like Typography */
+    .chapter-eyebrow {
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      color: var(--secondary);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .chapter-title {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      background: linear-gradient(to right, #ffffff, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .chapter-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    .academic-section {
+      margin-bottom: 64px;
+      scroll-margin-top: 40px;
+    }
+
+    .section-num {
+      font-family: var(--font-code);
+      color: var(--primary);
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      color: #ffffff;
+    }
+
+    .subsection-title {
+      font-family: var(--font-body);
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      color: var(--secondary);
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: var(--text-color);
+      font-size: 1.05rem;
+      line-height: 1.75;
+    }
+
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    /* Callout & Analogy Boxes */
+    .analogy-box {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(139, 92, 246, 0.05));
+      border-left: 4px solid var(--secondary);
+      border-radius: var(--radius-sm);
+      padding: 24px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .analogy-title {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pro-tip {
+      background-color: rgba(16, 185, 129, 0.04);
+      border-left: 4px solid var(--success);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin: 24px 0;
+    }
+
+    .pro-tip-title {
+      font-weight: 700;
+      color: var(--success);
+      margin-bottom: 8px;
+    }
+
+    /* ==========================================
+       3. CODE BLOCKS & TEXT ANNOTATIONS
+       ========================================== */
+    .code-container {
+      background-color: rgba(13, 17, 23, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      margin: 32px 0;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .code-header {
+      background-color: #0b0d13;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .code-file {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .code-lang {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      background-color: rgba(139, 92, 246, 0.2);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .code-block {
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: #c9d1d9;
+      line-height: 1.5;
+    }
+
+    .code-annotation-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      background-color: var(--surface-color);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .code-annotation-table th, 
+    .code-annotation-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .code-annotation-table th {
+      background-color: rgba(21, 26, 43, 0.5);
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+
+    .code-annotation-table td code {
+      background-color: var(--surface-card);
+      color: var(--secondary);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+    }
+
+    .code-annotation-table td {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* Diagramming via CSS Elements */
+    .architecture-diagram {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin: 32px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .diag-box {
+      background-color: var(--surface-card);
+      border: 2px solid var(--border-color);
+      padding: 16px 24px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .diag-arrow {
+      height: 30px;
+      width: 2px;
+      background-color: var(--primary);
+      position: relative;
+    }
+
+    .diag-arrow::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: -4px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 7px solid var(--primary);
+    }
+
+    .diag-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: -10px 0;
+      font-style: italic;
+    }
+
+    /* ==========================================
+       4. INTERACTIVE PLAYGROUND (SCREEN ONLY)
+       ========================================== */
+    .playground {
+      background-color: var(--surface-color);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      margin: 48px 0;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.4);
+    }
+
+    .playground-header {
+      background-color: var(--primary);
+      color: #ffffff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .playground-title {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 380px;
+    }
+
+    .playground-editors {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-color);
+      background-color: #0b0d13;
+    }
+
+    .editor-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pane-label {
+      background-color: rgba(21, 26, 43, 0.6);
+      padding: 6px 16px;
+      font-size: 0.75rem;
+      font-family: var(--font-code);
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pane-textarea {
+      flex: 1;
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      color: #06b6d4;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      padding: 12px 16px;
+      resize: none;
+      outline: none;
+    }
+
+    .playground-preview {
+      background-color: #0d1117;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-terminal {
+      flex: 1;
+      padding: 20px;
+      color: #38bdf8;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .run-btn {
+      background-color: var(--success);
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .run-btn:hover {
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================
+       5. PRINT LAYOUT CSS (BOOK GENERATION)
+       ========================================== */
+    @media print {
+      :root {
+        --bg-color: #ffffff !important;
+        --text-color: #1a1a1a !important;
+        --text-muted: #555555 !important;
+        --border-color: #cccccc !important;
+        --surface-color: #fafafa !important;
+        --surface-card: #f3f4f6 !important;
+        --primary: #5b21b6 !important;
+        --secondary: #0891b2 !important;
+      }
+
+      body {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        font-size: 11pt !important;
+        line-height: 1.6 !important;
+      }
+
+      .academy-container {
+        display: block !important;
+      }
+
+      .academy-sidebar,
+      .hud-controls,
+      .no-print,
+      .playground,
+      .run-btn {
+        display: none !important;
+      }
+
+      .academy-content {
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+
+      .academic-section {
+        page-break-after: always;
+        margin-bottom: 40px !important;
+      }
+
+      .academic-section:last-child {
+        page-break-after: avoid;
+      }
+
+      .code-container, 
+      .code-annotation-table, 
+      .analogy-box,
+      .architecture-diagram {
+        page-break-inside: avoid !important;
+        border: 1px solid #999999 !important;
+        background-color: #f9fafb !important;
+      }
+
+      .code-block {
+        color: #000000 !important;
+        background-color: #f9fafb !important;
+      }
+
+      .code-header {
+        background-color: #e5e7eb !important;
+        border-bottom: 1px solid #999999 !important;
+      }
+
+      .chapter-title {
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+        color: #000000 !important;
+        font-size: 28pt !important;
+        margin-top: 50px;
+      }
+
+      .section-title {
+        color: #000000 !important;
+        border-bottom: 2px solid #5b21b6 !important;
+      }
+
+      @page {
+        size: letter;
+        margin: 20mm 15mm 20mm 15mm;
+      }
+
+      header {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+        font-size: 8pt;
+        color: #666;
+        font-family: var(--font-code);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header style="display: none;" class="print-only">
+    WebDev Pathway Manual: Chapter 2 - Deep-Dive into Systems Setup (VS Code, Node, Git & PATH)
+  </header>
+
+  <div class="academy-container">
+    
+    <!-- SIDEBAR -->
+    <nav class="academy-sidebar no-print">
+      <div>
+        <div class="logo-area">Developer Academy</div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4;">
+          Systems & Tools Setup Guide
+        </p>
+        
+        <ul class="nav-list">
+          <li class="nav-item"><a href="chapter-1-essay-blueprint.html"><span class="nav-num">1.0</span> Essay Blueprint</a></li>
+          <li class="nav-item active"><a href="#intro"><span class="nav-num">2.0</span> Systems Setup</a></li>
+          <li class="nav-item"><a href="#vscode"><span class="nav-num">2.1</span> VS Code Internals</a></li>
+          <li class="nav-item"><a href="#node"><span class="nav-num">2.2</span> Node.js Runtimes</a></li>
+          <li class="nav-item"><a href="#git"><span class="nav-num">2.3</span> Git Storage DAG</a></li>
+          <li class="nav-item"><a href="#path"><span class="nav-num">2.4</span> PATH Resolution</a></li>
+          <li class="nav-item"><a href="#commands"><span class="nav-num">2.5</span> Terminal Commands</a></li>
+        </ul>
+      </div>
+
+      <div class="hud-controls">
+        <button class="action-btn" onclick="window.print()" title="Generates a print-ready manual saved as PDF">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+          Export to PDF
+        </button>
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="academy-content">
+      
+      <section id="intro" class="academic-section">
+        <div class="chapter-eyebrow">MODULE 2 • SYSTEMS SYSTEMS & COMPILATION</div>
+        <h1 class="chapter-title">Systems Setup Deep-Dive</h1>
+        <p class="chapter-desc">
+          Unpack the under-the-hood principles behind the tools that power professional developers. Learn how VS Code manages background processes, how Node compiles JavaScript scripts, how Git catalog files in a content-addressable storage database, and how your operating system finds executables via environment variables.
+        </p>
+
+        <div class="analogy-box">
+          <div class="analogy-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            10th Grade Analogy: The Formula 1 Cockpit
+          </div>
+          <p style="margin-bottom: 0; font-size: 0.95rem;">
+            Imagine starting programming as sitting in a Formula 1 racing cockpit. If you don't know what the buttons, steering wheel, and gears do, you cannot drive at high speeds. VS Code is your cockpit (showing monitors, buttons, dials), Node.js is the high-performance engine underneath running the car, Git is the video logs recording every split-second lap detail so you can rewind mistakes, and PATH is the steering alignment connecting the wheels to your controls. Let's study how they operate!
+          </p>
+        </div>
+      </section>
+
+      <!-- SECTION 2.1 -->
+      <section id="vscode" class="academic-section">
+        <span class="section-num">Section 2.1</span>
+        <h2 class="section-title">VS Code Process Topology</h2>
+        <p>
+          Recruiters often ask why VS Code is extremely stable and doesn't freeze the whole computer when a plugin crashes. The secret is its <strong>multi-process architecture</strong>.
+        </p>
+        <p>
+          Unlike older editors that run everything inside a single memory block, VS Code separates tasks into isolated workers:
+        </p>
+
+        <div class="architecture-diagram">
+          <div class="diag-box" style="border-color: var(--secondary);">
+            <strong>1. The Main / Renderer Process</strong><br>
+            Renders the visual interface (buttons, text editor boxes, scrollbars). Built on Electron (Chromium browser runtime).
+          </div>
+          <div class="diag-arrow"></div>
+          <div class="diag-label">Interprocess Communication (IPC)</div>
+          <div class="diag-arrow"></div>
+          <div class="diag-box" style="border-color: var(--primary);">
+            <strong>2. Extension Host Process</strong><br>
+            A separate background process where all your plugins (Prettier, GitLens, Python) execute. If a plugin crashes, your window stays completely responsive!
+          </div>
+          <div class="diag-arrow"></div>
+          <div class="diag-label">Spawns shell subprocesses</div>
+          <div class="diag-arrow"></div>
+          <div class="diag-box" style="border-color: var(--success);">
+            <strong>3. Terminal Process (Node PTY)</strong><br>
+            Runs shell processes (PowerShell, Bash) in the background and pipes text inputs/outputs directly to the main visual screen.
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2.2 -->
+      <section id="node" class="academic-section">
+        <span class="section-num">Section 2.2</span>
+        <h2 class="section-title">Node.js Runtime Under the Hood</h2>
+        <p>
+          Node.js is not a programming language—it is a runtime. It takes the JavaScript language (which traditionally only runs inside browsers) and allows it to run directly on your computer's operating system.
+        </p>
+        <p>
+          Under the hood, Node is built using two core engines:
+        </p>
+        <ul>
+          <li><strong>V8 Engine:</strong> Created by Google for Chrome. It takes your raw JavaScript text and compiles it into low-level machine instructions (assembly binary code) using Just-In-Time (JIT) compilation.</li>
+          <li><strong>libuv:</strong> A multi-platform C library that handles the event loop, file operations, system processes, and network requests asynchronously in the background.</li>
+        </ul>
+
+        <div class="analogy-box" style="border-left-color: var(--success);">
+          <div class="analogy-title" style="color: var(--success);">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            10th Grade Analogy: The Cook & The Helpers
+          </div>
+          <p style="margin-bottom: 0; font-size: 0.95rem;">
+            Think of the V8 engine as the Head Cook in a kitchen. The cook reads order sheets (your code) and quickly translates them into instructions. The cook only has one workspace (single-threaded execution). However, if an order takes a long time (like baking a cake or fetching data from a database), the Cook hands that ticket to the helper staff—<strong>libuv</strong>. The helper staff works in the background (multithreaded operations) and calls the Cook back (using callback queues) once the cake is fully baked, keeping the main cook free to accept more tickets!
+          </p>
+        </div>
+      </section>
+
+      <!-- SECTION 2.3 -->
+      <section id="git" class="academic-section">
+        <span class="section-num">Section 2.3</span>
+        <h2 class="section-title">Git Content-Addressable Storage</h2>
+        <p>
+          Git does not track changes as simple delta lines. Instead, Git behaves like a local transactional database. Inside your hidden <code>.git</code> folder, Git maps your files into a <strong>Directed Acyclic Graph (DAG)</strong> using cryptographic hash keys.
+        </p>
+        <p>
+          Git categorizes everything into three core object types:
+        </p>
+
+        <table class="code-annotation-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Git Object Type</th>
+              <th>Under-the-Hood Database Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Blobs</code></td>
+              <td>Stores raw file contents (pure data bytes). Blobs do not know their own filename, folder paths, or timestamps! They only contain content data.</td>
+            </tr>
+            <tr>
+              <td><code>Trees</code></td>
+              <td>Stores directory trees. A Tree acts like a folder log, linking blob hashes to physical filenames, permissions, and directory trees.</td>
+            </tr>
+            <tr>
+              <td><code>Commits</code></td>
+              <td>A metadata snapshot points to a single root Tree hash, referencing author names, timestamps, parent commits, and description comments.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Every file is cryptographically signed using SHA-1 (or SHA-256) hash functions. If you change a single letter in a file, its hash code changes completely. Git detects this instantly, creating a new Blob object and linking it in the directory graph.
+        </p>
+      </section>
+
+      <!-- SECTION 2.4 -->
+      <section id="path" class="academic-section">
+        <span class="section-num">Section 2.4</span>
+        <h2 class="section-title">The Environmental PATH Resolution</h2>
+        <p>
+          When you type <code>git</code>, <code>node</code>, or <code>npm</code> in your terminal, how does the computer know what program to run? It relies on the <strong>PATH environment variable</strong>.
+        </p>
+        <p>
+          The PATH is a list of directory paths stored in your operating system's memory. When a command is entered, the shell executes a lookup sequence:
+        </p>
+
+        <div class="code-container">
+          <div class="code-header">
+            <span class="code-file">Command Resolution Loop</span>
+            <span class="code-lang">System Logic</span>
+          </div>
+          <pre class="code-block"><code>User enters command: "node --version"
+ ↓
+Shell looks at system environment variable: $PATH
+ ↓
+Shell scans list of paths in order:
+  1. C:\Windows\system32? No 'node.exe' found.
+  2. C:\Windows? No 'node.exe' found.
+  3. C:\Program Files\nodejs? YES! Found 'node.exe' here.
+ ↓
+Shell executes "C:\Program Files\nodejs\node.exe --version"
+ ↓
+Prints version: v18.16.0</code></pre>
+        </div>
+
+        <p>
+          If you receive the error <code>"command not found"</code> or <code>"is not recognized as an internal or external command"</code>, it simply means the directory where the program's executable is stored is not listed inside your environment PATH variable list!
+        </p>
+      </section>
+
+      <!-- TERMINAL COMMANDS PLAYGROUND -->
+      <section id="commands" class="academic-section">
+        <span class="section-num">Section 2.5</span>
+        <h2 class="section-title">Interactive Terminal Resolution Sandbox</h2>
+        <p>
+          Use the sandbox terminal below to practice commands. Type typical system checks to see how command line shell parsing interprets parameters and locates environment files.
+        </p>
+
+        <div class="playground">
+          <div class="playground-header">
+            <div class="playground-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+              Command Line Interpreter Playground
+            </div>
+            <button class="run-btn" onclick="runCommand()">Execute Command</button>
+          </div>
+          
+          <div class="playground-grid" style="grid-template-columns: 1fr 1.2fr;">
+            <div class="playground-editors">
+              <div class="editor-pane">
+                <div class="pane-label">Enter Command (e.g. node -v, git log, env-check)</div>
+                <textarea id="command-input" class="pane-textarea">node -v</textarea>
+              </div>
+            </div>
+            
+            <div class="playground-preview">
+              <div class="pane-label" style="background-color: #0b0d13; border-bottom: 1px solid #222a40; color: #94a3b8;">Terminal Output Console</div>
+              <div id="terminal-out" class="preview-terminal">Microsoft Windows [Version 10.0.22631]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Developer\WebDev-Pathway> _</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Simple mock terminal compiler
+    function runCommand() {
+      const input = document.getElementById('command-input').value.trim();
+      const term = document.getElementById('terminal-out');
+      let response = '';
+
+      if (input === 'node -v' || input === 'node --version') {
+        response = 'v18.16.0';
+      } else if (input === 'git --version') {
+        response = 'git version 2.40.1.windows.1';
+      } else if (input === 'git log') {
+        response = 'commit ae1d4d5ab6ee64bbab02b532416f15f0a86fab10\nAuthor: rahulkothari677 <rahulkothari677@gmail.com>\nDate: Mon Jun 1 10:51:04 2026\n\n  feat: add Achievements grid, STT voice input, and AI-powered flashcards';
+      } else if (input === 'env-check' || input === 'echo %PATH%') {
+        response = 'C:\\Windows\\system32;C:\\Windows;C:\\Program Files\\nodejs\\;C:\\Program Files\\Git\\cmd\\';
+      } else {
+        response = `'${input}' is not recognized as an internal or external command, operable program or batch file.\nHint: Try 'node -v', 'git --version', or 'env-check'.`;
+      }
+
+      term.innerText = term.innerText + '\n\nC:\\Developer\\WebDev-Pathway> ' + input + '\n' + response;
+      term.scrollTop = term.scrollHeight; // Auto-scroll to bottom
+    }
+  </script>
+</body>
+</html>

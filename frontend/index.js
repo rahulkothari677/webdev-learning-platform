@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateProgressHUD();
   updateAuthHUD();
   initSpotlightGlow();
-  initQuantumBackground();
+  initThreeBackground();
   if (localStorage.getItem('faang-auth-token')) {
     syncProgressFromServer();
   }
@@ -1109,11 +1109,197 @@ function initSpotlightGlow() {
   });
 }
 
-// --- QUANTUM PARTICLE NETWORK BACKGROUND ---
-function initQuantumBackground() {
+// --- PREMIUM 3D WEBGL CYBERSPACE BACKGROUND ENGINE ---
+function initThreeBackground() {
   const canvas = document.getElementById('quantum-bg');
   if (!canvas) return;
-  
+
+  if (typeof THREE === 'undefined') {
+    console.warn("Three.js not loaded. Falling back to 2D background.");
+    initFallbackBackground(canvas);
+    return;
+  }
+
+  try {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // 1. ALL-AROUND CYBERSPACE WIREFRAME TUNNEL GRID
+    const tunnelRadius = 30;
+    const tunnelLength = 120;
+    const radialSegments = 30;
+    const tubularSegments = 30;
+
+    const gridGeom = new THREE.CylinderGeometry(tunnelRadius, tunnelRadius, tunnelLength, radialSegments, tubularSegments, true);
+    gridGeom.rotateX(Math.PI / 2); // Point inward towards camera
+
+    // Distort the cylinder lines slightly to make it feel warped and premium
+    const posAttr = gridGeom.attributes.position;
+    for (let i = 0; i < posAttr.count; i++) {
+      let z = posAttr.getZ(i);
+      let angle = Math.atan2(posAttr.getY(i), posAttr.getX(i));
+      let wave = Math.sin(z * 0.05 + angle * 2) * 1.5;
+      posAttr.setX(i, posAttr.getX(i) + Math.cos(angle) * wave);
+      posAttr.setY(i, posAttr.getY(i) + Math.sin(angle) * wave);
+    }
+    gridGeom.computeVertexNormals();
+
+    const isLightInitial = document.body.classList.contains('light-theme');
+
+    const gridMat = new THREE.MeshBasicMaterial({
+      color: isLightInitial ? 0x6d28d9 : 0x4a148c,
+      wireframe: true,
+      transparent: true,
+      opacity: isLightInitial ? 0.04 : 0.15,
+      blending: THREE.AdditiveBlending
+    });
+
+    const gridMesh = new THREE.Mesh(gridGeom, gridMat);
+    gridMesh.position.z = -20;
+    scene.add(gridMesh);
+
+    // 2. SOFT GLOWING NEON DOT CANVAS GENERATOR
+    const createNeonDotTexture = () => {
+      const canvasTex = document.createElement('canvas');
+      canvasTex.width = 64;
+      canvasTex.height = 64;
+      const ctx = canvasTex.getContext('2d');
+      
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+      grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(32, 32, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      return new THREE.CanvasTexture(canvasTex);
+    };
+
+    // 3. THEME-COLORED DYNAMIC DOT FIELD
+    const dotCount = 85;
+    const dotGeom = new THREE.BufferGeometry();
+    const positions = new Float32Array(dotCount * 3);
+    const colors = new Float32Array(dotCount * 3);
+    const driftProperties = [];
+
+    // Retrieve active theme colors from page variables dynamically
+    const computedStyle = getComputedStyle(document.documentElement);
+    let themeColors = [];
+    
+    // Essay specific color tokens
+    const ev = computedStyle.getPropertyValue('--brand-violet').trim();
+    const ec = computedStyle.getPropertyValue('--laser-cyan').trim();
+    const ep = computedStyle.getPropertyValue('--laser-pink').trim();
+    if (ev) themeColors.push(new THREE.Color(ev));
+    if (ec) themeColors.push(new THREE.Color(ec));
+    if (ep) themeColors.push(new THREE.Color(ep));
+
+    // Dashboard specific theme color variables
+    if (themeColors.length === 0) {
+      for (let i = 1; i <= 6; i++) {
+        let val = computedStyle.getPropertyValue(`--p${i}-color`).trim();
+        if (val) themeColors.push(new THREE.Color(val));
+      }
+    }
+
+    // Default Fallback
+    if (themeColors.length === 0) {
+      themeColors = [
+        new THREE.Color(0x00f2fe),
+        new THREE.Color(0xff0080)
+      ];
+    }
+
+    for (let i = 0; i < dotCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 55;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 35;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 25 - 5;
+
+      const assignedColor = themeColors[Math.floor(Math.random() * themeColors.length)];
+      colors[i * 3] = assignedColor.r;
+      colors[i * 3 + 1] = assignedColor.g;
+      colors[i * 3 + 2] = assignedColor.b;
+
+      driftProperties.push({
+        x: (Math.random() - 0.5) * 0.015,
+        y: (Math.random() - 0.5) * 0.015,
+        pulseOffset: Math.random() * Math.PI * 2,
+        pulseSpeed: 1 + Math.random() * 2
+      });
+    }
+
+    dotGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    dotGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const dotMaterial = new THREE.PointsMaterial({
+      size: 1.2,
+      vertexColors: true,
+      transparent: true,
+      opacity: isLightInitial ? 0.3 : 0.85,
+      map: createNeonDotTexture(),
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    const dotSystem = new THREE.Points(dotGeom, dotMaterial);
+    scene.add(dotSystem);
+
+    camera.position.z = 25;
+
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      const time = clock.getElapsedTime();
+
+      gridMesh.rotation.z = time * 0.02;
+      gridMesh.position.z = -20 + (Math.sin(time * 0.1) * 2);
+
+      const posArr = dotGeom.attributes.position.array;
+      for (let i = 0; i < dotCount; i++) {
+        posArr[i * 3] += driftProperties[i].x;
+        posArr[i * 3 + 1] += driftProperties[i].y;
+
+        if (Math.abs(posArr[i * 3]) > 28) driftProperties[i].x *= -1;
+        if (Math.abs(posArr[i * 3 + 1]) > 18) driftProperties[i].y *= -1;
+      }
+      dotGeom.attributes.position.needsUpdate = true;
+
+      const isLight = document.body.classList.contains('light-theme');
+      gridMat.color.setHex(isLight ? 0x6d28d9 : 0x4a148c);
+      gridMat.opacity = isLight ? 0.04 : 0.15;
+      
+      const baseOpacity = isLight ? 0.25 : 0.65;
+      const pulseRange = isLight ? 0.1 : 0.25;
+      dotMaterial.opacity = baseOpacity + Math.sin(time * 1.2) * pulseRange;
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+  } catch (err) {
+    console.error("Error building WebGL background:", err);
+    initFallbackBackground(canvas);
+  }
+}
+
+// 2D Canvas Fallback particle engine
+function initFallbackBackground(canvas) {
   const ctx = canvas.getContext('2d');
   let width = canvas.width = window.innerWidth;
   let height = canvas.height = window.innerHeight;
@@ -1124,7 +1310,7 @@ function initQuantumBackground() {
   });
   
   const particles = [];
-  const maxParticles = Math.min(60, Math.floor((width * height) / 25000)); // Dynamic count based on screen size
+  const maxParticles = Math.min(60, Math.floor((width * height) / 25000));
   
   class Particle {
     constructor() {
