@@ -15,6 +15,13 @@ $injectedCSS = @'
   z-index: 1009 !important;
   display: flex !important;
   gap: 12px !important;
+  transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+.controller-rack-hud.scrolled-hud {
+  opacity: 0.15 !important;
+}
+.controller-rack-hud.scrolled-hud:hover {
+  opacity: 1 !important;
 }
 .hud-btn {
   background: var(--surface, #13141a);
@@ -3111,6 +3118,20 @@ document.addEventListener('DOMContentLoaded', () => {
         backToTopBtn.style.display = 'none';
       }
     });
+  }
+
+  // Controller HUD scroll transparency listener
+  const controllerRack = document.querySelector('.controller-rack-hud');
+  if (controllerRack) {
+    const handleScroll = () => {
+      if (window.scrollY > 60) {
+        controllerRack.classList.add('scrolled-hud');
+      } else {
+        controllerRack.classList.remove('scrolled-hud');
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
   }
   
   // Scratchpad Bindings

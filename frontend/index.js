@@ -1075,6 +1075,12 @@ function toggleFeaturesModal() {
   modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
 }
 
+function toggleAchievementsModal() {
+  const modal = document.getElementById('achievements-modal');
+  if (!modal) return;
+  modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+}
+
 // Account Auth and Sync Bindings
 window.toggleAuthModal = toggleAuthModal;
 window.switchAuthTab = switchAuthTab;
@@ -1084,6 +1090,7 @@ window.syncProgressToServer = syncProgressToServer;
 window.syncProgressFromServer = syncProgressFromServer;
 window.toggleRoadmapGrid = toggleRoadmapGrid;
 window.toggleFeaturesModal = toggleFeaturesModal;
+window.toggleAchievementsModal = toggleAchievementsModal;
 
 // --- PREMIUM HOVER SPOTLIGHT TRACKER ---
 function initSpotlightGlow() {
