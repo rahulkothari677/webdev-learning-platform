@@ -24,50 +24,21 @@ $injectedCSS = @'
   opacity: 1 !important;
 }
 
-/* Floating Background Orbs */
-.bg-glow-orbs {
+/* WebGL Background Canvas */
+#quantum-bg {
   position: fixed;
   inset: 0;
-  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
   z-index: 0;
-  overflow: hidden;
+  pointer-events: none;
+  opacity: 1.0;
+  transition: opacity 0.3s;
 }
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(140px);
-  opacity: 0.30;
-  animation: orbFloat 22s infinite alternate ease-in-out;
-}
-body.light-theme .glow-orb {
-  opacity: 0.08;
-}
-.orb-1 {
-  background: var(--brand-violet, #8b5cf6);
-  width: 600px;
-  height: 600px;
-  top: -150px;
-  right: -150px;
-}
-.orb-2 {
-  background: var(--laser-cyan, #00d2ff);
-  width: 500px;
-  height: 500px;
-  bottom: 5%;
-  left: -150px;
-  animation-delay: -5s;
-}
-.orb-3 {
-  background: var(--laser-pink, #ec4899);
-  width: 400px;
-  height: 400px;
-  top: 35%;
-  right: 10%;
-  animation-delay: -10s;
-}
-@keyframes orbFloat {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 30px) scale(1.12); }
+
+/* Expose canvas by overriding opaque layout backgrounds */
+.hero-radar, .hero {
+  background: transparent !important;
 }
 
 /* Scanline Grid overlay */
@@ -3181,66 +3152,18 @@ function initThreeBackground() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // 1. ALL-AROUND CYBERSPACE WIREFRAME TUNNEL GRID
-    const tunnelRadius = 30;
+    const tunnelRadius = 45; // Larger radius to push grid to corners
     const tunnelLength = 120;
-    const radialSegments = 30;
-    const tubularSegments = 30;
+    const radialSegments = 20; // Less dense for crisp, straight lines
+    const tubularSegments = 15;
 
     const gridGeom = new THREE.CylinderGeometry(tunnelRadius, tunnelRadius, tunnelLength, radialSegments, tubularSegments, true);
     gridGeom.rotateX(Math.PI / 2); // Point inward towards camera
 
-    // Distort the cylinder lines slightly to make it feel warped and premium
-    const posAttr = gridGeom.attributes.position;
-    for (let i = 0; i < posAttr.count; i++) {
-      let z = posAttr.getZ(i);
-      let angle = Math.atan2(posAttr.getY(i), posAttr.getX(i));
-      let wave = Math.sin(z * 0.05 + angle * 2) * 1.5;
-      posAttr.setX(i, posAttr.getX(i) + Math.cos(angle) * wave);
-      posAttr.setY(i, posAttr.getY(i) + Math.sin(angle) * wave);
-    }
+    // Straight cylinder lines in perspective for a clean tech look
     gridGeom.computeVertexNormals();
 
     const isLightInitial = document.body.classList.contains('light-theme');
-
-    const gridMat = new THREE.MeshBasicMaterial({
-      color: isLightInitial ? 0x6d28d9 : 0x4a148c,
-      wireframe: true,
-      transparent: true,
-      opacity: isLightInitial ? 0.04 : 0.15,
-      blending: THREE.AdditiveBlending
-    });
-
-    const gridMesh = new THREE.Mesh(gridGeom, gridMat);
-    gridMesh.position.z = -20;
-    scene.add(gridMesh);
-
-    // 2. SOFT GLOWING NEON DOT CANVAS GENERATOR
-    const createNeonDotTexture = () => {
-      const canvasTex = document.createElement('canvas');
-      canvasTex.width = 64;
-      canvasTex.height = 64;
-      const ctx = canvasTex.getContext('2d');
-      
-      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
-      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-      grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
-      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(32, 32, 30, 0, Math.PI * 2);
-      ctx.fill();
-
-      return new THREE.CanvasTexture(canvasTex);
-    };
-
-    // 3. THEME-COLORED DYNAMIC DOT FIELD
-    const dotCount = 85;
-    const dotGeom = new THREE.BufferGeometry();
-    const positions = new Float32Array(dotCount * 3);
-    const colors = new Float32Array(dotCount * 3);
-    const driftProperties = [];
 
     // Retrieve active theme colors from page variables dynamically
     const computedStyle = getComputedStyle(document.documentElement);
@@ -3270,39 +3193,134 @@ function initThreeBackground() {
       ];
     }
 
-    for (let i = 0; i < dotCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 55;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 35;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 25 - 5;
+    const colorLeft = themeColors[0] || new THREE.Color(0x00f2fe);
+    const colorRight = themeColors[1] || themeColors[0] || new THREE.Color(0xff0080);
 
-      const assignedColor = themeColors[Math.floor(Math.random() * themeColors.length)];
-      colors[i * 3] = assignedColor.r;
-      colors[i * 3 + 1] = assignedColor.g;
-      colors[i * 3 + 2] = assignedColor.b;
+    // Apply color gradient to cylinder wireframe vertices (cyan on left, magenta on right)
+    const posAttr = gridGeom.attributes.position;
+    const gridColors = [];
+    for (let i = 0; i < posAttr.count; i++) {
+      let x = posAttr.getX(i);
+      // Map X from [-45, 45] to [0, 1]
+      let ratio = (x + 45) / 90;
+      ratio = Math.max(0, Math.min(1, ratio));
+      const tempCol = new THREE.Color();
+      tempCol.lerpColors(colorLeft, colorRight, ratio);
+      gridColors.push(tempCol.r, tempCol.g, tempCol.b);
+    }
+    gridGeom.setAttribute('color', new THREE.Float32BufferAttribute(gridColors, 3));
 
-      driftProperties.push({
-        x: (Math.random() - 0.5) * 0.015,
-        y: (Math.random() - 0.5) * 0.015,
-        pulseOffset: Math.random() * Math.PI * 2,
-        pulseSpeed: 1 + Math.random() * 2
+    const gridMat = new THREE.MeshBasicMaterial({
+      vertexColors: true,
+      wireframe: true,
+      transparent: true,
+      opacity: isLightInitial ? 0.08 : 0.45, // Enhanced visibility
+      blending: THREE.AdditiveBlending
+    });
+
+    const gridMesh = new THREE.Mesh(gridGeom, gridMat);
+    gridMesh.position.z = -20;
+    scene.add(gridMesh);
+
+    // 2. SOFT GLOWING NEON DOT CANVAS GENERATOR
+    const createNeonDotTexture = () => {
+      const canvasTex = document.createElement('canvas');
+      canvasTex.width = 64;
+      canvasTex.height = 64;
+      const ctx = canvasTex.getContext('2d');
+      
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+      grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(32, 32, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      return new THREE.CanvasTexture(canvasTex);
+    };
+
+    const neonTexture = createNeonDotTexture();
+
+    // 3. TWO-TIERED DYNAMIC PARTICLE SYSTEM FOR DEPTH
+    // System A: Small, deep, slow-drifting background dots
+    const bgDotCount = 60;
+    const bgDotGeom = new THREE.BufferGeometry();
+    const bgPositions = new Float32Array(bgDotCount * 3);
+    const bgColors = new Float32Array(bgDotCount * 3);
+    const bgDrift = [];
+
+    for (let i = 0; i < bgDotCount; i++) {
+      bgPositions[i * 3] = (Math.random() - 0.5) * 60;
+      bgPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      bgPositions[i * 3 + 2] = (Math.random() - 0.5) * 30 - 10;
+
+      const col = themeColors[Math.floor(Math.random() * themeColors.length)];
+      bgColors[i * 3] = col.r;
+      bgColors[i * 3 + 1] = col.g;
+      bgColors[i * 3 + 2] = col.b;
+
+      bgDrift.push({
+        x: (Math.random() - 0.5) * 0.006,
+        y: (Math.random() - 0.5) * 0.006
       });
     }
+    bgDotGeom.setAttribute('position', new THREE.BufferAttribute(bgPositions, 3));
+    bgDotGeom.setAttribute('color', new THREE.BufferAttribute(bgColors, 3));
 
-    dotGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    dotGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const dotMaterial = new THREE.PointsMaterial({
+    const bgDotMat = new THREE.PointsMaterial({
       size: 1.2,
       vertexColors: true,
       transparent: true,
-      opacity: isLightInitial ? 0.3 : 0.85,
-      map: createNeonDotTexture(),
+      opacity: isLightInitial ? 0.15 : 0.4,
+      map: neonTexture,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
+    const bgDotSystem = new THREE.Points(bgDotGeom, bgDotMat);
+    scene.add(bgDotSystem);
 
-    const dotSystem = new THREE.Points(dotGeom, dotMaterial);
-    scene.add(dotSystem);
+    // System B: Larger, glowing, pulsing midground particles
+    const fgDotCount = 35;
+    const fgDotGeom = new THREE.BufferGeometry();
+    const fgPositions = new Float32Array(fgDotCount * 3);
+    const fgColors = new Float32Array(fgDotCount * 3);
+    const fgDrift = [];
+
+    for (let i = 0; i < fgDotCount; i++) {
+      fgPositions[i * 3] = (Math.random() - 0.5) * 55;
+      fgPositions[i * 3 + 1] = (Math.random() - 0.5) * 35;
+      fgPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 5;
+
+      const col = themeColors[Math.floor(Math.random() * themeColors.length)];
+      fgColors[i * 3] = col.r;
+      fgColors[i * 3 + 1] = col.g;
+      fgColors[i * 3 + 2] = col.b;
+
+      fgDrift.push({
+        x: (Math.random() - 0.5) * 0.012,
+        y: (Math.random() - 0.5) * 0.012,
+        pulseOffset: Math.random() * Math.PI * 2,
+        pulseSpeed: 1.5 + Math.random() * 2
+      });
+    }
+    fgDotGeom.setAttribute('position', new THREE.BufferAttribute(fgPositions, 3));
+    fgDotGeom.setAttribute('color', new THREE.BufferAttribute(fgColors, 3));
+
+    const fgDotMat = new THREE.PointsMaterial({
+      size: 2.6, // Prominent premium glow
+      vertexColors: true,
+      transparent: true,
+      opacity: isLightInitial ? 0.25 : 0.8,
+      map: neonTexture,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const fgDotSystem = new THREE.Points(fgDotGeom, fgDotMat);
+    scene.add(fgDotSystem);
 
     camera.position.z = 25;
 
@@ -3312,26 +3330,38 @@ function initThreeBackground() {
       requestAnimationFrame(animate);
       const time = clock.getElapsedTime();
 
-      gridMesh.rotation.z = time * 0.02;
-      gridMesh.position.z = -20 + (Math.sin(time * 0.1) * 2);
+      // Slow, premium rotation and breathing depth movement
+      gridMesh.rotation.z = time * 0.012;
+      gridMesh.position.z = -20 + (Math.sin(time * 0.08) * 1.5);
 
-      const posArr = dotGeom.attributes.position.array;
-      for (let i = 0; i < dotCount; i++) {
-        posArr[i * 3] += driftProperties[i].x;
-        posArr[i * 3 + 1] += driftProperties[i].y;
+      // Animate background particles (slow drift)
+      const bgPosArr = bgDotGeom.attributes.position.array;
+      for (let i = 0; i < bgDotCount; i++) {
+        bgPosArr[i * 3] += bgDrift[i].x;
+        bgPosArr[i * 3 + 1] += bgDrift[i].y;
 
-        if (Math.abs(posArr[i * 3]) > 28) driftProperties[i].x *= -1;
-        if (Math.abs(posArr[i * 3 + 1]) > 18) driftProperties[i].y *= -1;
+        if (Math.abs(bgPosArr[i * 3]) > 30) bgDrift[i].x *= -1;
+        if (Math.abs(bgPosArr[i * 3 + 1]) > 20) bgDrift[i].y *= -1;
       }
-      dotGeom.attributes.position.needsUpdate = true;
+      bgDotGeom.attributes.position.needsUpdate = true;
+
+      // Animate midground particles (faster drift + glowing pulse)
+      const fgPosArr = fgDotGeom.attributes.position.array;
+      for (let i = 0; i < fgDotCount; i++) {
+        fgPosArr[i * 3] += fgDrift[i].x;
+        fgPosArr[i * 3 + 1] += fgDrift[i].y;
+
+        if (Math.abs(fgPosArr[i * 3]) > 28) fgDrift[i].x *= -1;
+        if (Math.abs(fgPosArr[i * 3 + 1]) > 18) fgDrift[i].y *= -1;
+      }
+      fgDotGeom.attributes.position.needsUpdate = true;
 
       const isLight = document.body.classList.contains('light-theme');
-      gridMat.color.setHex(isLight ? 0x6d28d9 : 0x4a148c);
-      gridMat.opacity = isLight ? 0.04 : 0.15;
+      gridMat.opacity = isLight ? 0.08 : 0.45;
       
-      const baseOpacity = isLight ? 0.25 : 0.65;
+      const baseOpacity = isLight ? 0.25 : 0.6;
       const pulseRange = isLight ? 0.1 : 0.25;
-      dotMaterial.opacity = baseOpacity + Math.sin(time * 1.2) * pulseRange;
+      fgDotMat.opacity = baseOpacity + Math.sin(time * 1.5) * pulseRange;
 
       renderer.render(scene, camera);
     };
@@ -4668,7 +4698,8 @@ foreach ($file in $htmlFiles) {
     # 1. Clean up old custom styles (various older naming structures)
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(/\* Injected HUD & Theme controls \*/|/\* === INJECTED PREMIUM LAYOUT STYLE START === \*/).*?(?=</style>)", "")
     
-    # 2. Clean up old custom scripts
+    # 2. Clean up old custom scripts (both legacy loose ones and new wrapped comment ones)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PREMIUM MODULE JS START === -->.*?<!-- === INJECTED PREMIUM MODULE JS END === -->", "")
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(// Re-declared function to sync theme with localStorage|// === INJECTED PREMIUM MODULE JS START ===).*?(?=</script>)", "")
     
     # 3. Clean up old sidebar toggle buttons (both classes, IDs, raw, and commented variants)
@@ -4704,6 +4735,13 @@ foreach ($file in $htmlFiles) {
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+type=[`"']image/png[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
 
+    # 12. Clean up old Three.js CDN script tags (corrupted and clean ones)
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Three.js CDN Library -->\s*<script\s+src=[`"'][^`"']*three\.min\.js[`"'][^>]*>.*?</script>", "")
+
+    # 13. Clean up any duplicated background canvas or legacy glow orb blocks
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS START === -->.*?<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS END === -->", "")
+    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<div\s+class=[`"']bg-glow-orbs[`"']>.*?</div>", "")
+
     # Determine the Phase class for the body tag based on filename
     $phaseClass = ""
     if ($file.Name -match "essay-(\d+)\.") {
@@ -4714,8 +4752,8 @@ foreach ($file in $htmlFiles) {
     $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
     if ($bodyMatch.Success) {
         $bodyTag = $bodyMatch.Value
-        # Remove any existing phase class markers
-        $cleanBodyTag = [System.Text.RegularExpressions.Regex]::Replace($bodyTag, "\bphase-[1-9]\b", "")
+        # Remove any existing phase class markers (0 to 18)
+        $cleanBodyTag = [System.Text.RegularExpressions.Regex]::Replace($bodyTag, "\bphase-\d+\b", "")
         # Remove empty class="" if we cleared classes completely
         $cleanBodyTag = $cleanBodyTag -replace 'class="\s*"', ""
         
@@ -4737,11 +4775,11 @@ foreach ($file in $htmlFiles) {
         $content = $content.Substring(0, $styleEndIndex) + "`n" + $injectedCSS + "`n" + $content.Substring($styleEndIndex)
     }
     
-    # 2. Inject custom scripts before the FIRST </script> tag in the document (the main script block)
-    $scriptEndIndex = $content.IndexOf("</script>")
-    if ($scriptEndIndex -ge 0) {
-        $configScript = "window.currentLessonId = '$currentPhase.$currentLesson';`nwindow.phaseLessonIds = $jsLessonsArray;"
-        $content = $content.Substring(0, $scriptEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n" + $content.Substring($scriptEndIndex)
+    # 2. Inject custom scripts right before the closing </body> tag (wrapped in clean, commented script block)
+    $bodyEndIndex = $content.LastIndexOf("</body>")
+    if ($bodyEndIndex -ge 0) {
+        $configScript = "<!-- === INJECTED PREMIUM MODULE JS START === -->`n<script>`nwindow.currentLessonId = '$currentPhase.$currentLesson';`nwindow.phaseLessonIds = $jsLessonsArray;"
+        $content = $content.Substring(0, $bodyEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n</script>`n<!-- === INJECTED PREMIUM MODULE JS END === -->`n" + $content.Substring($bodyEndIndex)
     }
     
     # 3. Inject new toggle button, HUD rack, and background orbs right after the opening <body> tag (which may have been updated)
