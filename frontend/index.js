@@ -6,9 +6,9 @@
 // ── COURSE ESSAYS DATABASE ──
 const ESSAYS_DATA = {
   // Phase 0 — Foundation and Setup
-  "0.1": { title: "Essay 0.1 — Your complete development environment: VS Code, Node, Git, extensions, terminal", phase: 0, path: "", time: 45 },
-  "0.2": { title: "Essay 0.2 — The terminal and command line: navigation, files, processes, shortcuts", phase: 0, path: "", time: 45 },
-  "0.3": { title: "Essay 0.3 — Git and GitHub from scratch: init, add, commit, push, branches, pull requests", phase: 0, path: "", time: 45 },
+  "0.1": { title: "Essay 0.1 — Your Complete Development Environment", phase: 0, path: "essays/essay-0.1.html", time: 45 },
+  "0.2": { title: "Essay 0.2 — Terminal Mastery", phase: 0, path: "essays/essay-0.2.html", time: 45 },
+  "0.3": { title: "Essay 0.3 — How Developers Actually Think", phase: 0, path: "essays/essay-0.3.html", time: 35 },
 
   // Phase 1 — HTML
   "1.1": { title: "Essay 1.1 — HTML: The Skeleton of Every Webpage", phase: 1, path: "essays/essay-1.1.html", time: 45 },
