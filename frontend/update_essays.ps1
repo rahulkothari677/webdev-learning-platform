@@ -23,43 +23,6 @@ $injectedCSS = @'
 .controller-rack-hud.scrolled-hud:hover {
   opacity: 1 !important;
 }
-
-/* WebGL Background Canvas */
-#quantum-bg {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 1.0;
-  transition: opacity 0.3s;
-}
-
-/* Expose canvas by overriding opaque layout backgrounds */
-.hero-radar, .hero {
-  background: transparent !important;
-}
-
-/* Scanline Grid overlay */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 45px 45px;
-  opacity: 0.8;
-}
-body.light-theme::after {
-  background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
-}
-
 .hud-btn {
   background: var(--surface, #13141a);
   border: 2px solid var(--border, #2a2c38);
@@ -3132,85 +3095,6 @@ window.saveBackendUrl = saveBackendUrl;
 window.syncProgressToServer = syncProgressToServer;
 window.syncProgressFromServer = syncProgressFromServer;
 
-// --- QUANTUM PARTICLE NETWORK BACKGROUND ---
-function initQuantumBackground() {
-  const canvas = document.getElementById('quantum-bg');
-  if (!canvas) return;
-  
-  const ctx = canvas.getContext('2d');
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
-  
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-  
-  const particles = [];
-  const maxParticles = Math.min(60, Math.floor((width * height) / 25000));
-  
-  class Particle {
-    constructor() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.35;
-      this.vy = (Math.random() - 0.5) * 0.35;
-      this.radius = Math.random() * 1.5 + 0.5;
-    }
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.x < 0 || this.x > width) this.vx *= -1;
-      if (this.y < 0 || this.y > height) this.vy *= -1;
-    }
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = document.body.classList.contains('light-theme') ? 'rgba(109, 40, 217, 0.15)' : 'rgba(139, 92, 246, 0.35)';
-      ctx.fill();
-    }
-  }
-  
-  for (let i = 0; i < maxParticles; i++) {
-    particles.push(new Particle());
-  }
-  
-  function drawLines() {
-    const isLightTheme = document.body.classList.contains('light-theme');
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 110) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          const opacity = 0.12 * (1 - dist / 110);
-          ctx.strokeStyle = isLightTheme ? `rgba(109, 40, 217, ${opacity * 0.6})` : `rgba(6, 182, 212, ${opacity})`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
-    }
-  }
-  
-  function loop() {
-    ctx.clearRect(0, 0, width, height);
-    particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-    drawLines();
-    requestAnimationFrame(loop);
-  }
-  
-  loop();
-}
-
-window.initQuantumBackground = initQuantumBackground;
-
 // Hook up functions on load
 document.addEventListener('DOMContentLoaded', () => {
   initSidebarState();
@@ -3220,11 +3104,9 @@ document.addEventListener('DOMContentLoaded', () => {
   switchScratchTab('notes');
   initAITutorResizer();
   updateAuthHUD();
-  initQuantumBackground();
   if (localStorage.getItem('faang-auth-token')) {
     syncProgressFromServer();
   }
-});
   
   // Back to Top Button Scroll Listener
   const backToTopBtn = document.getElementById('back-to-top-btn');
@@ -4077,13 +3959,6 @@ window.resetDefaultFlashcards = resetDefaultFlashcards;
 // === INJECTED PREMIUM MODULE JS END ===
 '@
 
-# === INJECTED DYNAMIC BACKLIGHT ORBS HTML ===
-$injectedOrbs = @'
-<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS START === -->
-<canvas id="quantum-bg" style="position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none;"></canvas>
-<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS END === -->
-'@
-
 # === INJECTED TOGGLE BUTTON HTML ===
 $injectedToggleBtn = @'
 <!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
@@ -4454,8 +4329,7 @@ foreach ($file in $htmlFiles) {
     # 1. Clean up old custom styles (various older naming structures)
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(/\* Injected HUD & Theme controls \*/|/\* === INJECTED PREMIUM LAYOUT STYLE START === \*/).*?(?=</style>)", "")
     
-    # 2. Clean up old custom scripts (both legacy loose ones and new wrapped comment ones)
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PREMIUM MODULE JS START === -->.*?<!-- === INJECTED PREMIUM MODULE JS END === -->", "")
+    # 2. Clean up old custom scripts
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)(// Re-declared function to sync theme with localStorage|// === INJECTED PREMIUM MODULE JS START ===).*?(?=</script>)", "")
     
     # 3. Clean up old sidebar toggle buttons (both classes, IDs, raw, and commented variants)
@@ -4491,13 +4365,6 @@ foreach ($file in $htmlFiles) {
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+type=[`"']image/png[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
     $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<link\s+rel=[`"'](apple-touch-icon|icon)[`"']\s+href=[`"'][^`"']*favicon\.png[`"']\s*>", "")
 
-    # 12. Clean up old Three.js CDN script tags (corrupted and clean ones)
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- Three.js CDN Library -->\s*<script\s+src=[`"'][^`"']*three\.min\.js[`"'][^>]*>.*?</script>", "")
-
-    # 13. Clean up any duplicated background canvas or legacy glow orb blocks
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS START === -->.*?<!-- === INJECTED PREMIUM DYNAMIC BACKLIGHT ORBS END === -->", "")
-    $content = [System.Text.RegularExpressions.Regex]::Replace($content, "(?si)<div\s+class=[`"']bg-glow-orbs[`"']>.*?</div>", "")
-
     # Determine the Phase class for the body tag based on filename
     $phaseClass = ""
     if ($file.Name -match "essay-(\d+)\.") {
@@ -4508,8 +4375,8 @@ foreach ($file in $htmlFiles) {
     $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
     if ($bodyMatch.Success) {
         $bodyTag = $bodyMatch.Value
-        # Remove any existing phase class markers (0 to 18)
-        $cleanBodyTag = [System.Text.RegularExpressions.Regex]::Replace($bodyTag, "\bphase-\d+\b", "")
+        # Remove any existing phase class markers
+        $cleanBodyTag = [System.Text.RegularExpressions.Regex]::Replace($bodyTag, "\bphase-[1-9]\b", "")
         # Remove empty class="" if we cleared classes completely
         $cleanBodyTag = $cleanBodyTag -replace 'class="\s*"', ""
         
@@ -4531,18 +4398,18 @@ foreach ($file in $htmlFiles) {
         $content = $content.Substring(0, $styleEndIndex) + "`n" + $injectedCSS + "`n" + $content.Substring($styleEndIndex)
     }
     
-    # 2. Inject custom scripts right before the closing </body> tag (wrapped in clean, commented script block)
-    $bodyEndIndex = $content.LastIndexOf("</body>")
-    if ($bodyEndIndex -ge 0) {
-        $configScript = "<!-- === INJECTED PREMIUM MODULE JS START === -->`n<script>`nwindow.currentLessonId = '$currentPhase.$currentLesson';`nwindow.phaseLessonIds = $jsLessonsArray;"
-        $content = $content.Substring(0, $bodyEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n</script>`n<!-- === INJECTED PREMIUM MODULE JS END === -->`n" + $content.Substring($bodyEndIndex)
+    # 2. Inject custom scripts before the FIRST </script> tag in the document (the main script block)
+    $scriptEndIndex = $content.IndexOf("</script>")
+    if ($scriptEndIndex -ge 0) {
+        $configScript = "window.currentLessonId = '$currentPhase.$currentLesson';`nwindow.phaseLessonIds = $jsLessonsArray;"
+        $content = $content.Substring(0, $scriptEndIndex) + "`n" + $configScript + "`n" + $injectedJS + "`n" + $content.Substring($scriptEndIndex)
     }
     
-    # 3. Inject new toggle button, HUD rack, and background orbs right after the opening <body> tag (which may have been updated)
+    # 3. Inject new toggle button and HUD rack right after the opening <body> tag (which may have been updated)
     $bodyMatch = [System.Text.RegularExpressions.Regex]::Match($content, "(?i)<body[^>]*>")
     if ($bodyMatch.Success) {
         $insertIndex = $bodyMatch.Index + $bodyMatch.Length
-        $content = $content.Substring(0, $insertIndex) + "`n" + $injectedOrbs + "`n" + $injectedToggleBtn + "`n" + $injectedHUD + "`n" + $content.Substring($insertIndex)
+        $content = $content.Substring(0, $insertIndex) + "`n" + $injectedToggleBtn + "`n" + $injectedHUD + "`n" + $content.Substring($insertIndex)
     }
     
     # 4. Inject playground drawer and scratchpad right before the closing </body> tag

@@ -1124,7 +1124,7 @@ function initQuantumBackground() {
   });
   
   const particles = [];
-  const maxParticles = Math.min(60, Math.floor((width * height) / 25000));
+  const maxParticles = Math.min(60, Math.floor((width * height) / 25000)); // Dynamic count based on screen size
   
   class Particle {
     constructor() {
