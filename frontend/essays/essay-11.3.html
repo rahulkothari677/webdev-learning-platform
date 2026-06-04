@@ -81,6 +81,9 @@
   
   
   
+  
+  
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Essay 11.3 — Caching Architecture: Strategies, Invalidation, &amp; Distributed Topologies | FAANG Roadmap</title>
@@ -468,6 +471,7 @@ body.light-theme .summary-hud-metric { color: rgba(220, 38, 38, 0.08); }
 
 
 
+
 /* === INJECTED PREMIUM LAYOUT STYLE START === */
 .controller-rack-hud {
   position: fixed !important;
@@ -645,6 +649,56 @@ body.light-theme {
   --hero-gradient: linear-gradient(180deg, #e0f2fe 0%, #f5f6fa 100%);
   --hud-overlay-bg: rgba(232, 234, 242, 0.9);
 }
+
+/* Universal Cyberpunk Neon theme overrides */
+body.theme-cyberpunk {
+  background: #05050a !important;
+  color: #e0f2fe !important;
+  --bg: #05050a;
+  --surface: #0a0a14;
+  --surface2: #101026;
+  --border: #1f1f3e;
+  --accent: #ff007f;
+  --accent2: #00f5d4;
+  --text: #e0f2fe;
+  --text-muted: #8ec2e6;
+  --text-dim: #2f2f5c;
+  --green: #00f5d4;
+  --red: #ff007f;
+  --yellow: #ffee32;
+  --purple: #9d4edd;
+  --orange: #ff9f1c;
+  --code-bg: #03030b;
+}
+
+/* Universal Classic Dracula theme overrides */
+body.theme-dracula {
+  background: #282a36 !important;
+  color: #f8f8f2 !important;
+  --bg: #282a36;
+  --surface: #1e1f29;
+  --surface2: #343746;
+  --border: #44475a;
+  --accent: #ff79c6;
+  --accent2: #50fa7b;
+  --text: #f8f8f2;
+  --text-muted: #6272a4;
+  --text-dim: #44475a;
+  --green: #50fa7b;
+  --red: #ff5555;
+  --yellow: #f1fa8c;
+  --purple: #bd93f9;
+  --orange: #ffb86c;
+  --code-bg: #1e1f29;
+}
+
+/* Circular scroll progress HUD layout styling */
+#reading-progress-hud {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 
 /* Phase-specific background gradient overrides in light mode */
 body.light-theme.phase-1 {
@@ -2131,7 +2185,7 @@ body.light-theme #ai-voice-input-btn.listening {
 /* === INJECTED PREMIUM LAYOUT STYLE END === */
 </style>
 </head>
-<body class="sidebar-open phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11">
+<body class="sidebar-open phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11 phase-11">
 <!-- === INJECTED SIDEBAR TOGGLE BUTTON START === -->
 <button class="sidebar-toggle-btn" onclick="toggleSidebarHUD()" aria-label="Toggle Sidebar Map">
   <span class="toggle-icon">&#10005;</span>
@@ -2223,6 +2277,9 @@ body.light-theme #ai-voice-input-btn.listening {
   </div>
 </div>
 <!-- === INJECTED PREMIUM HUD RACK END === -->
+
+
+
 
 
 
@@ -3006,6 +3063,9 @@ window.phaseLessonIds = ['11.1', '11.2', '11.3', '11.4', '11.5', '11.6'];
 
 window.currentLessonId = '11.3';
 window.phaseLessonIds = ['11.1', '11.2', '11.3', '11.4', '11.5', '11.6'];
+
+window.currentLessonId = '11.3';
+window.phaseLessonIds = ['11.1', '11.2', '11.3', '11.4', '11.5', '11.6'];
 // === INJECTED PREMIUM MODULE JS START ===
 const getBackendUrl = () => 'https://webdev-learning-platform-backend.onrender.com';
 let syncTimeout = null;
@@ -3248,25 +3308,47 @@ function saveBackendUrl() {
 
 // Synchronously apply theme before DOMContentLoaded to prevent flash
 (function() {
-  const savedTheme = localStorage.getItem('faang-course-theme');
-  const body = document.body;
-  if (savedTheme === 'light') {
-    body.classList.add('light-theme');
-  } else {
-    body.classList.remove('light-theme');
+  let savedTheme = localStorage.getItem('faang-course-theme-preset');
+  if (!savedTheme) {
+    const legacy = localStorage.getItem('faang-course-theme');
+    savedTheme = legacy === 'light' ? 'light' : 'dark';
   }
+  const body = document.body;
+  body.classList.remove('light-theme', 'theme-cyberpunk', 'theme-dracula');
+  if (savedTheme === 'light') body.classList.add('light-theme');
+  else if (savedTheme === 'cyberpunk') body.classList.add('theme-cyberpunk');
+  else if (savedTheme === 'dracula') body.classList.add('theme-dracula');
 })();
 
 function toggleThemeHUD() {
+  const themes = ['dark', 'cyberpunk', 'dracula', 'light'];
+  let savedTheme = localStorage.getItem('faang-course-theme-preset');
+  if (!savedTheme) {
+    const legacy = localStorage.getItem('faang-course-theme');
+    savedTheme = legacy === 'light' ? 'light' : 'dark';
+  }
+  let idx = themes.indexOf(savedTheme);
+  if (idx === -1) idx = 0;
+  const nextTheme = themes[(idx + 1) % themes.length];
+  
   const body = document.body;
   const themeText = document.getElementById('theme-text');
-  body.classList.toggle('light-theme');
-  const isLight = body.classList.contains('light-theme');
-  localStorage.setItem('faang-course-theme', isLight ? 'light' : 'dark');
+  body.classList.remove('light-theme', 'theme-cyberpunk', 'theme-dracula');
+  if (nextTheme === 'light') body.classList.add('light-theme');
+  else if (nextTheme === 'cyberpunk') body.classList.add('theme-cyberpunk');
+  else if (nextTheme === 'dracula') body.classList.add('theme-dracula');
+  
+  localStorage.setItem('faang-course-theme-preset', nextTheme);
+  localStorage.setItem('faang-course-theme', nextTheme === 'light' ? 'light' : 'dark');
+  
   if (themeText) {
-    themeText.innerText = isLight ? "Light Lab" : "Dark Cyber";
+    let displayName = "Dark Cyber";
+    if (nextTheme === 'cyberpunk') displayName = "Cyber Neon";
+    if (nextTheme === 'dracula') displayName = "Dracula";
+    if (nextTheme === 'light') displayName = "Light Lab";
+    themeText.innerText = displayName;
   }
-  syncScratchpadTheme(isLight ? 'light' : 'dark');
+  syncScratchpadTheme(nextTheme === 'light' ? 'light' : 'dark');
 }
 
 function syncScratchpadTheme(theme) {
@@ -4443,16 +4525,40 @@ document.addEventListener('DOMContentLoaded', () => {
     syncProgressFromServer();
   }
   
-  // Back to Top Button Scroll Listener
-  const backToTopBtn = document.getElementById('back-to-top-btn');
-  if (backToTopBtn) {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 350) {
-        backToTopBtn.style.display = 'flex';
-      } else {
-        backToTopBtn.style.display = 'none';
+  // Combined Reading Progress & Scroll to Top Tracker
+  const progressHud = document.getElementById('reading-progress-hud');
+  const progressCircle = document.getElementById('reading-progress-circle');
+  const progressText = document.getElementById('reading-progress-text');
+  
+  if (progressHud) {
+    const updateProgress = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / docHeight) * 100))) : 0;
+      
+      if (progressCircle) {
+        const perimeter = 2 * Math.PI * 18; // 113.1
+        const offset = perimeter - (pct / 100) * perimeter;
+        progressCircle.style.strokeDashoffset = offset;
       }
-    });
+      
+      if (progressText) {
+        progressText.innerText = pct + '%';
+      }
+      
+      if (scrollTop > 350) {
+        progressHud.style.display = 'flex';
+        progressHud.style.opacity = '1';
+        progressHud.style.pointerEvents = 'auto';
+      } else {
+        progressHud.style.opacity = '0';
+        progressHud.style.pointerEvents = 'none';
+      }
+    };
+    
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    updateProgress();
   }
 
   // Controller HUD scroll transparency listener
@@ -4485,10 +4591,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  const savedTheme = localStorage.getItem('faang-course-theme');
+  let savedTheme = localStorage.getItem('faang-course-theme-preset');
+  if (!savedTheme) {
+    const legacy = localStorage.getItem('faang-course-theme');
+    savedTheme = legacy === 'light' ? 'light' : 'dark';
+  }
   const themeText = document.getElementById('theme-text');
   if (themeText) {
-    themeText.innerText = savedTheme === 'light' ? "Light Lab" : "Dark Cyber";
+    let displayName = "Dark Cyber";
+    if (savedTheme === 'cyberpunk') displayName = "Cyber Neon";
+    if (savedTheme === 'dracula') displayName = "Dracula";
+    if (savedTheme === 'light') displayName = "Light Lab";
+    themeText.innerText = displayName;
   }
   syncScratchpadTheme(savedTheme === 'light' ? 'light' : 'dark');
   
@@ -4594,18 +4708,22 @@ window.addEventListener('storage', (e) => {
       updateWordCount(e.newValue || '');
     }
   }
-  if (e.key === 'faang-course-theme') {
-    const theme = e.newValue;
+  if (e.key === 'faang-course-theme-preset') {
+    const t = e.newValue || 'dark';
     const body = document.body;
     const themeText = document.getElementById('theme-text');
-    if (theme === 'light') {
-      body.classList.add('light-theme');
-      if (themeText) themeText.innerText = "Light Lab";
-    } else {
-      body.classList.remove('light-theme');
-      if (themeText) themeText.innerText = "Dark Cyber";
+    body.classList.remove('light-theme', 'theme-cyberpunk', 'theme-dracula');
+    if (t === 'light') body.classList.add('light-theme');
+    else if (t === 'cyberpunk') body.classList.add('theme-cyberpunk');
+    else if (t === 'dracula') body.classList.add('theme-dracula');
+    if (themeText) {
+      let displayName = "Dark Cyber";
+      if (t === 'cyberpunk') displayName = "Cyber Neon";
+      if (t === 'dracula') displayName = "Dracula";
+      if (t === 'light') displayName = "Light Lab";
+      themeText.innerText = displayName;
     }
-    syncScratchpadTheme(theme);
+    syncScratchpadTheme(t === 'light' ? 'light' : 'dark');
   }
 });
 // --- PREMIUM GEMINI AI TUTOR SYSTEM ---
@@ -5450,12 +5568,21 @@ window.resetDefaultFlashcards = resetDefaultFlashcards;
 
 
 
+
+
+
+
+
 <!-- === INJECTED STUDY NOTES SCRATCHPAD START === -->
 <div id="scratchpad-hud-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 1010; font-family: 'Plus Jakarta Sans', sans-serif;">
-  <!-- Back to Top Button -->
-  <button id="back-to-top-btn" onclick="scrollToTopHUD()" aria-label="Scroll to Top" style="width: 50px; height: 50px; border-radius: 50%; background: var(--surface, #13141a); border: 2px solid var(--border, #2a2c38); color: var(--text, #e4e2dc); display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 1008; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 12px; outline: none;">
-    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-  </button>
+  <!-- Circular Reading Progress HUD (Back to Top) -->
+  <div id="reading-progress-hud" onclick="scrollToTopHUD()" aria-label="Scroll to Top" style="display: none; opacity: 0; pointer-events: none; width: 50px; height: 50px; border-radius: 50%; background: var(--surface, #13141a); border: 2px solid var(--border, #2a2c38); color: var(--text, #e4e2dc); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 1008; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 12px; outline: none; position: relative;">
+    <svg width="44" height="44" viewBox="0 0 44 44" style="transform: rotate(-90deg); width: 44px; height: 44px; display: block;">
+      <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border, #2a2c38)" stroke-width="2.5" />
+      <circle id="reading-progress-circle" cx="22" cy="22" r="18" fill="none" stroke="var(--accent, #38bdf8)" stroke-width="2.5" stroke-dasharray="113.1" stroke-dashoffset="113.1" stroke-linecap="round" style="transition: stroke-dashoffset 0.1s ease;" />
+    </svg>
+    <span id="reading-progress-text" style="position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 700; color: var(--text, #e4e2dc);">0%</span>
+  </div>
   <!-- Toggle Button -->
   <button id="scratchpad-toggle-btn" onclick="toggleScratchpadHUD()" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.2s ease;">
     <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
